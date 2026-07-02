@@ -65,7 +65,8 @@ const invitationData = {
 
   // ===================== العد التنازلي =====================
   countdown: {
-    heading: "La célébration commence dans",
+    heading: "Compte à rebours",
+    subtitleAr: "بقي على موعد الزفاف", // العنوان الفرعي بالعربية
     labels: { days: "Jours", hours: "Heures", minutes: "Minutes", seconds: "Secondes" },
     expiredText: "C'est le grand jour !",
   },
