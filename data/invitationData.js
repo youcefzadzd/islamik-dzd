@@ -147,7 +147,9 @@ const invitationData = {
 
   // ===================== الصور والأصول =====================
   assets: {
-    envelopeClosed: "/assets/envelope-closed.webp",
+    // شاشة الافتتاح — المغلف الجديد (envelope-first1.png بعد المعالجة)
+    envelopeClosed: "/assets/envelope-first1-open.webp",
+    envelopeSeal: "/assets/envelope-first1-seal.webp",
     waxSeal: "/assets/wax-seal.webp",
     invitationPaper: "/assets/invitation-paper.webp",
     heroBackground: "/assets/hero-background.webp",

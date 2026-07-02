@@ -21,16 +21,16 @@ const EASE = [0.22, 1, 0.36, 1];
 // dev-only: slow the whole sequence down to inspect it (keep 1 in production)
 const SLOW = 1;
 
-// Clip along the V creases: top corners down to the flap tip. The wax seal
-// is HTML-only (the baked one was inpainted out of the asset), so the flap
-// is a clean paper triangle.
-const FLAP_CLIP = "polygon(0% 0%, 100% 0%, 50% 47.7%)";
+// Clip along the V creases of envelope-first1: the fold meets the side
+// edges at ~19% and the tip sits under the gold seal (~49.3%). The seal is
+// an HTML sprite (the baked one was inpainted out of the base asset).
+const FLAP_CLIP = "polygon(0% 0%, 100% 0%, 100% 19%, 50% 49.3%, 0% 19%)";
 // Same shape mirrored vertically, for the back face of the flap.
-const FLAP_CLIP_BACK = "polygon(0% 100%, 100% 100%, 50% 52.3%)";
+const FLAP_CLIP_BACK = "polygon(0% 100%, 100% 100%, 100% 81%, 50% 50.7%, 0% 81%)";
 
 // Slightly inset so the painted interior never bleeds past the deckled
 // envelope edge or the flap silhouette.
-const INTERIOR_CLIP = "polygon(2% 1.5%, 98% 1.5%, 50% 46.5%)";
+const INTERIOR_CLIP = "polygon(1.5% 1.5%, 98.5% 1.5%, 98.5% 19%, 50% 48.3%, 1.5% 19%)";
 
 const INTERIOR_STYLE = {
   clipPath: INTERIOR_CLIP,
@@ -117,7 +117,7 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
         initial={{ opacity: 0, y: 26 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: EASE }}
-        className="relative w-[min(94vw,460px)]"
+        className="relative w-[min(96vw,500px)]"
       >
         <motion.div
           animate={cameraAnimate}
@@ -139,11 +139,12 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
             style={{ background: "rgb(var(--color-burgundy-dark) / 0.55)" }}
           />
 
-          {/* envelope body — completely still */}
+          {/* envelope body — completely still, shown whole and uncropped */}
           <img
             src={data.assets.envelopeClosed}
             alt="Enveloppe scellée"
             className="relative z-0 w-full select-none"
+            style={{ boxShadow: "0 24px 60px rgb(var(--color-burgundy-dark) / 0.2)" }}
             draggable={false}
           />
 
@@ -262,39 +263,24 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
             }}
           />
 
-          {/* handcrafted monogram wax seal — compresses, cracks, then fades */}
+          {/* the gold bismillah seal — compresses, cracks, then fades */}
           <div
-            className="absolute z-40 w-[29%]"
-            style={{ left: "50%", top: "47.5%", transform: "translate(-50%, -50%)" }}
+            className="absolute z-40 w-[33%]"
+            style={{ left: "50%", top: "49.32%", transform: "translate(-50%, -50%)" }}
           >
             <WaxSeal
-              src={data.assets.waxSeal}
+              src={data.assets.envelopeSeal}
               initials={initials}
               state={sealState}
               onOpen={open}
               fontSize="clamp(1.3rem, 6.5vw, 2rem)"
+              flat
             />
           </div>
         </motion.div>
       </motion.div>
 
-      {/* tap to open hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: stage === "closed" ? 1 : 0 }}
-        transition={{ duration: 0.6, delay: stage === "closed" ? 0.9 : 0 }}
-        className="absolute bottom-[8svh] flex flex-col items-center gap-1 text-gold-dark"
-      >
-        <motion.span
-          animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-          className="text-lg"
-          aria-hidden
-        >
-          ⌃
-        </motion.span>
-        <span className="text-[0.7rem] uppercase tracking-[0.45em]">{data.envelope.tapToOpenText}</span>
-      </motion.div>
+      {/* no HTML tap hint: "Tap to Open" is part of the envelope artwork */}
     </motion.div>
   );
 }

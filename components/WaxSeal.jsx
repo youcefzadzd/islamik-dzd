@@ -30,7 +30,11 @@ function waxMask(src) {
 }
 
 /* the wax disc itself: image + sculpting light layers, reused by the shards */
-function WaxBody({ src, initials, fontSize, glossOpacity = 0.55 }) {
+function WaxBody({ src, initials, fontSize, glossOpacity = 0.55, flat = false }) {
+  if (flat) {
+    // photographic seal: the artwork already carries its own depth
+    return <img src={src} alt="" className="block w-full select-none" draggable={false} />;
+  }
   return (
     <>
       <img src={src} alt="" className="block w-full select-none" draggable={false} />
@@ -109,7 +113,9 @@ function WaxBody({ src, initials, fontSize, glossOpacity = 0.55 }) {
   );
 }
 
-export default function WaxSeal({ src, initials, state, onOpen, fontSize }) {
+export default function WaxSeal({ src, initials, state, onOpen, fontSize, flat = false }) {
+  // flat: the seal artwork is already photographic (e.g. the gold bismillah
+  // seal) — keep every interaction but skip the CSS sculpting and initials
   const idle = state === "idle";
   const cracked = state === "crack";
 
@@ -139,7 +145,10 @@ export default function WaxSeal({ src, initials, state, onOpen, fontSize }) {
         animate={{ opacity: cracked ? 0 : 1 }}
         transition={{ duration: 0.3, delay: cracked ? 0.15 : 0 }}
         className="absolute left-1/2 top-[84%] h-[22%] w-[92%] -translate-x-1/2 rounded-[50%]"
-        style={{ background: "rgb(var(--color-burgundy-dark) / 0.4)", filter: "blur(10px)" }}
+        style={{
+          background: flat ? "rgb(80 55 35 / 0.22)" : "rgb(var(--color-burgundy-dark) / 0.4)",
+          filter: "blur(10px)",
+        }}
       />
       {/* tight contact shadow where the wax meets the paper */}
       <motion.div
@@ -147,15 +156,18 @@ export default function WaxSeal({ src, initials, state, onOpen, fontSize }) {
         animate={{ opacity: cracked ? 0 : 1 }}
         transition={{ duration: 0.25, delay: cracked ? 0.1 : 0 }}
         className="absolute left-1/2 top-[88%] h-[12%] w-[78%] -translate-x-1/2 rounded-[50%]"
-        style={{ background: "rgb(20 3 8 / 0.5)", filter: "blur(4px)" }}
+        style={{
+          background: flat ? "rgb(60 40 25 / 0.28)" : "rgb(20 3 8 / 0.5)",
+          filter: "blur(4px)",
+        }}
       />
 
       {/* whole seal (hidden the instant it cracks) */}
       <div className="relative" style={{ opacity: cracked ? 0 : 1 }}>
-        <WaxBody src={src} initials={initials} fontSize={fontSize} glossOpacity={idle ? 0.55 : 0.8} />
+        <WaxBody src={src} initials={initials} fontSize={fontSize} glossOpacity={idle ? 0.55 : 0.8} flat={flat} />
 
         {/* handmade imperfections: stray wax droplets at the rim */}
-        {[
+        {!flat && [
           { left: "9%", top: "40%", w: "4.5%", h: "3.8%" },
           { right: "7.5%", top: "58%", w: "3.8%", h: "3.2%" },
           { left: "55%", bottom: "3.5%", w: "3.2%", h: "2.8%" },
@@ -189,7 +201,7 @@ export default function WaxSeal({ src, initials, state, onOpen, fontSize }) {
               className="absolute inset-0"
               style={{ clipPath: SHARD_LEFT }}
             >
-              <WaxBody src={src} initials={initials} fontSize={fontSize} glossOpacity={0.5} />
+              <WaxBody src={src} initials={initials} fontSize={fontSize} glossOpacity={0.5} flat={flat} />
             </motion.div>
             <motion.div
               key="right"
@@ -199,7 +211,7 @@ export default function WaxSeal({ src, initials, state, onOpen, fontSize }) {
               className="absolute inset-0"
               style={{ clipPath: SHARD_RIGHT }}
             >
-              <WaxBody src={src} initials={initials} fontSize={fontSize} glossOpacity={0.5} />
+              <WaxBody src={src} initials={initials} fontSize={fontSize} glossOpacity={0.5} flat={flat} />
             </motion.div>
             {/* fracture flash along the break line */}
             <motion.svg
