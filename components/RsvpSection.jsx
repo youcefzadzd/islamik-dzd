@@ -15,7 +15,7 @@ export default function RsvpSection({ data }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.name.trim() || status === "submitting") return;
     setStatus("submitting");
     try {
       if (rsvp.submitEndpoint) {
@@ -36,16 +36,25 @@ export default function RsvpSection({ data }) {
   }
 
   return (
-    <section className="px-6 py-20 bg-ivory">
-      <div className="invite-card">
+    <section className="relative overflow-hidden bg-ivory px-6 py-20">
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: "url(/assets/paper-texture.webp)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+      <div className="relative invite-card">
         <Reveal>
-          <div className="text-center mb-8">
-            <p className="uppercase tracking-[0.3em] text-xs text-gold-dark mb-2">
-              {rsvp.deadline}
-            </p>
-            <h2 className="font-serif text-3xl md:text-4xl text-emerald mb-3">{rsvp.heading}</h2>
-            <div className="divider" />
-            <p className="mt-4 font-body text-ink/80">{rsvp.subheading}</p>
+          <div className="mb-8 text-center">
+            <p className="mb-2 text-xs uppercase tracking-[0.3em] text-gold-dark">{rsvp.deadline}</p>
+            <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{rsvp.heading}</h2>
+            <div className="divider mt-4">
+              <span className="text-gold">❦</span>
+            </div>
+            <p className="mt-4 font-body text-lg text-ink/80">{rsvp.subheading}</p>
           </div>
 
           <AnimatePresence mode="wait">
@@ -54,9 +63,14 @@ export default function RsvpSection({ data }) {
                 key="success"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-8"
+                className="py-8 text-center"
               >
-                <p className="font-serif text-2xl text-emerald mb-2">✦</p>
+                <img
+                  src={data.assets.waxSeal}
+                  alt=""
+                  className="mx-auto mb-4 w-20 select-none"
+                  draggable={false}
+                />
                 <p className="font-body text-lg text-ink/90">{rsvp.confirmationMessage}</p>
               </motion.div>
             ) : (
@@ -69,20 +83,20 @@ export default function RsvpSection({ data }) {
                 className="space-y-5"
               >
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-gold-dark mb-2">
+                  <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
                     {rsvp.nameLabel}
                   </label>
                   <input
                     required
                     value={form.name}
                     onChange={(e) => update("name", e.target.value)}
-                    className="w-full bg-transparent border-b border-ink/30 focus:border-emerald outline-none py-2 font-body text-lg"
+                    className="w-full border-b border-ink/30 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
                     placeholder={rsvp.namePlaceholder}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-gold-dark mb-2">
+                  <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
                     {rsvp.attendingLabel}
                   </label>
                   <div className="flex gap-3">
@@ -91,9 +105,9 @@ export default function RsvpSection({ data }) {
                         type="button"
                         key={val}
                         onClick={() => update("attending", val)}
-                        className={`flex-1 py-2 rounded-full border text-sm uppercase tracking-wide transition-colors ${
+                        className={`flex-1 rounded-full border py-2 text-sm uppercase tracking-wide transition-colors ${
                           form.attending === val
-                            ? "bg-emerald text-ivory border-emerald"
+                            ? "border-burgundy bg-burgundy text-ivory-light"
                             : "border-ink/20 text-ink/70"
                         }`}
                       >
@@ -105,15 +119,15 @@ export default function RsvpSection({ data }) {
 
                 {form.attending === "yes" && (
                   <div>
-                    <label className="block text-xs uppercase tracking-widest text-gold-dark mb-2">
+                    <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
                       {rsvp.guestsLabel}
                     </label>
                     <select
                       value={form.guests}
                       onChange={(e) => update("guests", e.target.value)}
-                      className="w-full bg-transparent border-b border-ink/30 focus:border-emerald outline-none py-2 font-body text-lg"
+                      className="w-full border-b border-ink/30 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
                     >
-                      {[1, 2, 3, 4].map((n) => (
+                      {[1, 2, 3, 4, 5, 6].map((n) => (
                         <option key={n} value={n}>
                           {n}
                         </option>
@@ -123,29 +137,44 @@ export default function RsvpSection({ data }) {
                 )}
 
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-gold-dark mb-2">
+                  <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
                     {rsvp.messageLabel}
                   </label>
                   <textarea
                     value={form.message}
                     onChange={(e) => update("message", e.target.value)}
                     rows={3}
-                    className="w-full bg-transparent border-b border-ink/30 focus:border-emerald outline-none py-2 font-body text-lg resize-none"
+                    className="w-full resize-none border-b border-ink/30 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
                     placeholder={rsvp.messagePlaceholder}
                   />
                 </div>
 
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  type="submit"
-                  disabled={status === "submitting"}
-                  className="w-full py-3 rounded-full bg-emerald text-ivory uppercase tracking-[0.2em] text-sm shadow-card hover:bg-emerald-dark transition-colors disabled:opacity-60"
-                >
-                  {status === "submitting" ? rsvp.submittingText : rsvp.submitText}
-                </motion.button>
+                {/* burgundy wax-seal submit button */}
+                <div className="flex flex-col items-center pt-4">
+                  <motion.button
+                    type="submit"
+                    disabled={status === "submitting"}
+                    whileHover={{ scale: 1.05, rotate: [0, -2, 2, 0] }}
+                    whileTap={{ scale: 0.9 }}
+                    className="relative w-36 outline-none disabled:opacity-70"
+                    aria-label={rsvp.sealButtonText}
+                  >
+                    <img src={data.assets.waxSeal} alt="" className="w-full select-none" draggable={false} />
+                    <span
+                      className="absolute inset-0 flex items-center justify-center pb-[6%] font-monogram text-3xl text-gold-light"
+                      style={{
+                        textShadow:
+                          "0 1px 1px rgb(var(--color-burgundy-dark)), 0 -1px 1px rgb(var(--color-burgundy-light) / 0.6)",
+                      }}
+                    >
+                      {status === "submitting" ? "…" : rsvp.sealButtonText}
+                    </span>
+                  </motion.button>
+                  <p className="mt-3 font-body text-sm italic text-ink/60">{rsvp.sealButtonHint}</p>
+                </div>
 
                 {status === "error" && (
-                  <p className="text-center text-sm text-emerald">
+                  <p className="text-center text-sm text-burgundy">
                     Une erreur est survenue. Veuillez réessayer.
                   </p>
                 )}

@@ -1,20 +1,55 @@
+"use client";
+
 import Reveal from "./Reveal";
 
 export default function LocationSection({ data }) {
-  const { location } = data;
+  const location = data.location;
 
   return (
-    <section className="px-6 py-20 bg-ivory text-center">
-      <div className="invite-card">
+    <section className="bg-ivory-dark/60 px-6 py-20">
+      <div className="invite-card text-center">
         <Reveal>
-          <p className="font-serif text-3xl text-emerald mb-2">{location.venueName}</p>
-          <p className="font-body text-lg text-ink/80 mb-8">{location.address}</p>
+          <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{location.heading}</h2>
+          <div className="divider mt-4">
+            <span className="text-gold">❦</span>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.15}>
+          <p className="mt-8 font-serif text-3xl text-burgundy">{location.venueName}</p>
+          <p className="mt-2 font-body text-lg text-ink/80">{location.address}</p>
+        </Reveal>
+
+        {location.mapEmbedUrl ? (
+          <Reveal delay={0.25}>
+            <div className="mt-8 overflow-hidden rounded-3xl border border-gold/50 shadow-card">
+              <iframe
+                src={location.mapEmbedUrl}
+                title={location.venueName}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-72 w-full border-0"
+              />
+            </div>
+          </Reveal>
+        ) : null}
+
+        <Reveal delay={0.35}>
           <a
             href={location.mapLinkUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-emerald text-ivory text-sm tracking-[0.15em] uppercase shadow-card hover:bg-emerald-dark transition-colors"
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-burgundy px-8 py-3 text-sm uppercase tracking-[0.2em] text-ivory-light shadow-card transition-colors hover:bg-burgundy-dark"
           >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              />
+              <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
             {location.buttonText}
           </a>
         </Reveal>

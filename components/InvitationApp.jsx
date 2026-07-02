@@ -1,35 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import EnvelopeReveal from "./EnvelopeReveal";
-import AyahSection from "./AyahSection";
-import CoupleNames from "./CoupleNames";
-import InvitationMessage from "./InvitationMessage";
-import EventDateTime from "./EventDateTime";
+import { useEffect, useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import EnvelopeIntro from "./EnvelopeIntro";
+import HeroSection from "./HeroSection";
+import IntroSection from "./IntroSection";
+import CountdownSection from "./CountdownSection";
+import ScheduleSection from "./ScheduleSection";
 import LocationSection from "./LocationSection";
-import Countdown from "./Countdown";
+import VideoSection from "./VideoSection";
+import GallerySection from "./GallerySection";
 import RsvpSection from "./RsvpSection";
-import DuaSection from "./DuaSection";
-import SignatureFooter from "./SignatureFooter";
+import ThankYouSection from "./ThankYouSection";
 
 export default function InvitationApp({ data }) {
+  // mountMain: the page is rendered under the overlay just before the paper expands,
+  // so the crossfade lands on an already-painted hero.
+  const [mountMain, setMountMain] = useState(false);
   const [opened, setOpened] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = opened ? "" : "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [opened]);
 
   return (
     <>
-      {!opened && <EnvelopeReveal data={data} onOpen={() => setOpened(true)} />}
+      <AnimatePresence>
+        {!opened && (
+          <EnvelopeIntro
+            data={data}
+            onMountMain={() => setMountMain(true)}
+            onDone={() => setOpened(true)}
+          />
+        )}
+      </AnimatePresence>
 
-      {opened && (
+      {mountMain && (
         <main className="relative">
-          <AyahSection data={data} />
-          <CoupleNames data={data} />
-          <InvitationMessage data={data} />
-          <EventDateTime data={data} />
+          <HeroSection data={data} revealed={opened} />
+          <IntroSection data={data} />
+          <CountdownSection data={data} />
+          <ScheduleSection data={data} />
           <LocationSection data={data} />
-          <Countdown targetDateISO={data.event.dateTimeISO} />
+          <VideoSection data={data} />
+          <GallerySection data={data} />
           <RsvpSection data={data} />
-          <DuaSection data={data} />
-          <SignatureFooter data={data} />
+          <ThankYouSection data={data} />
         </main>
       )}
     </>

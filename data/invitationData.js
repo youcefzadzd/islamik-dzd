@@ -1,8 +1,8 @@
 /**
  * ============================================================
  *  INVITATION CONFIG — الملف الوحيد الذي تحتاج تعديله.
- *  Islamic Royal — دعوة زفاف إسلامية فاخرة باللغة الفرنسية.
- *  كل صفحة وكل قسم في الموقع يقرأ محتواه من هذا الملف فقط.
+ *  Islamic Royal — دعوة زفاف إسلامية فاخرة.
+ *  كل نص، تاريخ، رابط أو صورة في الموقع يُقرأ من هذا الملف فقط.
  * ============================================================
  */
 
@@ -13,31 +13,25 @@ const invitationData = {
     description: "Invitation à notre mariage — avec la grâce d'Allah.",
   },
 
-  // ===================== الآية القرآنية =====================
-  ayah: {
-    text:
-      "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا " +
-      "لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",
-    reference: "سورة الروم - الآية 21",
-  },
-
   // ===================== العروسان =====================
   couple: {
-    // الاسم بخط عربي فاخر + الاسم الفرنسي يظهر أسفله
+    // الحرف الأول من كل اسم يظهر تلقائيًا على ختم الشمع (Y & K)
+    groomName: "Youcef",
+    brideName: "Katia",
     groomNameAr: "يوسف",
-    groomNameFr: "Youcef",
     brideNameAr: "كاتيا",
-    brideNameFr: "Katia",
-    // ترتيب الظهور: ["groom", "bride"] أو ["bride", "groom"]
-    order: ["groom", "bride"],
   },
 
-  // ===================== نص الدعوة بالفرنسية =====================
-  invitationMessage: {
-    lines: [
-      "Nous avons l'immense joie de vous inviter à célébrer notre mariage.",
-      "Votre présence sera pour nous un immense honneur.",
-    ],
+  // ===================== المغلف (شاشة الافتتاح) =====================
+  envelope: {
+    tapToOpenText: "Touchez pour ouvrir",
+  },
+
+  // ===================== الواجهة الرئيسية (Hero) =====================
+  hero: {
+    bismillah: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+    eyebrow: "Wedding Day",
+    scrollHintText: "Scroll down",
   },
 
   // ===================== التاريخ والوقت =====================
@@ -45,17 +39,81 @@ const invitationData = {
     // التاريخ والوقت الدقيق المستخدم لحساب العد التنازلي (لا تغيّر الصيغة)
     dateTimeISO: "2026-08-14T16:00:00",
     displayDate: "14 Août 2026", // التاريخ كما يظهر في الصفحة
-    displayDay: "Vendredi", // اسم اليوم بالفرنسية
+    displayDateShort: "14.08.26", // التاريخ المختصر أسفل "Wedding Day"
+    displayDay: "Vendredi", // اسم اليوم
     displayTime: "16h00", // الوقت كما يظهر في الصفحة
+  },
+
+  // ===================== رسالة الافتتاح =====================
+  intro: {
+    // السطور المزخرفة بالخط الذهبي
+    calligraphyLines: ["Deux âmes", "Un seul destin", "Écrit par Allah"],
+    // نص الدعوة
+    messageLines: [
+      "Chers familles et amis,",
+      "Nous avons l'immense joie de vous inviter à célébrer notre mariage.",
+      "Votre présence illuminera le début de notre éternité.",
+    ],
+    // الآية القرآنية
+    ayah: {
+      text:
+        "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا " +
+        "لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",
+      reference: "سورة الروم — الآية 21",
+    },
+  },
+
+  // ===================== العد التنازلي =====================
+  countdown: {
+    heading: "La célébration commence dans",
+    labels: { days: "Jours", hours: "Heures", minutes: "Minutes", seconds: "Secondes" },
+    expiredText: "C'est le grand jour !",
+  },
+
+  // ===================== برنامج اليوم =====================
+  schedule: {
+    heading: "Programme de la journée",
+    items: [
+      { time: "16h00", title: "Accueil des invités" },
+      { time: "17h00", title: "Cérémonie & Fatiha" },
+      { time: "19h00", title: "Dîner" },
+      { time: "21h00", title: "Gâteau & Célébration" },
+      { time: "23h00", title: "Clôture de la soirée" },
+    ],
   },
 
   // ===================== المكان =====================
   location: {
-    venueName: "AB Parke", // اسم القاعة
-    address: "Bouira, Algérie", // العنوان
+    heading: "Localisation",
+    venueName: "AB Parke",
+    address: "Bouira, Algérie",
     // رابط جوجل ماب يُستخدم لزر "Voir sur Google Maps"
     mapLinkUrl: "https://maps.app.goo.gl/PFApV3L7r9zXFtfQ9",
+    // رابط الخريطة المدمجة (iframe) — اتركه فارغًا لإخفاء الخريطة
+    mapEmbedUrl: "https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1sAB%20Parke%20Bouira%20Alg%C3%A9rie",
     buttonText: "Voir sur Google Maps",
+  },
+
+  // ===================== الفيديو =====================
+  video: {
+    heading: "Notre vidéo",
+    subheading: "Un avant-goût de notre grand jour",
+    // ضع هنا رابط YouTube "embed" مثل: https://www.youtube-nocookie.com/embed/XXXXXXX
+    // اتركه فارغًا لعرض إطار أنيق بدل الفيديو
+    embedUrl: "",
+    placeholderText: "La vidéo arrive bientôt…",
+  },
+
+  // ===================== معرض الصور =====================
+  gallery: {
+    heading: "Galerie",
+    subheading: "Quelques instants de notre histoire",
+    // أضف أو احذف الصور بحرية — ضع صورك في public/assets/
+    images: [
+      { src: "/assets/hero-background.webp", alt: "Arche royale aux cygnes" },
+      { src: "/assets/thankyou-background.webp", alt: "Jardin des arches dorées" },
+      { src: "/assets/envelope-closed.webp", alt: "L'enveloppe scellée" },
+    ],
   },
 
   // ===================== نموذج تأكيد الحضور (RSVP) =====================
@@ -71,41 +129,48 @@ const invitationData = {
     guestsLabel: "Nombre d'invités",
     messageLabel: "Message (optionnel)",
     messagePlaceholder: "Un mot pour les mariés",
-    submitText: "Confirmer ma présence",
+    sealButtonText: "RSVP", // النص فوق ختم الشمع
+    sealButtonHint: "Appuyez sur le sceau pour confirmer",
     submittingText: "Envoi en cours...",
     // اتركها فارغة لتخزين الردود في متصفح الضيف فقط، أو ضع رابط API خاص بك
     submitEndpoint: "",
     confirmationMessage: "Qu'Allah bénisse votre présence. Merci pour votre réponse.",
   },
 
-  // ===================== الدعاء الختامي =====================
-  dua: {
-    text: "بارك الله لهما وبارك عليهما وجمع بينهما في خير",
+  // ===================== رسالة الشكر الختامية =====================
+  thankYou: {
+    heading: "Au plaisir de vous voir !",
+    message: "Votre présence est le plus beau des cadeaux.",
+    dua: "بارك الله لهما وبارك عليهما وجمع بينهما في خير",
+    signatureNames: "Youcef & Katia",
   },
 
-  // ===================== التوقيع =====================
-  signature: {
-    groomFamilyLabel: "Famille du marié",
-    brideFamilyLabel: "Famille de la mariée",
+  // ===================== الصور والأصول =====================
+  assets: {
+    envelopeClosed: "/assets/envelope-closed.webp",
+    waxSeal: "/assets/wax-seal.webp",
+    invitationPaper: "/assets/invitation-paper.webp",
+    heroBackground: "/assets/hero-background.webp",
+    countdownCard: "/assets/countdown-card.webp",
+    thankYouBackground: "/assets/thankyou-background.webp",
   },
 
   // ===================== ألوان القالب =====================
-  // غيّر أي كود لون (hex) هنا وسيتغيّر لون الموقع كاملاً تلقائيًا —
-  // بدون الحاجة لتعديل أي ملف تصميم أو كود.
+  // غيّر أي كود لون (hex) هنا وسيتغيّر لون الموقع كاملاً تلقائيًا.
   theme: {
     colors: {
       white: "#FFFFFF", // أبيض
-      ivory: "#FAF6EC", // عاجي (خلفية أساسية)
+      ivory: "#FAF5EA", // عاجي (خلفية أساسية)
       ivoryLight: "#FFFDF8", // عاجي فاتح جدًا
-      ivoryDark: "#F0E8D6", // عاجي غامق (خلفيات أقسام)
+      ivoryDark: "#F0E6D2", // عاجي غامق (خلفيات أقسام)
       gold: "#C9A227", // الذهبي الأساسي (نصوص وحدود وزخارف)
       goldLight: "#E4C866", // ذهبي فاتح
       goldDark: "#9C7A1B", // ذهبي غامق
-      emerald: "#0B5E42", // الأخضر الزمردي الأساسي (عناوين وأزرار)
-      emeraldLight: "#146B4E", // زمردي فاتح
-      emeraldDark: "#073D2B", // زمردي غامق
-      ink: "#20281F", // لون النص الأساسي
-      burgundy: "#6E1F2B", // لون ختم الشمع (Wax Seal) فقط
+      emerald: "#6E1F2B", // لون العناوين والأزرار (عنابي ملكي)
+      emeraldLight: "#8C2E3C",
+      emeraldDark: "#4A1420",
+      ink: "#3C3229", // لون النص الأساسي (بني دافئ)
+      burgundy: "#6E1F2B", // لون ختم الشمع (Wax Seal)
       burgundyLight: "#8C2E3C", // عنابي فاتح (لمعان الختم)
       burgundyDark: "#4A1420", // عنابي غامق (ظل الختم)
     },
