@@ -65,3 +65,64 @@ body {
 .text-balance {
   text-wrap: balance;
 }
+
+/* ===== Hero cinematics (transform/opacity only, GPU friendly) ===== */
+
+/* falling petals: outer element falls, inner element sways + rotates */
+@keyframes petal-fall {
+  0% { transform: translate3d(0, -8vh, 0); }
+  100% { transform: translate3d(0, 108vh, 0); }
+}
+@keyframes petal-fade {
+  0%, 100% { opacity: 0; }
+  8%, 82% { opacity: var(--po, 0.7); }
+}
+@keyframes petal-sway {
+  0% { transform: translateX(calc(var(--sway, 18px) * -1)) rotate(0deg); }
+  100% { transform: translateX(var(--sway, 18px)) rotate(var(--rot, 220deg)); }
+}
+.petal {
+  position: absolute;
+  top: 0;
+  will-change: transform, opacity;
+  animation:
+    petal-fall var(--dur, 11s) linear var(--delay, 0s) infinite,
+    petal-fade var(--dur, 11s) linear var(--delay, 0s) infinite;
+}
+.petal > span {
+  display: block;
+  will-change: transform;
+  animation: petal-sway var(--sway-dur, 3.4s) ease-in-out var(--delay, 0s) infinite alternate;
+}
+
+/* expanding water ripples under the swans */
+@keyframes swan-ripple {
+  0% { transform: translate(-50%, -50%) scale(0.35); opacity: 0.4; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+.swan-ripple {
+  animation: swan-ripple var(--rdur, 3.2s) ease-out var(--rdelay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+/* almost imperceptible golden light rays */
+@keyframes hero-rays {
+  0% { opacity: 0.55; transform: translateX(-1.2%); }
+  100% { opacity: 1; transform: translateX(1.2%); }
+}
+.hero-rays {
+  animation: hero-rays 9s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .petal,
+  .petal > span,
+  .swan-ripple,
+  .hero-rays {
+    animation: none !important;
+  }
+  .petal {
+    display: none;
+  }
+}
