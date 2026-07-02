@@ -105,6 +105,16 @@ body {
   will-change: transform, opacity;
 }
 
+/* light drifting slowly across the water surface */
+@keyframes water-shimmer {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+.water-shimmer {
+  animation: water-shimmer 14s linear infinite;
+  will-change: transform;
+}
+
 /* almost imperceptible golden light rays */
 @keyframes hero-rays {
   0% { opacity: 0.55; transform: translateX(-1.2%); }
@@ -119,6 +129,7 @@ body {
   .petal,
   .petal > span,
   .swan-ripple,
+  .water-shimmer,
   .hero-rays {
     animation: none !important;
   }

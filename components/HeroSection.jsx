@@ -118,20 +118,26 @@ function Swan({ side, src, revealed, reduce, style }) {
           style={{ transformOrigin: "50% 55%" }}
         />
 
-        {/* subtle water displacement where the body sits */}
+        {/* soft ambient seat: grounds the body in the water */}
+        <div
+          aria-hidden
+          className="absolute left-1/2 top-[50%] h-[22%] w-[105%] -translate-x-1/2 rounded-[50%]"
+          style={{ background: "rgb(105 80 45 / 0.13)", filter: "blur(9px)" }}
+        />
+        {/* subtle water displacement right under the body */}
         <div
           aria-hidden
           className="absolute left-1/2 top-[51%] h-[13%] w-[78%] -translate-x-1/2 rounded-[50%]"
           style={{ background: "rgb(90 70 40 / 0.22)", filter: "blur(5px)" }}
         />
-        {/* expanding ripples at the waterline */}
+        {/* expanding ripples at the waterline — starting while they glide */}
         {!reduce &&
-          [0, 1.6].map((d) => (
+          [1.4, 3.1, 5.5].map((d) => (
             <span
               key={d}
               aria-hidden
               className="swan-ripple absolute left-1/2 top-[53%] block h-[16%] w-[85%] rounded-[50%] border"
-              style={{ borderColor: "rgb(255 255 255 / 0.4)", "--rdur": "3.4s", "--rdelay": `${d + 5.5}s` }}
+              style={{ borderColor: "rgb(255 255 255 / 0.4)", "--rdur": "3.4s", "--rdelay": `${d}s` }}
             />
           ))}
       </motion.div>
@@ -195,6 +201,19 @@ export default function HeroSection({ data, revealed }) {
             className="absolute select-none"
             style={{ left: "32.8%", top: "67.4%", width: "34.96%" }}
           />
+          {/* living light drifting across the water surface (under the swans) */}
+          {!reduce && (
+            <div aria-hidden className="absolute inset-x-0 bottom-0 top-[62%] overflow-hidden">
+              <div
+                className="water-shimmer absolute inset-y-0 left-0 w-[200%]"
+                style={{
+                  background:
+                    "linear-gradient(90deg, transparent 0%, rgb(255 240 200 / 0.1) 22%, transparent 45%, rgb(255 238 195 / 0.07) 72%, transparent 100%)",
+                  mixBlendMode: "screen",
+                }}
+              />
+            </div>
+          )}
           {/* the swans glide in and meet, necks closing the heart */}
           <Swan
             side="left"
@@ -213,8 +232,11 @@ export default function HeroSection({ data, revealed }) {
         </motion.div>
       </div>
 
-      {/* legibility veils (unchanged design) */}
-      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-ivory-light/55 via-transparent to-ivory/80" />
+      {/* legibility veils — kept away from the water so the swans and lake
+          stay fully visible; only the top text zone and the very bottom
+          section hand-off are veiled */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[42%] bg-gradient-to-b from-ivory-light/50 via-ivory-light/20 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[8%] bg-gradient-to-b from-transparent to-ivory/90" />
 
       {/* cinematic golden light rays, almost imperceptible */}
       <motion.div
