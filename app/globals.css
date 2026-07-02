@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+  font-family: var(--font-body), Georgia, serif;
+}
+
+::selection {
+  background: rgb(var(--color-gold));
+  color: rgb(var(--color-ivory));
+}
+
+/* Blocks of Arabic text (Quran, dua, calligraphic names) need explicit RTL */
+.rtl {
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+/* Thin gold divider used between headings and content */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+.divider::before,
+.divider::after {
+  content: "";
+  height: 1px;
+  width: 2.5rem;
+  background: linear-gradient(90deg, transparent, rgb(var(--color-gold)));
+}
+.divider::after {
+  background: linear-gradient(90deg, rgb(var(--color-gold)), transparent);
+}
+
+/* Custom scrollbar, gold on ivory */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--color-ivory));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-gold-light));
+  border-radius: 999px;
+}
+
+.invite-card {
+  max-width: 30rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
