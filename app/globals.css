@@ -80,6 +80,8 @@ body {
 
 /* the one card style: 22px radius, champagne hairline, stacked paper */
 .lux-card {
+  position: relative;
+  overflow: hidden;
   border-radius: 22px;
   border: 1px solid rgb(var(--color-gold) / 0.5);
   background-color: rgb(var(--color-ivory-light));
@@ -88,6 +90,68 @@ body {
     10px 14px 26px rgb(90 70 54 / 0.14),
     inset 0 1px 0 rgb(255 255 255 / 0.9),
     inset 0 -2px 3px rgb(var(--color-gold) / 0.1);
+}
+.lux-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  background: url(/assets/paper-texture.webp) top left / 500px repeat;
+  mix-blend-mode: multiply;
+}
+
+/* one page of the invitation: the panel every section lives in */
+.lux-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgb(var(--color-gold) / 0.45);
+  background-image: linear-gradient(
+    180deg,
+    rgb(var(--color-ivory-light)) 0%,
+    rgb(var(--color-ivory)) 100%
+  );
+  box-shadow:
+    3px 4px 0 rgb(var(--color-ivory-dark)),
+    14px 20px 44px rgb(90 70 54 / 0.16),
+    inset 0 1px 0 rgb(255 255 255 / 0.85),
+    inset 0 -2px 3px rgb(var(--color-gold) / 0.08);
+}
+.lux-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  background: url(/assets/paper-texture.webp) top left / 620px repeat;
+  mix-blend-mode: multiply;
+}
+.lux-panel::after {
+  content: "";
+  position: absolute;
+  inset: 11px;
+  pointer-events: none;
+  border-radius: 20px;
+  border: 1px solid rgb(var(--color-gold) / 0.22);
+}
+
+/* continuous handmade-paper background behind all the pages */
+.page-paper {
+  background-image: linear-gradient(
+    180deg,
+    rgb(var(--color-ivory-light)),
+    rgb(var(--color-ivory)) 25%,
+    rgb(var(--color-ivory-dark)) 100%
+  );
+}
+.paper-tile {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.25;
+  background: url(/assets/paper-texture.webp) top left / 700px repeat;
+  mix-blend-mode: multiply;
 }
 
 /* the one media frame (maps, video, gallery tiles) */

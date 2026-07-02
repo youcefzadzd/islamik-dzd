@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Reveal from "./Reveal";
+import SectionPanel from "./SectionPanel";
 
 export default function RsvpSection({ data }) {
   const rsvp = data.rsvp;
@@ -36,9 +37,8 @@ export default function RsvpSection({ data }) {
   }
 
   return (
-    <section className="relative overflow-hidden bg-ivory px-6 py-20">
-      <div aria-hidden className="paper-overlay" />
-      <div className="relative invite-card">
+    <SectionPanel>
+      <div className="relative">
         <Reveal>
           <div className="mb-8 text-center">
             <p className="mb-2 text-xs uppercase tracking-[0.3em] text-gold-dark">{rsvp.deadline}</p>
@@ -82,7 +82,7 @@ export default function RsvpSection({ data }) {
                     required
                     value={form.name}
                     onChange={(e) => update("name", e.target.value)}
-                    className="w-full border-b border-ink/30 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
+                    className="w-full border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
                     placeholder={rsvp.namePlaceholder}
                   />
                 </div>
@@ -117,7 +117,7 @@ export default function RsvpSection({ data }) {
                     <select
                       value={form.guests}
                       onChange={(e) => update("guests", e.target.value)}
-                      className="w-full border-b border-ink/30 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
+                      className="w-full border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
                     >
                       {[1, 2, 3, 4, 5, 6].map((n) => (
                         <option key={n} value={n}>
@@ -136,7 +136,7 @@ export default function RsvpSection({ data }) {
                     value={form.message}
                     onChange={(e) => update("message", e.target.value)}
                     rows={3}
-                    className="w-full resize-none border-b border-ink/30 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
+                    className="w-full resize-none border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
                     placeholder={rsvp.messagePlaceholder}
                   />
                 </div>
@@ -175,6 +175,6 @@ export default function RsvpSection({ data }) {
           </AnimatePresence>
         </Reveal>
       </div>
-    </section>
+    </SectionPanel>
   );
 }

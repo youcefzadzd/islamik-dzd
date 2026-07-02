@@ -1,14 +1,14 @@
 "use client";
 
 import Reveal from "./Reveal";
+import SectionPanel from "./SectionPanel";
 
 export default function IntroSection({ data }) {
   const intro = data.intro;
 
   return (
-    <section className="relative overflow-hidden bg-ivory px-6 py-20">
-      <div aria-hidden className="paper-overlay" />
-      <div className="relative invite-card text-center">
+    <SectionPanel>
+      <div className="text-center">
         <Reveal>
           <p className="rtl font-arabicText text-lg text-burgundy-dark">{data.hero.bismillah}</p>
         </Reveal>
@@ -43,6 +43,6 @@ export default function IntroSection({ data }) {
           <p className="rtl mt-3 font-arabicText text-sm text-gold-dark">{intro.ayah.reference}</p>
         </Reveal>
       </div>
-    </section>
+    </SectionPanel>
   );
 }

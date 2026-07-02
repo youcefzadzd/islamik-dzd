@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Reveal from "./Reveal";
+import SectionPanel from "./SectionPanel";
 
 export default function GallerySection({ data }) {
   const gallery = data.gallery;
   const [selected, setSelected] = useState(null);
 
   return (
-    <section className="relative overflow-hidden bg-ivory-dark px-6 py-20">
-      <div aria-hidden className="paper-overlay" />
-      <div className="relative invite-card text-center">
+    <SectionPanel>
+      <div className="text-center">
         <Reveal>
           <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{gallery.heading}</h2>
           <p className="mt-3 font-body text-lg text-ink/75">{gallery.subheading}</p>
@@ -68,6 +68,6 @@ export default function GallerySection({ data }) {
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </section>
+    </SectionPanel>
   );
 }

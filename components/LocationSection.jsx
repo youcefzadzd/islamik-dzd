@@ -1,14 +1,14 @@
 "use client";
 
 import Reveal from "./Reveal";
+import SectionPanel from "./SectionPanel";
 
 export default function LocationSection({ data }) {
   const location = data.location;
 
   return (
-    <section className="relative overflow-hidden bg-ivory-dark px-6 py-20">
-      <div aria-hidden className="paper-overlay" />
-      <div className="relative invite-card text-center">
+    <SectionPanel>
+      <div className="text-center">
         <Reveal>
           <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{location.heading}</h2>
           <div className="divider mt-4">
@@ -55,6 +55,6 @@ export default function LocationSection({ data }) {
           </a>
         </Reveal>
       </div>
-    </section>
+    </SectionPanel>
   );
 }
