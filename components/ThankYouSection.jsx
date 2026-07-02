@@ -6,14 +6,14 @@ export default function ThankYouSection({ data }) {
   const thankYou = data.thankYou;
 
   return (
-    <section className="relative overflow-hidden px-6 py-24 text-center">
+    <section className="relative overflow-hidden px-6 py-20 text-center">
       <img
         src={data.assets.thankYouBackground}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="lux-grade absolute inset-0 h-full w-full object-cover object-center"
         draggable={false}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-ivory via-ivory/70 to-ivory/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-ivory via-ivory/55 to-ivory/85" />
 
       <div className="relative invite-card">
         <Reveal>

@@ -7,15 +7,7 @@ export default function IntroSection({ data }) {
 
   return (
     <section className="relative overflow-hidden bg-ivory px-6 py-20">
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-40"
-        style={{
-          backgroundImage: "url(/assets/paper-texture.webp)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
+      <div aria-hidden className="paper-overlay" />
       <div className="relative invite-card text-center">
         <Reveal>
           <p className="rtl font-arabicText text-lg text-burgundy-dark">{data.hero.bismillah}</p>

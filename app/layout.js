@@ -1,6 +1,5 @@
 import {
   Amiri,
-  Aref_Ruqaa,
   Playfair_Display,
   Cormorant_Garamond,
   Pinyon_Script,
@@ -14,14 +13,6 @@ const arabicText = Amiri({
   subsets: ["arabic", "latin"],
   weight: ["400", "700"],
   variable: "--font-arabic-text",
-  display: "swap",
-});
-
-// خط أسماء العروسين — خط عربي مزخرف فاخر
-const arabicDisplay = Aref_Ruqaa({
-  subsets: ["arabic"],
-  weight: ["400", "700"],
-  variable: "--font-arabic-display",
   display: "swap",
 });
 
@@ -71,7 +62,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body
-        className={`${arabicText.variable} ${arabicDisplay.variable} ${serifFont.variable} ${bodyFont.variable} ${monogramFont.variable} bg-ivory text-ink antialiased`}
+        className={`${arabicText.variable} ${serifFont.variable} ${bodyFont.variable} ${monogramFont.variable} bg-ivory text-ink antialiased`}
       >
         {children}
       </body>

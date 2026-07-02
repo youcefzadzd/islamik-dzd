@@ -37,22 +37,14 @@ export default function RsvpSection({ data }) {
 
   return (
     <section className="relative overflow-hidden bg-ivory px-6 py-20">
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: "url(/assets/paper-texture.webp)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
+      <div aria-hidden className="paper-overlay" />
       <div className="relative invite-card">
         <Reveal>
           <div className="mb-8 text-center">
             <p className="mb-2 text-xs uppercase tracking-[0.3em] text-gold-dark">{rsvp.deadline}</p>
             <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{rsvp.heading}</h2>
             <div className="divider mt-4">
-              <span className="text-gold">❦</span>
+              <span className="text-gold">✦</span>
             </div>
             <p className="mt-4 font-body text-lg text-ink/80">{rsvp.subheading}</p>
           </div>

@@ -99,7 +99,7 @@ function WaxBody({ src, initials, fontSize, glossOpacity = 0.55, flat = false })
         style={{
           fontSize,
           backgroundImage:
-            "linear-gradient(165deg, #fdf3cd 0%, #f0d788 35%, #d4ac3d 60%, #b8912b 75%, #f4e3a4 100%)",
+            "linear-gradient(165deg, #F5EBCB 0%, #E3CE93 35%, #C6A15B 60%, #A6813F 75%, #E7D6A8 100%)",
           WebkitBackgroundClip: "text",
           backgroundClip: "text",
           color: "transparent",
@@ -164,7 +164,7 @@ export default function WaxSeal({ src, initials, state, onOpen, fontSize, flat =
         className="absolute inset-0 rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgb(228 200 102 / 0.45) 30%, rgb(228 200 102 / 0.18) 58%, transparent 72%)",
+            "radial-gradient(circle, rgb(216 189 122 / 0.45) 30%, rgb(216 189 122 / 0.18) 58%, transparent 72%)",
           filter: "blur(10px)",
         }}
       />

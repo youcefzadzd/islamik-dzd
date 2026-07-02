@@ -6,12 +6,13 @@ export default function LocationSection({ data }) {
   const location = data.location;
 
   return (
-    <section className="bg-ivory-dark/60 px-6 py-20">
-      <div className="invite-card text-center">
+    <section className="relative overflow-hidden bg-ivory-dark px-6 py-20">
+      <div aria-hidden className="paper-overlay" />
+      <div className="relative invite-card text-center">
         <Reveal>
           <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{location.heading}</h2>
           <div className="divider mt-4">
-            <span className="text-gold">❦</span>
+            <span className="text-gold">✦</span>
           </div>
         </Reveal>
 
@@ -22,7 +23,7 @@ export default function LocationSection({ data }) {
 
         {location.mapEmbedUrl ? (
           <Reveal delay={0.25}>
-            <div className="mt-8 overflow-hidden rounded-3xl border border-gold/50 shadow-card">
+            <div className="lux-media mt-8">
               <iframe
                 src={location.mapEmbedUrl}
                 title={location.venueName}

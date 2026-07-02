@@ -6,8 +6,9 @@ export default function VideoSection({ data }) {
   const video = data.video;
 
   return (
-    <section className="bg-ivory px-6 py-20">
-      <div className="invite-card text-center">
+    <section className="relative overflow-hidden bg-ivory px-6 py-20">
+      <div aria-hidden className="paper-overlay" />
+      <div className="relative invite-card text-center">
         <Reveal>
           <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{video.heading}</h2>
           <p className="mt-3 font-body text-lg text-ink/75">{video.subheading}</p>
@@ -17,7 +18,7 @@ export default function VideoSection({ data }) {
         </Reveal>
 
         <Reveal delay={0.2}>
-          <div className="mt-8 overflow-hidden rounded-3xl border border-gold/50 shadow-card">
+          <div className="lux-media mt-8">
             {video.embedUrl ? (
               <iframe
                 src={video.embedUrl}

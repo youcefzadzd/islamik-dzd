@@ -46,7 +46,6 @@ module.exports = {
         },
       },
       fontFamily: {
-        arabicDisplay: ["var(--font-arabic-display)", "serif"],
         arabicText: ["var(--font-arabic-text)", "serif"],
         serif: ["var(--font-serif)", "Georgia", "serif"],
         body: ["var(--font-body)", "Georgia", "serif"],

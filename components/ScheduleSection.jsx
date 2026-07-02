@@ -7,22 +7,14 @@ export default function ScheduleSection({ data }) {
 
   return (
     <section className="relative overflow-hidden bg-ivory px-6 py-20">
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: "url(/assets/paper-texture.webp)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
+      <div aria-hidden className="paper-overlay" />
       <div className="relative invite-card">
         <Reveal>
           <h2 className="text-center font-monogram text-4xl text-gold-dark sm:text-5xl">
             {schedule.heading}
           </h2>
           <div className="divider mt-4">
-            <span className="text-gold">❦</span>
+            <span className="text-gold">✦</span>
           </div>
         </Reveal>
 

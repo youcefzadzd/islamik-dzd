@@ -113,7 +113,7 @@ const invitationData = {
     images: [
       { src: "/assets/hero-background.webp", alt: "Arche royale aux cygnes" },
       { src: "/assets/thankyou-background.webp", alt: "Jardin des arches dorées" },
-      { src: "/assets/envelope-closed.webp", alt: "L'enveloppe scellée" },
+      { src: "/assets/envelope-first1.png", alt: "L'enveloppe scellée" },
     ],
   },
 
@@ -160,22 +160,23 @@ const invitationData = {
 
   // ===================== ألوان القالب =====================
   // غيّر أي كود لون (hex) هنا وسيتغيّر لون الموقع كاملاً تلقائيًا.
+  // نظام التصميم الموحد — Luxury Islamic Wedding Collection
   theme: {
     colors: {
       white: "#FFFFFF", // أبيض
-      ivory: "#FAF5EA", // عاجي (خلفية أساسية)
-      ivoryLight: "#FFFDF8", // عاجي فاتح جدًا
-      ivoryDark: "#F0E6D2", // عاجي غامق (خلفيات أقسام)
-      gold: "#C9A227", // الذهبي الأساسي (نصوص وحدود وزخارف)
-      goldLight: "#E4C866", // ذهبي فاتح
-      goldDark: "#9C7A1B", // ذهبي غامق
-      emerald: "#6E1F2B", // لون العناوين والأزرار (عنابي ملكي)
-      emeraldLight: "#8C2E3C",
-      emeraldDark: "#4A1420",
-      ink: "#3C3229", // لون النص الأساسي (بني دافئ)
-      burgundy: "#6E1F2B", // لون ختم الشمع (Wax Seal)
-      burgundyLight: "#8C2E3C", // عنابي فاتح (لمعان الختم)
-      burgundyDark: "#4A1420", // عنابي غامق (ظل الختم)
+      ivory: "#F8F3EA", // عاجي دافئ (خلفية أساسية)
+      ivoryLight: "#FDFAF3", // عاجي فاتح (خلفية البطاقات)
+      ivoryDark: "#EFE4D6", // بيج فاتح (خلفيات أقسام متناوبة)
+      gold: "#C6A15B", // الذهبي الأساسي (عناوين وحدود وزخارف)
+      goldLight: "#D8BD7A", // ذهبي ناعم
+      goldDark: "#A6813F", // ذهبي غامق (نصوص ذهبية على الفاتح)
+      emerald: "#7B1E2B", // مرادف العنابي (متوافق مع الظلال القديمة)
+      emeraldLight: "#96323F",
+      emeraldDark: "#521219",
+      ink: "#5A4636", // بني النصوص
+      burgundy: "#7B1E2B", // العنابي (ختم الشمع والأزرار)
+      burgundyLight: "#96323F", // عنابي فاتح
+      burgundyDark: "#521219", // عنابي غامق
     },
   },
 };

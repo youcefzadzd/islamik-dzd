@@ -346,7 +346,7 @@ export default function HeroSection({ data, revealed }) {
           initial="hidden"
           animate={state}
           custom={2.2}
-          className="rtl mt-6 font-arabicDisplay text-2xl text-burgundy/80"
+          className="rtl mt-6 font-arabicText text-2xl text-burgundy/80"
         >
           {data.couple.groomNameAr} ♥ {data.couple.brideNameAr}
         </motion.p>
