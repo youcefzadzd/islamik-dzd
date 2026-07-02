@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import WaxSeal from "./WaxSeal";
 
 /**
  * Cinematic opening:
@@ -63,17 +64,7 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     setTimeout(onDone, 1600 * SLOW);
   }
 
-  const sealAnimate =
-    stage === "closed"
-      ? { scale: 1, opacity: 1, rotate: 0 }
-      : stage === "press"
-        ? {
-            scale: [1, 0.94, 0.97, 0.95],
-            rotate: [0, -1, 1, -0.5],
-            x: [0, -1, 1, 0],
-            transition: { duration: 0.25, ease: "easeOut" },
-          }
-        : { opacity: 0, scale: 1.03, transition: { duration: 0.25, ease: "easeOut" } };
+  const sealState = stage === "closed" ? "idle" : stage === "press" ? "press" : "crack";
 
   // real paper: fast take-off, long elegant settle, with a faint mid-flight bend
   const flapAnimate = opening
@@ -271,32 +262,18 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
             }}
           />
 
-          {/* monogram wax seal — compresses, shakes, then fades */}
+          {/* handcrafted monogram wax seal — compresses, cracks, then fades */}
           <div
             className="absolute z-40 w-[29%]"
             style={{ left: "50%", top: "47.5%", transform: "translate(-50%, -50%)" }}
           >
-            <motion.button
-              type="button"
-              aria-label="Ouvrir l'invitation"
-              animate={sealAnimate}
-              whileHover={stage === "closed" ? { scale: 1.04 } : undefined}
-              whileTap={stage === "closed" ? { scale: 0.94 } : undefined}
-              onClick={open}
-              className="relative w-full outline-none"
-            >
-              <img src={data.assets.waxSeal} alt="" className="w-full select-none" draggable={false} />
-              <span
-                className="absolute inset-0 flex items-center justify-center pb-[6%] font-monogram text-gold-light"
-                style={{
-                  fontSize: "clamp(1.3rem, 6.5vw, 2rem)",
-                  textShadow:
-                    "0 1px 1px rgb(var(--color-burgundy-dark)), 0 -1px 1px rgb(var(--color-burgundy-light) / 0.6)",
-                }}
-              >
-                {initials}
-              </span>
-            </motion.button>
+            <WaxSeal
+              src={data.assets.waxSeal}
+              initials={initials}
+              state={sealState}
+              onOpen={open}
+              fontSize="clamp(1.3rem, 6.5vw, 2rem)"
+            />
           </div>
         </motion.div>
       </motion.div>
