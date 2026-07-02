@@ -74,7 +74,8 @@ function Petal({ p }) {
   );
 }
 
-/* one swan sprite: glide to meet, then breathe, bob and drift like a real bird */
+/* one swan: a true transparent cutout gliding on the water, with a CSS
+   reflection (flipped, blurred, masked) and ripples at the waterline */
 function Swan({ side, src, revealed, reduce, style }) {
   const dir = side === "left" ? -1 : 1;
 
@@ -105,30 +106,52 @@ function Swan({ side, src, revealed, reduce, style }) {
               }
         }
         transition={{ duration: 6.5, delay: 5.6, repeat: Infinity, ease: "easeInOut" }}
-        style={{ transformOrigin: "50% 60%" }}
+        className="relative"
+        style={{ transformOrigin: "50% 85%" }}
       >
-        {/* neck settling while approaching: one soft nod, no cartoon bounce */}
+        {/* soft ambient seat: grounds the body in the water */}
+        <div
+          aria-hidden
+          className="absolute left-1/2 top-[86%] h-[26%] w-[108%] -translate-x-1/2 rounded-[50%]"
+          style={{ background: "rgb(105 80 45 / 0.14)", filter: "blur(9px)" }}
+        />
+
+        {/* the swan body — real alpha, no background */}
         <motion.img
           src={src}
           alt=""
           draggable={false}
           animate={reduce ? undefined : { rotate: [0, dir * -0.8, dir * 0.5, 0] }}
           transition={{ duration: 4.6, delay: 0.9, times: [0, 0.45, 0.8, 1], ease: "easeInOut" }}
-          className="w-full select-none"
-          style={{ transformOrigin: "50% 55%" }}
+          className="relative w-full select-none"
+          style={{
+            transformOrigin: "50% 70%",
+            filter: "drop-shadow(0 4px 6px rgb(95 65 30 / 0.28))",
+          }}
         />
 
-        {/* soft ambient seat: grounds the body in the water */}
-        <div
-          aria-hidden
-          className="absolute left-1/2 top-[50%] h-[22%] w-[105%] -translate-x-1/2 rounded-[50%]"
-          style={{ background: "rgb(105 80 45 / 0.13)", filter: "blur(9px)" }}
-        />
+        {/* mirror reflection: flipped copy, softened and fading into the water */}
+        <div aria-hidden className="reflection-sway absolute left-0 top-[96%] w-full">
+          <img
+            src={src}
+            alt=""
+            draggable={false}
+            className="w-full select-none"
+            style={{
+              transform: "scaleY(-0.92)",
+              opacity: 0.4,
+              filter: "blur(2px)",
+              WebkitMaskImage: "linear-gradient(to bottom, rgb(0 0 0 / 0.65), transparent 68%)",
+              maskImage: "linear-gradient(to bottom, rgb(0 0 0 / 0.65), transparent 68%)",
+            }}
+          />
+        </div>
+
         {/* subtle water displacement right under the body */}
         <div
           aria-hidden
-          className="absolute left-1/2 top-[51%] h-[13%] w-[78%] -translate-x-1/2 rounded-[50%]"
-          style={{ background: "rgb(90 70 40 / 0.22)", filter: "blur(5px)" }}
+          className="absolute left-1/2 top-[90%] h-[14%] w-[80%] -translate-x-1/2 rounded-[50%]"
+          style={{ background: "rgb(90 70 40 / 0.2)", filter: "blur(5px)" }}
         />
         {/* expanding ripples at the waterline — starting while they glide */}
         {!reduce &&
@@ -136,8 +159,8 @@ function Swan({ side, src, revealed, reduce, style }) {
             <span
               key={d}
               aria-hidden
-              className="swan-ripple absolute left-1/2 top-[53%] block h-[16%] w-[85%] rounded-[50%] border"
-              style={{ borderColor: "rgb(255 255 255 / 0.4)", "--rdur": "3.4s", "--rdelay": `${d}s` }}
+              className="swan-ripple absolute left-1/2 top-[97%] block h-[18%] w-[88%] rounded-[50%] border"
+              style={{ borderColor: "rgb(255 255 255 / 0.45)", "--rdur": "3.4s", "--rdelay": `${d}s` }}
             />
           ))}
       </motion.div>
@@ -217,17 +240,17 @@ export default function HeroSection({ data, revealed }) {
           {/* the swans glide in and meet, necks closing the heart */}
           <Swan
             side="left"
-            src="/assets/hero-swan-left.webp"
+            src="/assets/swan-left.png"
             revealed={revealed}
             reduce={reduce}
-            style={{ left: "34.18%", top: "67.87%", width: "16.11%" }}
+            style={{ left: "34.18%", top: "67.38%", width: "16.21%" }}
           />
           <Swan
             side="right"
-            src="/assets/hero-swan-right.webp"
+            src="/assets/swan-right.png"
             revealed={revealed}
             reduce={reduce}
-            style={{ left: "49.71%", top: "67.87%", width: "16.21%" }}
+            style={{ left: "49.61%", top: "67.38%", width: "16.41%" }}
           />
         </motion.div>
       </div>

@@ -105,6 +105,16 @@ body {
   will-change: transform, opacity;
 }
 
+/* the reflection breathes sideways very slightly, like water moving */
+@keyframes reflection-sway {
+  0% { transform: skewX(-1.1deg) translateX(-0.5%); }
+  100% { transform: skewX(1.1deg) translateX(0.5%); }
+}
+.reflection-sway {
+  animation: reflection-sway 6.5s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
 /* light drifting slowly across the water surface */
 @keyframes water-shimmer {
   0% { transform: translateX(-50%); }
@@ -130,6 +140,7 @@ body {
   .petal > span,
   .swan-ripple,
   .water-shimmer,
+  .reflection-sway,
   .hero-rays {
     animation: none !important;
   }
