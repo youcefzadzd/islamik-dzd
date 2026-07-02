@@ -119,12 +119,12 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
         transition={{ duration: 1, ease: EASE }}
         className="relative w-[min(96vw,500px)]"
       >
+        {/* the envelope itself is not clickable — only the seal opens it */}
         <motion.div
           animate={cameraAnimate}
           onHoverStart={() => setHovered(true)}
           onHoverEnd={() => setHovered(false)}
-          onClick={open}
-          className="relative cursor-pointer"
+          className="relative cursor-default"
           style={{ perspective: 1200 }}
         >
           {/* resting / hover shadow under the whole envelope */}

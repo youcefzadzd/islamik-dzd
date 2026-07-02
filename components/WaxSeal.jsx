@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 /**
  * Handcrafted sealing-wax look, built from the wax PNG + masked CSS layers:
@@ -118,6 +118,7 @@ export default function WaxSeal({ src, initials, state, onOpen, fontSize, flat =
   // seal) — keep every interaction but skip the CSS sculpting and initials
   const idle = state === "idle";
   const cracked = state === "crack";
+  const reduce = useReducedMotion();
 
   const buttonAnimate =
     state === "press"
@@ -127,7 +128,15 @@ export default function WaxSeal({ src, initials, state, onOpen, fontSize, flat =
           x: [0, -1.2, 1.2, -0.6, 0],
           transition: { duration: 0.25, ease: "easeOut" },
         }
-      : { scale: 1, rotate: 0, x: 0, transition: SPRING };
+      : idle && !reduce
+        ? {
+            // gentle breathing: invites the tap without shouting
+            scale: [1, 1.025, 1],
+            rotate: 0,
+            x: 0,
+            transition: { duration: 2.6, repeat: Infinity, ease: "easeInOut" },
+          }
+        : { scale: 1, rotate: 0, x: 0, transition: SPRING };
 
   return (
     <motion.button
@@ -139,6 +148,27 @@ export default function WaxSeal({ src, initials, state, onOpen, fontSize, flat =
       onClick={onOpen}
       className="relative block w-full cursor-pointer outline-none"
     >
+      {/* soft golden halo pulsing behind the seal — the "tap me" cue */}
+      <motion.div
+        aria-hidden
+        animate={
+          idle && !reduce
+            ? { opacity: [0.25, 0.6, 0.25], scale: [1.05, 1.14, 1.05] }
+            : { opacity: idle ? 0.35 : 0, scale: 1.08 }
+        }
+        transition={
+          idle && !reduce
+            ? { duration: 2.6, repeat: Infinity, ease: "easeInOut" }
+            : { duration: 0.3 }
+        }
+        className="absolute inset-0 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgb(228 200 102 / 0.45) 30%, rgb(228 200 102 / 0.18) 58%, transparent 72%)",
+          filter: "blur(10px)",
+        }}
+      />
+
       {/* ambient shadow underneath */}
       <motion.div
         aria-hidden
