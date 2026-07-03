@@ -41,7 +41,7 @@ export default function LocationSection({ data }) {
             href={location.mapLinkUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-burgundy px-8 py-3 text-sm uppercase tracking-[0.2em] text-ivory-light shadow-card transition-colors hover:bg-burgundy-dark"
+            className="mt-8 inline-flex w-full max-w-full items-center justify-center gap-2 rounded-full bg-burgundy px-6 py-3 text-center text-xs uppercase tracking-[0.18em] text-ivory-light shadow-card transition-colors hover:bg-burgundy-dark sm:w-auto sm:px-8 sm:text-sm"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path

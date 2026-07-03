@@ -41,13 +41,13 @@ export default function ScheduleSection({ data }) {
 
         {items.map((step, index) => (
           <Reveal key={`${step.time}-${step.title}`} delay={index * 0.12}>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-5">
-              <p className="text-right font-serif text-2xl text-ink/85">{step.time}</p>
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-5 sm:gap-4">
+              <p className="min-w-0 text-right font-serif text-xl text-ink/85 sm:text-2xl">{step.time}</p>
               <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full border border-gold/50 bg-ivory-light shadow-card">
                 <StarNode className="h-3.5 w-3.5" />
               </span>
-              <div className="text-left">
-                <p className="font-serif text-xl text-burgundy">{step.title}</p>
+              <div className="min-w-0 text-left">
+                <p className="font-serif text-lg text-burgundy sm:text-xl">{step.title}</p>
                 {step.description ? (
                   <p className="mt-1 font-body text-sm text-ink/70">{step.description}</p>
                 ) : null}

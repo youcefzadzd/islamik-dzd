@@ -10,7 +10,7 @@ import { CornerOrnament, CardFlourish } from "./ornaments";
 export default function SectionPanel({ children, className = "" }) {
   return (
     <section className="relative px-4 py-7 sm:px-6">
-      <div className={`lux-panel mx-auto w-full max-w-[34rem] px-5 py-12 sm:px-9 ${className}`}>
+      <div className={`lux-panel mx-auto w-full max-w-[34rem] px-6 py-12 sm:px-9 ${className}`}>
         <CornerOrnament className="pointer-events-none absolute left-1 top-1 w-16 sm:w-20" />
         <CornerOrnament className="pointer-events-none absolute right-1 top-1 w-16 -scale-x-100 sm:w-20" />
         <CornerOrnament className="pointer-events-none absolute bottom-1 left-1 w-16 -scale-y-100 sm:w-20" />
