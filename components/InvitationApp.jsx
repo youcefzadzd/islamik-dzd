@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import EnvelopeIntro from "./EnvelopeIntro";
+import SectionDivider from "./SectionDivider";
 import { Rosette } from "./ornaments";
 import HeroSection from "./HeroSection";
 import IntroSection from "./IntroSection";
@@ -59,13 +60,21 @@ export default function InvitationApp({ data }) {
 
           <HeroSection data={data} revealed={opened} />
           <div className="relative pb-8 pt-4">
+            <SectionDivider />
             <IntroSection data={data} />
+            <SectionDivider />
             <CountdownSection data={data} />
+            <SectionDivider />
             <ScheduleSection data={data} />
+            <SectionDivider />
             <LocationSection data={data} />
+            <SectionDivider />
             <VideoSection data={data} />
+            <SectionDivider />
             <GallerySection data={data} />
+            <SectionDivider />
             <RsvpSection data={data} />
+            <SectionDivider />
           </div>
           <ThankYouSection data={data} />
         </main>

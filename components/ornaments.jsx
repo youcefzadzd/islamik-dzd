@@ -90,6 +90,49 @@ export function CardFlourish({ className = "h-4 w-20" }) {
   );
 }
 
+/* centered divider ornament: scrolls, eight-point star and a tiny jewel */
+export function DividerOrnament({ className = "h-6 w-28" }) {
+  return (
+    <svg viewBox="0 0 120 26" fill="none" aria-hidden className={className}>
+      <path
+        d="M6 13 C22 5 36 7 48 13 M6 13 C22 21 36 19 48 13"
+        stroke="#C6A15B"
+        strokeWidth="1"
+        opacity="0.8"
+      />
+      <path
+        d="M114 13 C98 5 84 7 72 13 M114 13 C98 21 84 19 72 13"
+        stroke="#C6A15B"
+        strokeWidth="1"
+        opacity="0.8"
+      />
+      <circle cx="6" cy="13" r="1.5" fill="#C6A15B" opacity="0.85" />
+      <circle cx="114" cy="13" r="1.5" fill="#C6A15B" opacity="0.85" />
+      {/* eight-point star */}
+      <path
+        d="M60 3.5 L62.2 10.4 L69.5 13 L62.2 15.6 L60 22.5 L57.8 15.6 L50.5 13 L57.8 10.4 Z"
+        fill="#C6A15B"
+      />
+      <path
+        d="M60 6.5 L61.6 11 L66.5 13 L61.6 15 L60 19.5 L58.4 15 L53.5 13 L58.4 11 Z"
+        fill="#D8BD7A"
+        opacity="0.9"
+      />
+      {/* tiny gold diamond jewel */}
+      <rect
+        x="58.2"
+        y="11.2"
+        width="3.6"
+        height="3.6"
+        transform="rotate(45 60 13)"
+        fill="#F5EBCB"
+        stroke="#A6813F"
+        strokeWidth="0.6"
+      />
+    </svg>
+  );
+}
+
 /* small eight-point star, used as timeline nodes and accents */
 export function StarNode({ className = "h-3 w-3" }) {
   return (

@@ -236,16 +236,32 @@ body {
   will-change: transform, opacity;
 }
 
+/* slow white petals drifting through the section dividers */
+@keyframes divider-petal-fall {
+  0% { transform: translate3d(0, -12px, 0) rotate(0deg); opacity: 0; }
+  15% { opacity: var(--po, 0.75); }
+  85% { opacity: calc(var(--po, 0.75) * 0.5); }
+  100% { transform: translate3d(var(--dx, 8px), 95px, 0) rotate(var(--rot, 160deg)); opacity: 0; }
+}
+.divider-petal {
+  position: absolute;
+  top: 0;
+  will-change: transform, opacity;
+  animation: divider-petal-fall var(--dur, 7s) linear var(--delay, 0s) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .petal,
   .petal > span,
   .swan-ripple,
   .water-shimmer,
   .reflection-sway,
-  .hero-rays {
+  .hero-rays,
+  .divider-petal {
     animation: none !important;
   }
-  .petal {
+  .petal,
+  .divider-petal {
     display: none;
   }
 }
