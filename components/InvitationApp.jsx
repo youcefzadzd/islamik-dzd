@@ -10,7 +10,6 @@ import IntroSection from "./IntroSection";
 import CountdownSection from "./CountdownSection";
 import ScheduleSection from "./ScheduleSection";
 import LocationSection from "./LocationSection";
-import VideoSection from "./VideoSection";
 import GallerySection from "./GallerySection";
 import RsvpSection from "./RsvpSection";
 import ThankYouSection from "./ThankYouSection";
@@ -68,8 +67,6 @@ export default function InvitationApp({ data }) {
             <ScheduleSection data={data} />
             <SectionDivider />
             <LocationSection data={data} />
-            <SectionDivider />
-            <VideoSection data={data} />
             <SectionDivider />
             <GallerySection data={data} />
             <SectionDivider />

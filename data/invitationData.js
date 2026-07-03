@@ -95,16 +95,6 @@ const invitationData = {
     buttonText: "Voir sur Google Maps",
   },
 
-  // ===================== الفيديو =====================
-  video: {
-    heading: "Notre vidéo",
-    subheading: "Un avant-goût de notre grand jour",
-    // ضع هنا رابط YouTube "embed" مثل: https://www.youtube-nocookie.com/embed/XXXXXXX
-    // اتركه فارغًا لعرض إطار أنيق بدل الفيديو
-    embedUrl: "",
-    placeholderText: "La vidéo arrive bientôt…",
-  },
-
   // ===================== معرض الصور =====================
   gallery: {
     heading: "Galerie",
