@@ -111,22 +111,24 @@ const invitationData = {
   // ===================== نموذج تأكيد الحضور (RSVP) =====================
   rsvp: {
     heading: "Confirmez votre présence",
-    subheading: "Merci de nous répondre avant la date limite.",
-    deadline: "Avant le 1er Août 2026",
-    nameLabel: "Nom complet",
-    namePlaceholder: "Votre nom",
-    attendingLabel: "Serez-vous des nôtres ?",
-    attendingYes: "Avec joie",
-    attendingNo: "Avec regret",
-    guestsLabel: "Nombre d'invités",
-    messageLabel: "Message (optionnel)",
-    messagePlaceholder: "Un mot pour les mariés",
+    subheading: "Merci de confirmer votre présence avant le 1 août 2026.",
+    nameLabel: "Votre nom",
+    namePlaceholder: "Entrez votre nom complet",
+    attendingLabel: "Serez-vous présent ?",
+    attendingYes: "✓ Oui, je serai présent",
+    attendingNo: "✗ Non, je ne pourrai pas être présent",
+    guestsLabel: "Combien serez-vous ?",
+    guestsPlaceholder: "Sélectionnez le nombre de personnes",
+    messageLabel: "Un message (facultatif)",
+    messagePlaceholder: "Laissez un petit mot aux mariés...",
     sealButtonText: "RSVP", // النص فوق ختم الشمع
-    sealButtonHint: "Appuyez sur le sceau pour confirmer",
+    sealButtonHint: "Touchez le sceau pour envoyer votre réponse.",
     submittingText: "Envoi en cours...",
     // اتركها فارغة لتخزين الردود في متصفح الضيف فقط، أو ضع رابط API خاص بك
     submitEndpoint: "",
-    confirmationMessage: "Qu'Allah bénisse votre présence. Merci pour votre réponse.",
+    confirmationTitle: "Merci !",
+    confirmationMessage:
+      "Votre réponse a bien été enregistrée.\nNous avons hâte de célébrer cette magnifique journée avec vous.",
   },
 
   // ===================== رسالة الشكر الختامية =====================

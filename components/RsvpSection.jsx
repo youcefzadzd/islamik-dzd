@@ -7,7 +7,7 @@ import SectionPanel from "./SectionPanel";
 
 export default function RsvpSection({ data }) {
   const rsvp = data.rsvp;
-  const [form, setForm] = useState({ name: "", attending: "yes", guests: "1", message: "" });
+  const [form, setForm] = useState({ name: "", attending: "yes", guests: "", message: "" });
   const [status, setStatus] = useState("idle"); // idle | submitting | success | error
 
   function update(field, value) {
@@ -40,13 +40,12 @@ export default function RsvpSection({ data }) {
     <SectionPanel>
       <div className="relative">
         <Reveal>
-          <div className="mb-8 text-center">
-            <p className="mb-2 text-xs uppercase tracking-[0.3em] text-gold-dark">{rsvp.deadline}</p>
+          <div className="mb-10 text-center">
             <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{rsvp.heading}</h2>
             <div className="divider mt-4">
               <span className="text-gold">✦</span>
             </div>
-            <p className="mt-4 font-body text-lg text-ink/80">{rsvp.subheading}</p>
+            <p className="mt-5 font-body text-lg leading-relaxed text-ink/80">{rsvp.subheading}</p>
           </div>
 
           <AnimatePresence mode="wait">
@@ -60,10 +59,17 @@ export default function RsvpSection({ data }) {
                 <img
                   src={data.assets.waxSeal}
                   alt=""
-                  className="mx-auto mb-4 w-20 select-none"
+                  className="mx-auto mb-5 w-20 select-none"
                   draggable={false}
                 />
-                <p className="font-body text-lg text-ink/90">{rsvp.confirmationMessage}</p>
+                <p className="font-monogram text-4xl text-gold-dark">{rsvp.confirmationTitle}</p>
+                <div className="mt-4 space-y-1">
+                  {rsvp.confirmationMessage.split("\n").map((line) => (
+                    <p key={line} className="font-body text-lg leading-relaxed text-ink/90">
+                      {line}
+                    </p>
+                  ))}
+                </div>
               </motion.div>
             ) : (
               <motion.form
@@ -72,7 +78,7 @@ export default function RsvpSection({ data }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="space-y-5"
+                className="space-y-7"
               >
                 <div>
                   <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
@@ -91,13 +97,13 @@ export default function RsvpSection({ data }) {
                   <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
                     {rsvp.attendingLabel}
                   </label>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     {["yes", "no"].map((val) => (
                       <button
                         type="button"
                         key={val}
                         onClick={() => update("attending", val)}
-                        className={`flex-1 rounded-full border py-2 text-sm uppercase tracking-wide transition-colors ${
+                        className={`flex-1 rounded-full border px-4 py-3 font-body text-base transition-colors ${
                           form.attending === val
                             ? "border-burgundy bg-burgundy text-ivory-light"
                             : "border-ink/20 text-ink/70"
@@ -115,13 +121,19 @@ export default function RsvpSection({ data }) {
                       {rsvp.guestsLabel}
                     </label>
                     <select
+                      required
                       value={form.guests}
                       onChange={(e) => update("guests", e.target.value)}
-                      className="w-full border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
+                      className={`w-full border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy ${
+                        form.guests === "" ? "text-ink/50" : ""
+                      }`}
                     >
+                      <option value="" disabled>
+                        {rsvp.guestsPlaceholder}
+                      </option>
                       {[1, 2, 3, 4, 5, 6].map((n) => (
                         <option key={n} value={n}>
-                          {n}
+                          {n} {n > 1 ? "personnes" : "personne"}
                         </option>
                       ))}
                     </select>
