@@ -20,11 +20,12 @@ export default function RsvpSection({ data }) {
     setStatus("submitting");
     try {
       if (rsvp.submitEndpoint) {
-        await fetch(rsvp.submitEndpoint, {
+        const res = await fetch(rsvp.submitEndpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify(form),
         });
+        if (!res.ok) throw new Error("submit failed");
       } else {
         const stored = JSON.parse(localStorage.getItem("rsvps") || "[]");
         stored.push({ ...form, submittedAt: new Date().toISOString() });

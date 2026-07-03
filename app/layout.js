@@ -4,7 +4,7 @@ import {
   Cormorant_Garamond,
   Pinyon_Script,
 } from "next/font/google";
-import invitationData from "@/data/invitationData";
+import { getSeo, getThemeColors } from "@/lib/config-adapter";
 import { buildThemeCssVariables } from "@/lib/theme";
 import "./globals.css";
 
@@ -40,19 +40,19 @@ const monogramFont = Pinyon_Script({
 });
 
 export const metadata = {
-  title: invitationData.seo.title,
-  description: invitationData.seo.description,
+  title: getSeo().title,
+  description: getSeo().description,
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: invitationData.theme.colors.ivory,
+  themeColor: getThemeColors().ivory,
 };
 
 export default function RootLayout({ children }) {
-  const themeCssVariables = buildThemeCssVariables(invitationData.theme.colors);
+  const themeCssVariables = buildThemeCssVariables(getThemeColors());
 
   return (
     <html lang="fr">

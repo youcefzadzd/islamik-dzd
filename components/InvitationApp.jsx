@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { getData } from "@/lib/i18n";
 import EnvelopeIntro from "./EnvelopeIntro";
+import MusicPlayer from "./MusicPlayer";
 import SectionDivider from "./SectionDivider";
 import { Rosette } from "./ornaments";
 import HeroSection from "./HeroSection";
@@ -110,12 +111,19 @@ export default function InvitationApp() {
             <SectionDivider />
             <GallerySection data={data} />
             <SectionDivider />
-            <RsvpSection data={data} />
-            <SectionDivider />
+            {data.rsvp.enabled && (
+              <>
+                <RsvpSection data={data} />
+                <SectionDivider />
+              </>
+            )}
           </div>
           <ThankYouSection data={data} />
         </main>
       )}
+
+      {/* background music, only when a track is set in the config */}
+      {data.music && <MusicPlayer src={data.music} started={opened} />}
       </div>
     </>
   );
