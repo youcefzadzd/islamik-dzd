@@ -316,7 +316,7 @@ export default function HeroSection({ data, revealed }) {
           initial="hidden"
           animate={state}
           custom={1.55}
-          className="mt-8 font-monogram text-5xl text-gold-dark sm:text-6xl"
+          className="mt-8 font-monogram text-[clamp(2.2rem,12vw,3rem)] text-gold-dark sm:text-6xl"
         >
           {data.hero.eyebrow}
         </motion.h1>
@@ -332,11 +332,11 @@ export default function HeroSection({ data, revealed }) {
         </motion.p>
 
         <motion.div variants={item} initial="hidden" animate={state} custom={2.0} className="mt-12">
-          <p className="font-monogram text-6xl leading-tight text-gold-dark sm:text-7xl">
+          <p className="font-monogram text-[clamp(2.6rem,14vw,3.75rem)] leading-tight text-gold-dark sm:text-7xl">
             {data.couple.groomName}
           </p>
           <p className="my-1 font-monogram text-3xl text-gold">&amp;</p>
-          <p className="font-monogram text-6xl leading-tight text-gold-dark sm:text-7xl">
+          <p className="font-monogram text-[clamp(2.6rem,14vw,3.75rem)] leading-tight text-gold-dark sm:text-7xl">
             {data.couple.brideName}
           </p>
         </motion.div>

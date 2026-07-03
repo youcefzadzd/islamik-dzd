@@ -11,13 +11,13 @@ export default function LocationSection({ data }) {
       <div className="text-center">
         <Reveal>
           <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{location.heading}</h2>
-          <div className="divider mt-4">
+          <div className="divider mt-5">
             <span className="text-gold">✦</span>
           </div>
         </Reveal>
 
         <Reveal delay={0.15}>
-          <p className="mt-8 font-serif text-3xl text-burgundy">{location.venueName}</p>
+          <p className="mt-10 font-serif text-2xl text-burgundy sm:text-3xl">{location.venueName}</p>
           <p className="mt-2 font-body text-lg text-ink/80">{location.address}</p>
         </Reveal>
 

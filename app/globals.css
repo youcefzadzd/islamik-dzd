@@ -167,6 +167,17 @@ button {
 .lux-panel h2 {
   font-size: clamp(1.7rem, 8.5vw, 2.25rem);
   line-height: 1.15;
+  text-wrap: balance;
+}
+/* calm, even paragraphs: no orphan words, generous leading */
+.lux-panel p {
+  text-wrap: pretty;
+}
+.lux-panel .font-body {
+  line-height: 1.7;
+}
+.lux-panel label {
+  line-height: 1.5;
 }
 @media (min-width: 640px) {
   .lux-panel h2 {

@@ -42,10 +42,10 @@ export default function RsvpSection({ data }) {
         <Reveal>
           <div className="mb-10 text-center">
             <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{rsvp.heading}</h2>
-            <div className="divider mt-4">
+            <p className="mt-3 font-body text-lg leading-relaxed text-ink/80">{rsvp.subheading}</p>
+            <div className="divider mt-5">
               <span className="text-gold">✦</span>
             </div>
-            <p className="mt-5 font-body text-lg leading-relaxed text-ink/80">{rsvp.subheading}</p>
           </div>
 
           <AnimatePresence mode="wait">

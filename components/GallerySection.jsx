@@ -43,13 +43,13 @@ export default function GallerySection({ data }) {
         <Reveal>
           <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">{gallery.heading}</h2>
           <p className="mt-3 font-body text-lg text-ink/75">{gallery.subheading}</p>
-          <div className="divider mt-4">
+          <div className="divider mt-5">
             <span className="text-gold">✦</span>
           </div>
         </Reveal>
 
         {/* 2x2 grid of the collection */}
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-4">
           {images.map((image, index) => (
             <motion.button
               key={image.src}

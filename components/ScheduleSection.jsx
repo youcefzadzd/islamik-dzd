@@ -15,7 +15,7 @@ export default function ScheduleSection({ data }) {
           <h2 className="font-monogram text-4xl text-gold-dark sm:text-5xl">
             {schedule.heading}
           </h2>
-          <div className="divider mt-4">
+          <div className="divider mt-5">
             <span className="text-gold">✦</span>
           </div>
         </Reveal>

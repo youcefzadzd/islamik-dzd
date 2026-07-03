@@ -116,7 +116,7 @@ const invitationData = {
     namePlaceholder: "Entrez votre nom complet",
     attendingLabel: "Serez-vous présent ?",
     attendingYes: "✓ Oui, je serai présent",
-    attendingNo: "✗ Non, je ne pourrai pas être présent",
+    attendingNo: "✗ Non, je ne pourrai pas venir",
     guestsLabel: "Combien serez-vous ?",
     guestsPlaceholder: "Sélectionnez le nombre de personnes",
     messageLabel: "Un message (facultatif)",
@@ -128,7 +128,7 @@ const invitationData = {
     submitEndpoint: "",
     confirmationTitle: "Merci !",
     confirmationMessage:
-      "Votre réponse a bien été enregistrée.\nNous avons hâte de célébrer cette magnifique journée avec vous.",
+      "Votre réponse a bien été enregistrée.\nNous avons hâte de célébrer ce grand jour avec vous.",
   },
 
   // ===================== رسالة الشكر الختامية =====================
