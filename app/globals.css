@@ -48,6 +48,33 @@ button {
   unicode-bidi: isolate;
 }
 
+/* ===== Arabic mode: elegant Naskh everywhere, no letter-spacing ===== */
+html[dir="rtl"] .font-monogram,
+html[dir="rtl"] .font-serif,
+html[dir="rtl"] .font-body {
+  font-family: var(--font-arabic-text), serif;
+}
+html[dir="rtl"] .lux-panel h2,
+html[dir="rtl"] h1,
+html[dir="rtl"] .font-monogram {
+  line-height: 1.45;
+}
+/* Arabic must never be letter-spaced */
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] p,
+html[dir="rtl"] label,
+html[dir="rtl"] button,
+html[dir="rtl"] a,
+html[dir="rtl"] span {
+  letter-spacing: 0 !important;
+}
+/* numbers, times and dates stay readable left-to-right */
+html[dir="rtl"] .tabular-nums {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
 /* Thin gold divider used between headings and content */
 .divider {
   display: flex;

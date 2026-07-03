@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
+import { getData } from "@/lib/i18n";
 import EnvelopeIntro from "./EnvelopeIntro";
 import SectionDivider from "./SectionDivider";
 import { Rosette } from "./ornaments";
@@ -14,11 +15,35 @@ import GallerySection from "./GallerySection";
 import RsvpSection from "./RsvpSection";
 import ThankYouSection from "./ThankYouSection";
 
-export default function InvitationApp({ data }) {
+export default function InvitationApp() {
   // mountMain: the page is rendered under the overlay just before the paper expands,
   // so the crossfade lands on an already-painted hero.
   const [mountMain, setMountMain] = useState(false);
   const [opened, setOpened] = useState(false);
+
+  // language: French by default, Arabic remembered across visits
+  const [lang, setLang] = useState("fr");
+  const [textFading, setTextFading] = useState(false);
+  const data = useMemo(() => getData(lang), [lang]);
+
+  useEffect(() => {
+    if (localStorage.getItem("lang") === "ar") setLang("ar");
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  function switchLang() {
+    const next = lang === "fr" ? "ar" : "fr";
+    setTextFading(true);
+    setTimeout(() => {
+      setLang(next);
+      localStorage.setItem("lang", next);
+      setTextFading(false);
+    }, 200);
+  }
 
   useEffect(() => {
     document.body.style.overflow = opened ? "" : "hidden";
@@ -29,6 +54,21 @@ export default function InvitationApp({ data }) {
 
   return (
     <>
+      {/* language switcher — always visible, above every overlay */}
+      <button
+        type="button"
+        onClick={switchLang}
+        className={`fixed right-4 top-4 z-[70] rounded-full border border-gold/50 bg-ivory-light/90 px-4 py-1.5 text-sm text-gold-dark shadow-card backdrop-blur-sm transition-colors hover:bg-ivory-light ${
+          lang === "fr" ? "font-arabicText" : "font-body"
+        }`}
+        aria-label={lang === "fr" ? "التبديل إلى العربية" : "Passer au français"}
+      >
+        {lang === "fr" ? "العربية" : "Français"}
+      </button>
+
+      <div
+        className={`transition-opacity duration-300 ${textFading ? "opacity-0" : "opacity-100"}`}
+      >
       <AnimatePresence>
         {!opened && (
           <EnvelopeIntro
@@ -76,6 +116,7 @@ export default function InvitationApp({ data }) {
           <ThankYouSection data={data} />
         </main>
       )}
+      </div>
     </>
   );
 }

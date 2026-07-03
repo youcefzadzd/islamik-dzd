@@ -119,6 +119,7 @@ const invitationData = {
     attendingNo: "✗ Non, je ne pourrai pas venir",
     guestsLabel: "Combien serez-vous ?",
     guestsPlaceholder: "Sélectionnez le nombre de personnes",
+    guestsOptions: ["1 personne", "2 personnes", "3 personnes", "4 personnes", "5 personnes", "6 personnes"],
     messageLabel: "Un message (facultatif)",
     messagePlaceholder: "Laissez un petit mot aux mariés...",
     sealButtonText: "RSVP", // النص فوق ختم الشمع
@@ -126,6 +127,7 @@ const invitationData = {
     submittingText: "Envoi en cours...",
     // اتركها فارغة لتخزين الردود في متصفح الضيف فقط، أو ضع رابط API خاص بك
     submitEndpoint: "",
+    errorMessage: "Une erreur est survenue. Veuillez réessayer.",
     confirmationTitle: "Merci !",
     confirmationMessage:
       "Votre réponse a bien été enregistrée.\nNous avons hâte de célébrer ce grand jour avec vous.",

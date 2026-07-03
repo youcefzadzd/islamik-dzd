@@ -131,9 +131,9 @@ export default function RsvpSection({ data }) {
                       <option value="" disabled>
                         {rsvp.guestsPlaceholder}
                       </option>
-                      {[1, 2, 3, 4, 5, 6].map((n) => (
-                        <option key={n} value={n}>
-                          {n} {n > 1 ? "personnes" : "personne"}
+                      {rsvp.guestsOptions.map((label, n) => (
+                        <option key={label} value={n + 1}>
+                          {label}
                         </option>
                       ))}
                     </select>
@@ -178,9 +178,7 @@ export default function RsvpSection({ data }) {
                 </div>
 
                 {status === "error" && (
-                  <p className="text-center text-sm text-burgundy">
-                    Une erreur est survenue. Veuillez réessayer.
-                  </p>
+                  <p className="text-center text-sm text-burgundy">{rsvp.errorMessage}</p>
                 )}
               </motion.form>
             )}
