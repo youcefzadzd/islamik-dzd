@@ -99,11 +99,12 @@ const invitationData = {
   gallery: {
     heading: "Galerie",
     subheading: "Quelques instants de notre histoire",
-    // أضف أو احذف الصور بحرية — ضع صورك في public/assets/
+    // أضف أو احذف الصور بحرية — ضع صورك في public/assets/gallery/
     images: [
-      { src: "/assets/hero-background.webp", alt: "Arche royale aux cygnes" },
-      { src: "/assets/thankyou-background.webp", alt: "Jardin des arches dorées" },
-      { src: "/assets/envelope-first1.png", alt: "L'enveloppe scellée" },
+      { src: "/assets/gallery/gallery-1.jpg", alt: "Table dorée sous les lanternes" },
+      { src: "/assets/gallery/gallery-2.jpg", alt: "Instant précieux" },
+      { src: "/assets/gallery/gallery-3.jpg", alt: "Lumière du soir" },
+      { src: "/assets/gallery/gallery-4.jpg", alt: "Détails du palais" },
     ],
   },
 
