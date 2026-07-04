@@ -1,37 +1,32 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { timingSafeEqual } from "crypto";
 import config from "@/wedding-config.json";
+import { getAdminClient, getWeddingByPublicId } from "@/lib/wedding-service";
+import { verifyPassword, safeEqual } from "@/lib/passwords";
 
 /**
- * Dashboard API — runs only on the server.
- * Reads/deletes use the service-role key (never sent to the browser) and
- * are gated by the dashboard password. Guests never touch this route;
- * their inserts go straight to Supabase under the insert-only RLS policy.
- *
- * Password: DASHBOARD_PASSWORD env var wins; wedding-config.json
- * admin.password is the fallback for local use.
+ * Client dashboard API — server only.
+ * Password check order:
+ *   1. platform wedding row → scrypt hash (dashboard_password_hash)
+ *   2. template/demo wedding → DASHBOARD_PASSWORD env, then
+ *      wedding-config.json admin.password (local fallback)
+ * Every query is filtered by the URL's wedding_id.
  */
-
-function getAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, { auth: { persistSession: false } });
-}
-
-function passwordOk(request) {
-  const expected = process.env.DASHBOARD_PASSWORD || config.admin?.password || "";
+async function authorize(request, weddingId) {
   const given = request.headers.get("x-dashboard-password") || "";
-  if (!expected || !given) return false;
-  const a = Buffer.from(String(expected));
-  const b = Buffer.from(String(given));
-  return a.length === b.length && timingSafeEqual(a, b);
+  if (!given) return false;
+
+  const { configured, wedding } = await getWeddingByPublicId(weddingId);
+  if (configured && wedding) {
+    return verifyPassword(given, wedding.dashboard_password_hash);
+  }
+  // template/demo wedding
+  const expected = process.env.DASHBOARD_PASSWORD || config.admin?.password || "";
+  return safeEqual(given, expected);
 }
 
 export async function GET(request, { params }) {
   const { weddingId } = await params;
-  if (!passwordOk(request)) {
+  if (!(await authorize(request, weddingId))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const supabase = getAdminClient();
@@ -49,7 +44,7 @@ export async function GET(request, { params }) {
 
 export async function DELETE(request, { params }) {
   const { weddingId } = await params;
-  if (!passwordOk(request)) {
+  if (!(await authorize(request, weddingId))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const supabase = getAdminClient();
@@ -58,7 +53,6 @@ export async function DELETE(request, { params }) {
   }
   const { id } = await request.json();
   if (!id) return NextResponse.json({ error: "missing id" }, { status: 400 });
-  // scoped to the wedding in the URL: one client can never delete another's rows
   const { error } = await supabase
     .from("rsvp_responses")
     .delete()

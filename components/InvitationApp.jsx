@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { getData } from "@/lib/i18n";
+import { buildThemeCssVariables } from "@/lib/theme";
 import EnvelopeIntro from "./EnvelopeIntro";
 import MusicPlayer from "./MusicPlayer";
 import SectionDivider from "./SectionDivider";
@@ -16,25 +17,29 @@ import GallerySection from "./GallerySection";
 import RsvpSection from "./RsvpSection";
 import ThankYouSection from "./ThankYouSection";
 
-export default function InvitationApp({ weddingIdOverride }) {
+export default function InvitationApp({ weddingIdOverride, initialData }) {
   // mountMain: the page is rendered under the overlay just before the paper expands,
   // so the crossfade lands on an already-painted hero.
   const [mountMain, setMountMain] = useState(false);
   const [opened, setOpened] = useState(false);
 
-  // language: French by default, Arabic remembered across visits
-  const [lang, setLang] = useState("fr");
+  // language: the wedding's default, guest choice remembered across visits
+  const defaultLang = initialData?.fr?.defaultLang || "fr";
+  const enabledLangs = initialData?.fr?.enabledLangs || ["fr", "ar"];
+  const [lang, setLang] = useState(defaultLang);
   const [textFading, setTextFading] = useState(false);
   const data = useMemo(() => {
-    const base = getData(lang);
+    const base = initialData ? initialData[lang] || initialData.fr : getData(lang);
     // /w/[weddingId] links scope RSVP responses to the wedding in the URL
     return weddingIdOverride
       ? { ...base, rsvp: { ...base.rsvp, weddingId: weddingIdOverride } }
       : base;
-  }, [lang, weddingIdOverride]);
+  }, [lang, weddingIdOverride, initialData]);
 
   useEffect(() => {
-    if (localStorage.getItem("lang") === "ar") setLang("ar");
+    const saved = localStorage.getItem("lang");
+    if (saved && saved !== defaultLang && enabledLangs.includes(saved)) setLang(saved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -61,7 +66,17 @@ export default function InvitationApp({ weddingIdOverride }) {
 
   return (
     <>
+      {/* per-wedding theme colors (platform weddings only) */}
+      {initialData && (
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `:root { ${buildThemeCssVariables(data.theme.colors)} }`,
+          }}
+        />
+      )}
+
       {/* language switcher — always visible, above every overlay */}
+      {enabledLangs.length > 1 && (
       <button
         type="button"
         onClick={switchLang}
@@ -72,6 +87,7 @@ export default function InvitationApp({ weddingIdOverride }) {
       >
         {lang === "fr" ? "العربية" : "Français"}
       </button>
+      )}
 
       <div
         className={`transition-opacity duration-300 ${textFading ? "opacity-0" : "opacity-100"}`}
