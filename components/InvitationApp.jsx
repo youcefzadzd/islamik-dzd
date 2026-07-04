@@ -123,7 +123,9 @@ export default function InvitationApp() {
       )}
 
       {/* background music, only when a track is set in the config */}
-      {data.music && <MusicPlayer src={data.music} started={opened} />}
+      {data.music && (
+        <MusicPlayer src={data.music} openingSrc={data.openingSound} started={mountMain} />
+      )}
       </div>
     </>
   );

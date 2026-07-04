@@ -2,37 +2,90 @@
 
 import { useEffect, useRef, useState } from "react";
 
+const MUSIC_VOLUME = 0.3;
+const OPENING_VOLUME = 0.4;
+const FADE_MS = 1800;
+
+/* gently ramp an audio element's volume; resolves when done */
+function fade(audio, to, ms) {
+  return new Promise((resolve) => {
+    const from = audio.volume;
+    const start = performance.now();
+    function step(now) {
+      const t = Math.min(1, (now - start) / ms);
+      audio.volume = from + (to - from) * t;
+      if (t < 1) requestAnimationFrame(step);
+      else resolve();
+    }
+    requestAnimationFrame(step);
+  });
+}
+
 /**
- * Discreet background-music toggle (only rendered when media.music is set
- * in wedding-config.json). Playback starts after the guest opens the
- * envelope; browsers that refuse autoplay simply leave the button paused.
+ * The invitation's sound: a short envelope-opening whisper when the seal
+ * breaks, then soft piano fading in and looping at 30%. A discreet
+ * bottom-corner button lets guests fade the music out and back in.
  */
-export default function MusicPlayer({ src, started }) {
-  const audioRef = useRef(null);
+export default function MusicPlayer({ src, openingSrc, started }) {
+  const musicRef = useRef(null);
+  const openingRef = useRef(null);
+  const startedOnce = useRef(false);
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
-    if (!started || !audioRef.current) return;
-    audioRef.current
-      .play()
-      .then(() => setPlaying(true))
-      .catch(() => setPlaying(false));
+    if (!started || startedOnce.current) return;
+    startedOnce.current = true;
+
+    const music = musicRef.current;
+    const beginMusic = () => {
+      if (!music) return;
+      music.volume = 0;
+      music
+        .play()
+        .then(() => {
+          setPlaying(true);
+          fade(music, MUSIC_VOLUME, FADE_MS);
+        })
+        .catch(() => setPlaying(false));
+    };
+
+    const opening = openingRef.current;
+    if (opening) {
+      opening.volume = OPENING_VOLUME;
+      opening.addEventListener("ended", beginMusic, { once: true });
+      opening.play().catch(() => {
+        // autoplay refused: skip straight to trying the music
+        opening.removeEventListener("ended", beginMusic);
+        beginMusic();
+      });
+    } else {
+      beginMusic();
+    }
   }, [started]);
 
-  function toggle() {
-    const audio = audioRef.current;
-    if (!audio) return;
+  async function toggle() {
+    const music = musicRef.current;
+    if (!music) return;
     if (playing) {
-      audio.pause();
       setPlaying(false);
+      await fade(music, 0, 900);
+      music.pause();
     } else {
-      audio.play().then(() => setPlaying(true)).catch(() => {});
+      music.volume = 0;
+      try {
+        await music.play();
+        setPlaying(true);
+        fade(music, MUSIC_VOLUME, 900);
+      } catch {
+        /* stays paused */
+      }
     }
   }
 
   return (
     <>
-      <audio ref={audioRef} src={src} loop preload="none" />
+      <audio ref={musicRef} src={src} loop preload="auto" />
+      {openingSrc && <audio ref={openingRef} src={openingSrc} preload="auto" />}
       <button
         type="button"
         onClick={toggle}

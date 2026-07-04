@@ -94,15 +94,19 @@ Pour changer une photo : placez votre image dans le dossier
 ## 6. La musique — الموسيقى
 
 ```json
-"music": "/music/wedding.mp3"
+"music": "/music/wedding.mp3",          ← musique de fond (boucle, volume 30%)
+"openingSound": "/music/opening.mp3"    ← petit son d'ouverture de l'enveloppe
 ```
 
-1. Créez le dossier `public/music/`
-2. Placez-y votre fichier mp3
-3. Écrivez son chemin ici
+Deux fichiers libres de droits (licence Pixabay, usage commercial
+autorisé) sont déjà inclus dans `public/music/` — voir `CREDITS.txt`.
 
-Un petit bouton 🎵 apparaîtra en bas à droite ; la musique démarre à
-l'ouverture de l'enveloppe. Laissez `""` pour désactiver.
+À l'ouverture de l'enveloppe : le son d'ouverture joue une fois, puis
+la musique démarre en fondu et tourne en boucle. Un petit bouton 🎵 en
+bas à droite permet de couper/relancer la musique.
+
+Pour changer de musique : placez votre mp3 dans `public/music/` et
+écrivez son chemin ici. Laissez `""` pour désactiver.
 
 ## 7. Les couleurs — الألوان
 
