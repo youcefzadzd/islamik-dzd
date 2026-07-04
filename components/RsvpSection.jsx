@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Reveal from "./Reveal";
 import SectionPanel from "./SectionPanel";
+import { getSupabase } from "@/lib/supabase";
 
 export default function RsvpSection({ data }) {
   const rsvp = data.rsvp;
@@ -19,7 +20,19 @@ export default function RsvpSection({ data }) {
     if (!form.name.trim() || status === "submitting") return;
     setStatus("submitting");
     try {
-      if (rsvp.submitEndpoint) {
+      const supabase = getSupabase();
+      if (supabase) {
+        // primary store: Supabase (RLS allows guests to insert only)
+        const { error } = await supabase.from("rsvp_responses").insert({
+          wedding_id: rsvp.weddingId,
+          guest_name: form.name.trim(),
+          attendance_status: form.attending,
+          guest_count: form.attending === "yes" ? Number(form.guests) || 1 : 0,
+          message: form.message.trim(),
+          language: data.lang,
+        });
+        if (error) throw error;
+      } else if (rsvp.submitEndpoint) {
         const res = await fetch(rsvp.submitEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
