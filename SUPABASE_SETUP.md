@@ -1,90 +1,107 @@
-# 🔐 Supabase — Guide de mise en service (RSVP sécurisé)
+# 🔐 RSVP multi-clients — Guide de mise en service
 
-Votre table `rsvp_responses` existe déjà et RLS est activé.
-Il reste 4 étapes, dans l'ordre :
+Architecture :
+
+```
+Invité   →  https://votre-domaine.com/w/WED-7XK92P        (invitation publique)
+Client   →  https://votre-domaine.com/dashboard/WED-7XK92P (tableau de bord privé)
+```
+
+- Chaque mariage a un **wedding_id unique** (ex. `WED-7XK92P`).
+- Les invités **insèrent** leur réponse dans Supabase — et ne peuvent
+  rien lire, modifier ou supprimer (Row Level Security).
+- Le tableau de bord est protégé par **mot de passe** ; la lecture et la
+  suppression passent par une API serveur qui utilise la clé
+  `service_role` (jamais envoyée au navigateur) et qui filtre toujours
+  sur le `wedding_id` de l'URL.
 
 ---
 
 ## Étape 1 — Coller les règles de sécurité (SQL)
 
-1. Ouvrez votre projet sur https://supabase.com/dashboard
-2. Menu de gauche → **SQL Editor** → **New query**
-3. Ouvrez le fichier `supabase/rsvp-policies.sql` de ce projet,
-   copiez **tout** son contenu, collez-le, puis cliquez **Run**.
+1. https://supabase.com/dashboard → votre projet
+2. Menu gauche → **SQL Editor** → **New query**
+3. Copiez tout le contenu de `supabase/rsvp-policies.sql` → **Run**
 
-Ce script (idempotent, ré-exécutable sans risque) crée :
+Résultat :
 
-| Règle | Effet |
-| --- | --- |
-| `guests can insert rsvp` | les invités (clé anon) peuvent **uniquement insérer** une réponse, avec des limites (nom ≤ 120 car., message ≤ 1000, 0–20 personnes, statut `yes/no`, langue `fr/ar`) |
-| *(aucune règle SELECT/UPDATE/DELETE pour anon)* | les invités **ne peuvent ni lire, ni modifier, ni supprimer** — RLS refuse tout par défaut |
-| table `wedding_admins` | associe un compte admin ↔ un `wedding_id` (multi-clients) |
-| `admins read/update/delete own wedding` | un admin connecté ne voit et ne gère **que les réponses de son propre mariage** |
+| Qui | Peut | Ne peut pas |
+| --- | --- | --- |
+| Invités (clé anon) | INSERT (avec limites : nom ≤ 120, message ≤ 1000, 0–20 pers., statut yes/no, langue fr/ar) | SELECT / UPDATE / DELETE |
+| API serveur (service_role) | tout, mais le code filtre chaque requête sur le wedding_id de l'URL | — |
 
-## Étape 2 — Créer le compte admin du client
+*(Le script crée aussi des policies pour des admins Supabase Auth —
+inutile pour le tableau de bord par mot de passe, mais sans danger et
+utile si vous voulez un jour des comptes admin.)*
 
-1. Dashboard → **Authentication** → **Users** → **Add user**
-   (email + mot de passe, cochez "Auto confirm").
-2. Retour au **SQL Editor**, liez ce compte à son mariage :
+## Étape 2 — Les clés du site
 
-```sql
-insert into public.wedding_admins (user_id, wedding_id)
-values (
-  (select id from auth.users where email = 'client@example.com'),
-  'amine-fatima-2026'
-);
-```
-
-⚠️ Le `wedding_id` doit être **identique** au champ `"wedding" → "id"`
-de `wedding-config.json`. Chaque client a son propre `wedding_id` et son
-propre compte : il ne verra jamais les réponses des autres mariages
-(garanti par la base, pas seulement par l'interface).
-
-## Étape 3 — Connecter le site
-
-1. Dashboard → **Project Settings** → **API** : copiez l'URL du projet
-   et la clé **anon public**.
-2. Dans ce projet, copiez `.env.local.example` → `.env.local` :
+Dashboard → **Project Settings** → **API**, puis copiez
+`.env.local.example` → `.env.local` et remplissez :
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://votre-projet.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=votre-cle-anon
+NEXT_PUBLIC_SUPABASE_URL=...        (URL du projet)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...   (clé "anon public" — pour le formulaire)
+SUPABASE_SERVICE_ROLE_KEY=...       (clé "service_role" — pour le dashboard, serveur uniquement)
+DASHBOARD_PASSWORD=...              (mot de passe du tableau de bord)
 ```
 
-3. Redémarrez le site (`npm run dev` ou redéploiement).
+En production (Vercel…), mettez ces 4 valeurs dans les variables
+d'environnement du projet. ⚠️ La clé `service_role` et le mot de passe
+ne doivent jamais apparaître dans le code ou le navigateur.
 
-Dès que ces clés sont présentes, le formulaire RSVP envoie chaque
-réponse dans `rsvp_responses` (avec `wedding_id`, nom, présence, nombre
-de personnes, message et langue). Sans les clés, le site continue de
-fonctionner comme avant (email formsubmit ou stockage local).
+## Étape 3 — Configurer le mariage
 
-> La clé **anon** est publique par conception — la sécurité réelle est
-> assurée par les règles RLS de l'étape 1. Ne mettez **jamais** la clé
-> `service_role` dans le site.
+Dans `wedding-config.json` :
 
-## Étape 4 — Le tableau de bord
+```json
+"weddingId": "WED-7XK92P",
+"admin": { "password": "change-this-password" }
+```
 
-Ouvrez **`/admin`** sur votre site (exemple :
-`https://votre-site.com/admin`).
+- `weddingId` : identifiant unique du mariage (lettres/chiffres/tirets).
+- `admin.password` : mot de passe **de secours pour le développement
+  local**. En production, `DASHBOARD_PASSWORD` (variable
+  d'environnement) le remplace — utilisez-la, car tout ce qui est dans
+  wedding-config.json est visible dans le code du site.
 
-- Connexion avec l'email/mot de passe créés à l'étape 2.
-- Statistiques : réponses, présents, total d'invités.
-- Liste des réponses (nom, présence, personnes, message, langue, date)
-  avec suppression possible.
-- Chaque client connecté ne voit que **son** mariage.
+## Étape 4 — Utilisation
+
+- **Lien invités** : `https://votre-domaine.com/w/WED-7XK92P`
+  (la page d'accueil `/` fonctionne aussi et utilise le weddingId du
+  fichier de config)
+- **Lien client** : `https://votre-domaine.com/dashboard/WED-7XK92P`
+  → mot de passe → statistiques (réponses, présents, absents, total
+  d'invités), recherche par nom, filtre présents/absents, export CSV,
+  suppression de réponses.
+
+Chaque tableau de bord ne montre **que** les réponses de son
+`wedding_id` : l'API filtre côté serveur, un client ne peut pas voir ni
+toucher les réponses d'un autre mariage.
+
+## Pour chaque nouveau client
+
+1. Dupliquez le site (nouveau déploiement) avec son propre
+   `wedding-config.json` : nouveau `weddingId` (ex. `WED-9QL41Z`),
+   noms, textes, photos.
+2. Même projet Supabase, même table — les réponses sont séparées par
+   `wedding_id`.
+3. Donnez au client ses deux liens + son mot de passe.
 
 ---
 
-## Vérifier la sécurité (optionnel, 2 minutes)
+## Vérifier la sécurité (2 minutes)
 
-Dans le SQL Editor, exécutez :
+Dans le SQL Editor :
 
 ```sql
--- doit être vide ou lister uniquement vos policies :
 select policyname, cmd, roles from pg_policies
 where tablename = 'rsvp_responses';
 ```
 
-Puis testez en anonyme (Dashboard → API Docs → utilisez la clé anon) :
-un `select` sur `rsvp_responses` doit renvoyer **0 ligne**, un `insert`
-valide doit réussir.
+Test invité (clé anon, via l'API Docs du dashboard) :
+- `select` sur `rsvp_responses` → **0 ligne** attendu
+- `insert` valide → doit réussir
+
+Test dashboard : mauvais mot de passe → « Mot de passe incorrect » ;
+bon mot de passe → les réponses du mariage uniquement.

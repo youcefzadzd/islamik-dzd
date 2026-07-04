@@ -16,7 +16,7 @@ import GallerySection from "./GallerySection";
 import RsvpSection from "./RsvpSection";
 import ThankYouSection from "./ThankYouSection";
 
-export default function InvitationApp() {
+export default function InvitationApp({ weddingIdOverride }) {
   // mountMain: the page is rendered under the overlay just before the paper expands,
   // so the crossfade lands on an already-painted hero.
   const [mountMain, setMountMain] = useState(false);
@@ -25,7 +25,13 @@ export default function InvitationApp() {
   // language: French by default, Arabic remembered across visits
   const [lang, setLang] = useState("fr");
   const [textFading, setTextFading] = useState(false);
-  const data = useMemo(() => getData(lang), [lang]);
+  const data = useMemo(() => {
+    const base = getData(lang);
+    // /w/[weddingId] links scope RSVP responses to the wedding in the URL
+    return weddingIdOverride
+      ? { ...base, rsvp: { ...base.rsvp, weddingId: weddingIdOverride } }
+      : base;
+  }, [lang, weddingIdOverride]);
 
   useEffect(() => {
     if (localStorage.getItem("lang") === "ar") setLang("ar");

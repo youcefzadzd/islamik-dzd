@@ -40,9 +40,8 @@ export default function RsvpSection({ data }) {
         });
         if (!res.ok) throw new Error("submit failed");
       } else {
-        const stored = JSON.parse(localStorage.getItem("rsvps") || "[]");
-        stored.push({ ...form, submittedAt: new Date().toISOString() });
-        localStorage.setItem("rsvps", JSON.stringify(stored));
+        // no storage backend configured
+        throw new Error("no backend");
       }
       setStatus("success");
     } catch {
