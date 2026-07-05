@@ -1,34 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import WeddingForm, { rowToForm } from "./WeddingForm";
-import { OwnerShell, OwnerGate, ownerHeaders, OWNER_PASS_KEY } from "./OwnerDashboard";
+import { OwnerGate, OwnerLayout, ownerHeaders, OWNER_PASS_KEY } from "./shared";
+import WeddingWizard from "./WeddingWizard";
+import { rowToForm } from "./formModel";
 
 export default function OwnerEdit({ weddingId }) {
   const [granted, setGranted] = useState(false);
-  const [initial, setInitial] = useState(null);
+  const [wedding, setWedding] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
 
   async function load() {
     const res = await fetch(`/api/owner/weddings/${encodeURIComponent(weddingId)}`, {
       headers: ownerHeaders(),
     });
-    if (res.status === 401 || res.status === 503) return setGranted(false);
+    if (res.status === 401) return setGranted(false);
     setGranted(true);
-    if (res.status === 404) return setNotice("Mariage introuvable.");
-    const { wedding } = await res.json();
-    setInitial(rowToForm(wedding));
+    if (res.ok) setWedding((await res.json()).wedding);
+    else setError("Mariage introuvable.");
   }
 
   useEffect(() => {
     if (sessionStorage.getItem(OWNER_PASS_KEY)) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [weddingId]);
 
   async function save(body) {
     setBusy(true);
-    setNotice("");
+    setError("");
+    setSaved(false);
     try {
       const res = await fetch(`/api/owner/weddings/${encodeURIComponent(weddingId)}`, {
         method: "PUT",
@@ -36,10 +38,11 @@ export default function OwnerEdit({ weddingId }) {
         body: JSON.stringify(body),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "erreur");
-      setNotice("✓ Modifications enregistrées.");
+      if (!res.ok) throw new Error(json.error || "erreur serveur");
+      setSaved(true);
+      setWedding(json.wedding);
     } catch (e) {
-      setNotice("Erreur : " + String(e.message || e));
+      setError(String(e.message || e));
     } finally {
       setBusy(false);
     }
@@ -48,13 +51,33 @@ export default function OwnerEdit({ weddingId }) {
   if (!granted) return <OwnerGate onGranted={() => load()} />;
 
   return (
-    <OwnerShell title={`Modifier — ${weddingId}`}>
-      {notice && <p className="mb-4 text-sm font-medium text-burgundy">{notice}</p>}
-      {initial ? (
-        <WeddingForm initial={initial} onSubmit={save} submitLabel="Enregistrer" busy={busy} />
-      ) : (
-        !notice && <p className="text-ink/60">Chargement…</p>
+    <OwnerLayout active="/owner/weddings" title={`Modifier — ${weddingId}`}>
+      {saved && (
+        <p className="mb-4 rounded-xl border border-gold bg-ivory-light px-4 py-2 text-sm text-ink">
+          ✓ Modifications enregistrées.{" "}
+          <a
+            href={`/w/${weddingId}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-burgundy underline-offset-4 hover:underline"
+          >
+            Voir l'invitation
+          </a>
+        </p>
       )}
-    </OwnerShell>
+      {!wedding && !error && <p className="py-8 text-center text-ink/55">Chargement…</p>}
+      {error && !wedding && <p className="py-8 text-center text-burgundy">{error}</p>}
+      {wedding && (
+        <WeddingWizard
+          key={wedding.updated_at}
+          initial={rowToForm(wedding)}
+          onFinish={save}
+          finishLabel="✓ Enregistrer"
+          requirePassword={false}
+          busy={busy}
+          error={error}
+        />
+      )}
+    </OwnerLayout>
   );
 }
