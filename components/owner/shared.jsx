@@ -8,8 +8,13 @@ export function ownerHeaders() {
   return { "x-owner-password": sessionStorage.getItem(OWNER_PASS_KEY) || "" };
 }
 
-/* wedding status derived from its date */
+/* one glass card style for the whole admin */
+export const glass =
+  "rounded-2xl border border-gold/25 bg-white/60 shadow-card backdrop-blur-md";
+
+/* wedding status derived from its date + archive flag */
 export function statusOf(w) {
+  if (w.archived) return { label: "archivé", cls: "bg-ink/10 text-ink/50" };
   if (!w.wedding_date) return { label: "sans date", cls: "bg-ink/10 text-ink/60" };
   const today = new Date().toISOString().slice(0, 10);
   if (w.wedding_date >= today) return { label: "à venir", cls: "bg-gold/20 text-gold-dark" };
@@ -18,8 +23,7 @@ export function statusOf(w) {
 
 export function daysUntil(dateStr) {
   if (!dateStr) return null;
-  const diff = Math.ceil((new Date(dateStr + "T00:00:00") - new Date()) / 86400000);
-  return diff;
+  return Math.ceil((new Date(dateStr + "T00:00:00") - new Date()) / 86400000);
 }
 
 export function CopyButton({ text, label = "copier" }) {
@@ -33,7 +37,7 @@ export function CopyButton({ text, label = "copier" }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      className="rounded-md border border-gold/50 px-2 py-0.5 text-xs text-gold-dark hover:bg-ivory-dark"
+      className="rounded-md border border-gold/50 px-2 py-0.5 text-xs text-gold-dark transition-colors hover:bg-ivory-dark"
     >
       {copied ? "✓" : label}
     </button>
@@ -67,11 +71,11 @@ export function OwnerGate({ onGranted }) {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-ivory px-4">
-      <form
-        onSubmit={tryLogin}
-        className="w-full max-w-xs space-y-4 rounded-2xl border border-gold/30 bg-ivory-light p-6 shadow-card"
-      >
-        <h1 className="text-center text-xl font-semibold text-ink">Espace propriétaire</h1>
+      <form onSubmit={tryLogin} className={`w-full max-w-xs space-y-4 p-6 ${glass}`}>
+        <p className="text-center font-monogram text-3xl text-gold-dark">Invitations Royales</p>
+        <h1 className="text-center text-sm uppercase tracking-[0.2em] text-ink/60">
+          Espace propriétaire
+        </h1>
         <input
           type="password"
           required
@@ -84,7 +88,7 @@ export function OwnerGate({ onGranted }) {
         {error && <p className="text-sm text-burgundy">{error}</p>}
         <button
           type="submit"
-          className="w-full rounded-xl bg-burgundy px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white hover:bg-burgundy-dark"
+          className="w-full rounded-xl bg-burgundy px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-burgundy-dark"
         >
           Entrer
         </button>
@@ -94,41 +98,91 @@ export function OwnerGate({ onGranted }) {
 }
 
 const NAV = [
-  { href: "/owner", label: "Tableau de bord", icon: "◆" },
+  { href: "/owner", label: "Dashboard", icon: "🏠" },
   { href: "/owner/weddings", label: "Mariages", icon: "💍" },
-  { href: "/owner/weddings/new", label: "Nouveau", icon: "＋" },
-  { href: "/owner/settings", label: "Paramètres", icon: "⚙" },
+  { href: "/owner/weddings/new", label: "Créer un mariage", icon: "➕" },
+  { href: "/owner/templates", label: "Modèles", icon: "🖼" },
+  { href: "/owner/media", label: "Médiathèque", icon: "📁" },
+  { href: "/owner/music", label: "Musiques", icon: "🎵" },
+  { href: "/owner/analytics", label: "Statistiques", icon: "📊" },
+  { href: "/owner/settings", label: "Paramètres", icon: "⚙️" },
 ];
 
-/* the owner shell: gold header + navigation, responsive */
-export function OwnerLayout({ children, active, title }) {
+/* SaaS admin shell: left sidebar + top bar + content */
+export function OwnerLayout({ children, active, title, actions }) {
+  const [open, setOpen] = useState(false);
+
+  const nav = (
+    <nav className="space-y-1">
+      {NAV.map((item) => (
+        <a
+          key={item.href}
+          href={item.href}
+          className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors ${
+            active === item.href
+              ? "bg-burgundy text-white shadow-card"
+              : "text-ink/75 hover:bg-white/70"
+          }`}
+        >
+          <span className="w-5 text-center">{item.icon}</span>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  );
+
   return (
-    <main className="min-h-screen bg-ivory">
-      <header className="border-b border-gold/25 bg-ivory-light">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+    <main className="min-h-screen bg-ivory md:pl-60">
+      {/* sidebar — fixed on desktop, slide-over on mobile */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-60 border-r border-gold/25 bg-ivory-light/90 p-4 backdrop-blur-md transition-transform md:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <a href="/owner" className="mb-6 block px-2">
           <p className="font-monogram text-2xl text-gold-dark">Invitations Royales</p>
-          <nav className="flex flex-wrap gap-1">
-            {NAV.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
-                  active === item.href
-                    ? "bg-burgundy text-white"
-                    : "text-ink/75 hover:bg-ivory-dark"
-                }`}
-              >
-                <span className="mr-1 hidden sm:inline">{item.icon}</span>
-                {item.label}
-              </a>
-            ))}
-          </nav>
+          <p className="text-[0.65rem] uppercase tracking-[0.25em] text-ink/45">admin</p>
+        </a>
+        {nav}
+        <p className="absolute bottom-4 left-4 right-4 text-[0.65rem] text-ink/35">
+          © {new Date().getFullYear()} — plateforme privée
+        </p>
+      </aside>
+      {open && (
+        <button
+          aria-label="Fermer le menu"
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-30 bg-ink/30 md:hidden"
+        />
+      )}
+
+      {/* top bar */}
+      <header className="sticky top-0 z-20 border-b border-gold/25 bg-ivory/85 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label="Menu"
+              onClick={() => setOpen(true)}
+              className="rounded-lg border border-gold/40 px-2.5 py-1.5 text-sm text-gold-dark md:hidden"
+            >
+              ☰
+            </button>
+            <h1 className="text-lg font-semibold text-ink">{title}</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {actions}
+            <a
+              href="/owner/weddings/new"
+              className="rounded-xl bg-burgundy px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-burgundy-dark"
+            >
+              + Créer
+            </a>
+          </div>
         </div>
       </header>
-      <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        {title && <h1 className="mb-5 text-2xl font-semibold text-ink">{title}</h1>}
-        {children}
-      </div>
+
+      <div className="px-4 py-6">{children}</div>
     </main>
   );
 }

@@ -3,7 +3,13 @@
  * Anything left empty falls back to the wedding-config.json template.
  */
 
-export const EMPTY_PROGRAM_STEP = { time: "", title_fr: "", title_ar: "" };
+export const EMPTY_PROGRAM_STEP = {
+  time: "",
+  title_fr: "",
+  title_ar: "",
+  description_fr: "",
+  description_ar: "",
+};
 
 export function rowToForm(w = {}) {
   const texts = w.texts || {};
@@ -14,6 +20,7 @@ export function rowToForm(w = {}) {
     // step 1 — couple & date
     groomName: w.groom_name || "",
     brideName: w.bride_name || "",
+    displayName: w.display_name || "",
     groomNameAr: texts.couple?.groomNameAr || "",
     brideNameAr: texts.couple?.brideNameAr || "",
     initials: w.initials || "",
@@ -73,6 +80,7 @@ export function formToBody(f) {
   return {
     groomName: f.groomName.trim(),
     brideName: f.brideName.trim(),
+    displayName: f.displayName.trim() || undefined,
     initials: f.initials.trim() || undefined,
     weddingDate: f.weddingDate || undefined,
     weddingTime: f.weddingTime || undefined,

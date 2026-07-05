@@ -32,10 +32,18 @@ export async function GET(request) {
   }
   const { data, error } = await supabase
     .from("weddings")
-    .select("id, wedding_id, bride_name, groom_name, display_name, wedding_date, created_at")
+    .select(
+      "id, wedding_id, bride_name, groom_name, display_name, wedding_date, created_at, default_language, languages, media, texts"
+    )
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ rows: data });
+  return NextResponse.json({
+    rows: data.map(({ texts, media, ...w }) => ({
+      ...w,
+      heroImage: media?.heroImage || null,
+      archived: !!texts?._archived,
+    })),
+  });
 }
 
 /* POST /api/owner/weddings — create a wedding */

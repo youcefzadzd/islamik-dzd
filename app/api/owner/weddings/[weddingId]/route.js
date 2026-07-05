@@ -75,6 +75,29 @@ export async function PUT(request, { params }) {
   return NextResponse.json({ wedding: sanitizeWedding(data) });
 }
 
+/* PATCH — toggle archive (stored in texts jsonb: no schema change) */
+export async function PATCH(request, { params }) {
+  const denied = guard(request);
+  if (denied) return denied;
+  const supabase = getAdminClient();
+  if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
+  const { weddingId } = await params;
+  const { archived } = await request.json();
+  const { data: row, error: getErr } = await supabase
+    .from("weddings")
+    .select("texts")
+    .eq("wedding_id", weddingId)
+    .maybeSingle();
+  if (getErr) return NextResponse.json({ error: getErr.message }, { status: 500 });
+  if (!row) return NextResponse.json({ error: "not found" }, { status: 404 });
+  const texts = { ...(row.texts || {}) };
+  if (archived) texts._archived = true;
+  else delete texts._archived;
+  const { error } = await supabase.from("weddings").update({ texts }).eq("wedding_id", weddingId);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true, archived: !!archived });
+}
+
 /* DELETE — remove the wedding and all of its RSVP responses */
 export async function DELETE(request, { params }) {
   const denied = guard(request);
