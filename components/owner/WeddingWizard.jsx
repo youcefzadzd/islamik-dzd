@@ -187,6 +187,13 @@ function StepMedia({ f, set, setF }) {
         accept="audio/*"
         placeholder="/music/wedding.mp3"
       />
+      <UploadField
+        label="Son d'ouverture de l'enveloppe (mp3, 1-3s)"
+        value={f.openingSound}
+        onChange={(v) => setF((p) => ({ ...p, openingSound: v }))}
+        accept="audio/*"
+        placeholder="/music/opening.mp3"
+      />
     </Grid>
   );
 }
@@ -366,6 +373,7 @@ function Review({ f, requirePassword }) {
     ["Hero", f.heroImage || "modèle par défaut"],
     ["Galerie", `${f.galleryText.split("\n").filter((s) => s.trim()).length || "modèle"} photo(s)`],
     ["Musique", f.music || "modèle par défaut"],
+    ["Son d'ouverture", f.openingSound || "modèle par défaut"],
     ["Programme", `${f.program.filter((s) => s.time && (s.title_fr || s.title_ar)).length} événement(s)`],
     ["Modèle", "Islamic Royal"],
     ["Couleurs", `${f.primaryColor} · ${f.goldColor} · ${f.backgroundColor}`],

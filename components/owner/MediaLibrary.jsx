@@ -45,7 +45,7 @@ export default function MediaLibrary({ kind }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
-  async function upload(fileList, replaceName) {
+  async function upload(fileList, replaceName, replaceBucket) {
     setBusy(true);
     setError("");
     try {
@@ -53,6 +53,7 @@ export default function MediaLibrary({ kind }) {
         const fd = new FormData();
         fd.append("file", file);
         if (replaceName) fd.append("replace", replaceName);
+        if (replaceBucket) fd.append("bucket", replaceBucket);
         const res = await fetch("/api/owner/media", {
           method: "POST",
           headers: ownerHeaders(),
@@ -69,12 +70,12 @@ export default function MediaLibrary({ kind }) {
     }
   }
 
-  async function remove(name) {
+  async function remove(name, bucket) {
     if (!window.confirm(`Supprimer ${name} ?`)) return;
     await fetch("/api/owner/media", {
       method: "DELETE",
       headers: { ...ownerHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, bucket }),
     });
     load();
   }
@@ -113,7 +114,7 @@ export default function MediaLibrary({ kind }) {
       <div className={isAudio ? "space-y-2" : "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"}>
         {(files || []).map((f) =>
           isAudio ? (
-            <div key={f.name} className={`flex flex-wrap items-center gap-3 p-3 ${glass}`}>
+            <div key={f.bucket + "/" + f.name} className={`flex flex-wrap items-center gap-3 p-3 ${glass}`}>
               <span className="text-xl">🎵</span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium text-ink">{f.name}</span>
@@ -128,12 +129,12 @@ export default function MediaLibrary({ kind }) {
                     type="file"
                     accept={accept}
                     className="hidden"
-                    onChange={(e) => e.target.files?.[0] && upload([e.target.files[0]], f.name)}
+                    onChange={(e) => e.target.files?.[0] && upload([e.target.files[0]], f.name, f.bucket)}
                   />
                 </label>
                 <button
                   type="button"
-                  onClick={() => remove(f.name)}
+                  onClick={() => remove(f.name, f.bucket)}
                   className="rounded-md border border-burgundy/40 px-2 py-0.5 text-xs text-burgundy hover:bg-burgundy hover:text-white"
                 >
                   supprimer
@@ -141,7 +142,7 @@ export default function MediaLibrary({ kind }) {
               </span>
             </div>
           ) : (
-            <div key={f.name} className={`overflow-hidden ${glass}`}>
+            <div key={f.bucket + "/" + f.name} className={`overflow-hidden ${glass}`}>
               <a href={f.url} target="_blank" rel="noreferrer" title="Prévisualiser">
                 <img src={f.url} alt={f.name} className="aspect-[4/3] w-full object-cover" loading="lazy" />
               </a>
@@ -158,12 +159,12 @@ export default function MediaLibrary({ kind }) {
                       type="file"
                       accept={accept}
                       className="hidden"
-                      onChange={(e) => e.target.files?.[0] && upload([e.target.files[0]], f.name)}
+                      onChange={(e) => e.target.files?.[0] && upload([e.target.files[0]], f.name, f.bucket)}
                     />
                   </label>
                   <button
                     type="button"
-                    onClick={() => remove(f.name)}
+                    onClick={() => remove(f.name, f.bucket)}
                     className="rounded-md border border-burgundy/40 px-2 py-0.5 text-xs text-burgundy hover:bg-burgundy hover:text-white"
                   >
                     ✕

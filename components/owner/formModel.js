@@ -39,6 +39,7 @@ export function rowToForm(w = {}) {
     thankYouImage: media.thankYouImage || "",
     galleryText: Array.isArray(media.gallery) ? media.gallery.join("\n") : "",
     music: media.music || "",
+    openingSound: media.openingSound || "",
     // step 4 — program
     program:
       Array.isArray(w.program) && w.program.length
@@ -115,6 +116,7 @@ export function formToBody(f) {
       thankYouImage: f.thankYouImage.trim() || undefined,
       gallery: gallery.length ? gallery : undefined,
       music: f.music.trim() || undefined,
+      openingSound: f.openingSound.trim() || undefined,
     },
     contact: { phone: f.phone.trim(), whatsapp: f.whatsapp.trim() },
     dashboardPassword: f.dashboardPassword || undefined,

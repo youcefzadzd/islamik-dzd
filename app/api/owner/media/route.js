@@ -3,10 +3,23 @@ import { getAdminClient } from "@/lib/wedding-service";
 import { safeEqual } from "@/lib/passwords";
 
 /**
- * Owner media library on Supabase Storage (public bucket "media",
- * created automatically on first use). Server only — service key.
+ * Owner uploads on Supabase Storage — server only (service key).
+ * Two public buckets, created automatically on first use:
+ *   wedding-images — hero, thank-you, gallery photos
+ *   wedding-music  — background music, opening sounds
+ * ("media" is the legacy bucket: still listed if it has files.)
  */
-const BUCKET = "media";
+const IMAGE_BUCKET = "wedding-images";
+const MUSIC_BUCKET = "wedding-music";
+const LEGACY_BUCKET = "media";
+
+const AUDIO_RE = /^audio\/|\.(mp3|wav|ogg|m4a)$/i;
+
+function bucketFor(fileName, mimeType) {
+  return AUDIO_RE.test(mimeType || "") || AUDIO_RE.test(fileName || "")
+    ? MUSIC_BUCKET
+    : IMAGE_BUCKET;
+}
 
 function denied(request) {
   if (!process.env.OWNER_PASSWORD) {
@@ -18,13 +31,10 @@ function denied(request) {
   return null;
 }
 
-async function ensureBucket(supabase) {
-  const { data } = await supabase.storage.getBucket(BUCKET);
+async function ensureBucket(supabase, bucket) {
+  const { data } = await supabase.storage.getBucket(bucket);
   if (!data) {
-    await supabase.storage.createBucket(BUCKET, {
-      public: true,
-      fileSizeLimit: "20MB",
-    });
+    await supabase.storage.createBucket(bucket, { public: true, fileSizeLimit: "25MB" });
   }
 }
 
@@ -33,20 +43,26 @@ export async function GET(request) {
   if (d) return d;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
-  await ensureBucket(supabase);
-  const { data, error } = await supabase.storage.from(BUCKET).list("", {
-    limit: 500,
-    sortBy: { column: "created_at", order: "desc" },
-  });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  const files = (data || [])
-    .filter((f) => f.name && !f.name.startsWith("."))
-    .map((f) => ({
-      name: f.name,
-      size: f.metadata?.size || 0,
-      createdAt: f.created_at,
-      url: supabase.storage.from(BUCKET).getPublicUrl(f.name).data.publicUrl,
-    }));
+  await Promise.all([ensureBucket(supabase, IMAGE_BUCKET), ensureBucket(supabase, MUSIC_BUCKET)]);
+
+  const files = [];
+  for (const bucket of [IMAGE_BUCKET, MUSIC_BUCKET, LEGACY_BUCKET]) {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .list("", { limit: 500, sortBy: { column: "created_at", order: "desc" } });
+    if (error) continue; // legacy bucket may not exist — fine
+    for (const f of data || []) {
+      if (!f.name || f.name.startsWith(".")) continue;
+      files.push({
+        bucket,
+        name: f.name,
+        size: f.metadata?.size || 0,
+        createdAt: f.created_at,
+        url: supabase.storage.from(bucket).getPublicUrl(f.name).data.publicUrl,
+      });
+    }
+  }
+  files.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
   return NextResponse.json({ files });
 }
 
@@ -55,27 +71,29 @@ export async function POST(request) {
   if (d) return d;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
-  await ensureBucket(supabase);
 
   const form = await request.formData();
   const file = form.get("file");
   if (!file || typeof file === "string") {
     return NextResponse.json({ error: "missing file" }, { status: 400 });
   }
-  // replace mode keeps the exact name; normal uploads get a unique prefix
+
   const replaceName = form.get("replace");
+  const bucket = form.get("bucket") || bucketFor(file.name, file.type);
+  await ensureBucket(supabase, bucket);
+
   const safeName = (replaceName || `${Date.now().toString(36)}-${file.name}`)
     .toString()
     .replace(/[^a-zA-Z0-9._-]/g, "_");
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const { error } = await supabase.storage.from(BUCKET).upload(safeName, buffer, {
+  const { error } = await supabase.storage.from(bucket).upload(safeName, buffer, {
     contentType: file.type || "application/octet-stream",
     upsert: true,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  const url = supabase.storage.from(BUCKET).getPublicUrl(safeName).data.publicUrl;
-  return NextResponse.json({ name: safeName, url });
+  const url = supabase.storage.from(bucket).getPublicUrl(safeName).data.publicUrl;
+  return NextResponse.json({ bucket, name: safeName, url });
 }
 
 export async function DELETE(request) {
@@ -83,9 +101,10 @@ export async function DELETE(request) {
   if (d) return d;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
-  const { name } = await request.json();
+  const { name, bucket } = await request.json();
   if (!name) return NextResponse.json({ error: "missing name" }, { status: 400 });
-  const { error } = await supabase.storage.from(BUCKET).remove([name]);
+  const target = bucket || bucketFor(name, "");
+  const { error } = await supabase.storage.from(target).remove([name]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
