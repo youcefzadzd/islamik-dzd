@@ -7,6 +7,12 @@ import { useEffect, useMemo, useState } from "react";
  * Password-gated (checked server-side); shows stats, searchable and
  * filterable responses, CSV export and per-row delete.
  */
+
+/* count helpers — legacy rows (pre-companions) only carry guest_count */
+const rowTotal = (r) => r.total_guests ?? r.guest_count ?? 0;
+const rowAdults = (r) =>
+  r.adult_count ?? (r.attendance_status === "yes" ? r.guest_count ?? 0 : 0);
+const rowChildren = (r) => r.child_count ?? 0;
 export default function DashboardClient({ weddingId }) {
   const storageKey = `dash-pass-${weddingId}`;
   const [password, setPassword] = useState("");
@@ -79,20 +85,36 @@ export default function DashboardClient({ weddingId }) {
   }, [rows, filter, search]);
 
   function exportCsv() {
-    const header = ["Nom", "Présence", "Personnes", "Message", "Langue", "Date"];
+    const header = [
+      "Nom",
+      "Présence",
+      "Adultes",
+      "Enfants",
+      "Total invités",
+      "Accompagnants",
+      "Types accompagnants",
+      "Message",
+      "Langue",
+      "Date",
+    ];
     const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const lines = (rows || []).map((r) =>
-      [
+    const lines = (rows || []).map((r) => {
+      const companions = Array.isArray(r.companions) ? r.companions : [];
+      return [
         r.guest_name,
         r.attendance_status === "yes" ? "Présent" : "Absent",
-        r.guest_count,
+        rowAdults(r),
+        rowChildren(r),
+        rowTotal(r),
+        companions.map((c) => c.name).join(" | "),
+        companions.map((c) => (c.type === "child" ? "enfant" : "adulte")).join(" | "),
         r.message,
         r.language,
         new Date(r.created_at).toLocaleString("fr-FR"),
       ]
         .map(esc)
-        .join(";")
-    );
+        .join(";");
+    });
     // BOM so Excel opens the accents correctly
     const csv = "﻿" + [header.map(esc).join(";"), ...lines].join("\r\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
@@ -144,7 +166,9 @@ export default function DashboardClient({ weddingId }) {
   /* ---------- dashboard ---------- */
   const attending = (rows || []).filter((r) => r.attendance_status === "yes");
   const declined = (rows || []).filter((r) => r.attendance_status === "no");
-  const totalGuests = attending.reduce((s, r) => s + (r.guest_count || 0), 0);
+  const totalAdults = attending.reduce((s, r) => s + rowAdults(r), 0);
+  const totalChildren = attending.reduce((s, r) => s + rowChildren(r), 0);
+  const totalGuests = attending.reduce((s, r) => s + rowTotal(r), 0);
 
   return (
     <Shell wide>
@@ -177,11 +201,13 @@ export default function DashboardClient({ weddingId }) {
       </div>
 
       {/* stats */}
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[
           ["Réponses", (rows || []).length],
           ["Présents", attending.length],
           ["Absents", declined.length],
+          ["Adultes", totalAdults],
+          ["Enfants", totalChildren],
           ["Invités au total", totalGuests],
         ].map(([label, value]) => (
           <div key={label} className="lux-card px-2 py-5 text-center">
@@ -240,10 +266,33 @@ export default function DashboardClient({ weddingId }) {
                   {r.guest_name}{" "}
                   <span className={r.attendance_status === "yes" ? "text-burgundy" : "text-ink/50"}>
                     {r.attendance_status === "yes"
-                      ? `✓ présent · ${r.guest_count} pers.`
+                      ? `✓ présent · ${rowTotal(r)} pers.`
                       : "✗ absent"}
                   </span>
                 </p>
+                {r.attendance_status === "yes" && rowTotal(r) > 1 && (
+                  <p className="mt-0.5 text-xs text-ink/60">
+                    {rowAdults(r)} adulte{rowAdults(r) > 1 ? "s" : ""}
+                    {rowChildren(r) > 0 &&
+                      ` · ${rowChildren(r)} enfant${rowChildren(r) > 1 ? "s" : ""}`}
+                  </p>
+                )}
+                {Array.isArray(r.companions) && r.companions.length > 0 && (
+                  <ul className="mt-2 flex flex-wrap gap-1.5">
+                    {r.companions.map((c, i) => (
+                      <li
+                        key={i}
+                        className="rounded-full border border-gold/40 bg-ivory-light px-2.5 py-0.5 text-xs text-ink/80"
+                      >
+                        {c.name}
+                        <span className="text-gold-dark">
+                          {" "}
+                          · {c.type === "child" ? "enfant" : "adulte"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 {r.message && <p className="mt-1 font-body italic text-ink/75">« {r.message} »</p>}
                 <p className="mt-1 text-xs text-ink/45">
                   {new Date(r.created_at).toLocaleString("fr-FR")} · {r.language}

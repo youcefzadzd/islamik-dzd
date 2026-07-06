@@ -101,25 +101,67 @@ function StepCouple({ f, set }) {
   );
 }
 
-function StepDetails({ f, set }) {
+function StepDetails({ f, set, setF }) {
   return (
-    <Grid>
-      <Field label="Date du mariage">
-        <input type="date" className={inputCls} value={f.weddingDate} onChange={set("weddingDate")} />
-      </Field>
-      <Field label="Heure">
-        <input type="time" className={inputCls} value={f.weddingTime} onChange={set("weddingTime")} />
-      </Field>
-      <Field label="Date limite RSVP">
-        <input type="date" className={inputCls} value={f.rsvpDeadline} onChange={set("rsvpDeadline")} />
-      </Field>
-      <Field label="Téléphone (contact)">
-        <input className={inputCls} value={f.phone} onChange={set("phone")} placeholder="+213..." />
-      </Field>
-      <Field label="WhatsApp (contact)">
-        <input className={inputCls} value={f.whatsapp} onChange={set("whatsapp")} placeholder="+213..." />
-      </Field>
-    </Grid>
+    <div className="space-y-5">
+      <Grid>
+        <Field label="Date du mariage">
+          <input type="date" className={inputCls} value={f.weddingDate} onChange={set("weddingDate")} />
+        </Field>
+        <Field label="Heure">
+          <input type="time" className={inputCls} value={f.weddingTime} onChange={set("weddingTime")} />
+        </Field>
+        <Field label="Date limite RSVP">
+          <input type="date" className={inputCls} value={f.rsvpDeadline} onChange={set("rsvpDeadline")} />
+        </Field>
+        <Field label="Téléphone (contact)">
+          <input className={inputCls} value={f.phone} onChange={set("phone")} placeholder="+213..." />
+        </Field>
+        <Field label="WhatsApp (contact)">
+          <input className={inputCls} value={f.whatsapp} onChange={set("whatsapp")} placeholder="+213..." />
+        </Field>
+      </Grid>
+
+      {/* RSVP companion settings */}
+      <div className="rounded-xl border border-gold/30 bg-white/50 p-4">
+        <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gold-dark">
+          Paramètres RSVP — Accompagnants
+        </p>
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input type="checkbox" checked={f.allowCompanions} onChange={set("allowCompanions")} />
+          Autoriser les accompagnants
+        </label>
+        {f.allowCompanions && (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <Field label="Nombre maximum d'accompagnants">
+              <input
+                type="number"
+                min={0}
+                max={10}
+                className={inputCls}
+                value={f.maxCompanions}
+                onChange={set("maxCompanions")}
+              />
+              <p className="mt-1 text-xs text-ink/50">
+                0 = aucun · l'invité principal n'est pas compté
+              </p>
+            </Field>
+            <Field label="Politique enfants">
+              <select
+                className={inputCls}
+                value={f.childrenAllowed ? "yes" : "no"}
+                onChange={(e) =>
+                  setF((prev) => ({ ...prev, childrenAllowed: e.target.value === "yes" }))
+                }
+              >
+                <option value="no">Enfants non autorisés</option>
+                <option value="yes">Enfants autorisés</option>
+              </select>
+            </Field>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -368,6 +410,12 @@ function Review({ f, requirePassword }) {
     ["Nom d'affichage", f.displayName || `${f.groomName} & ${f.brideName}`],
     ["Date", [f.weddingDate, f.weddingTime].filter(Boolean).join(" · ") || "—"],
     ["Date limite RSVP", f.rsvpDeadline || "—"],
+    [
+      "Accompagnants RSVP",
+      f.allowCompanions
+        ? `max ${parseInt(f.maxCompanions, 10) || 0} · enfants ${f.childrenAllowed ? "autorisés" : "non autorisés"}`
+        : "désactivés",
+    ],
     ["Lieu", [f.locationName, f.address].filter(Boolean).join(", ") || "—"],
     ["Google Maps", f.googleMapsUrl || "—"],
     ["Hero", f.heroImage || "modèle par défaut"],
@@ -471,7 +519,7 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
       </h2>
 
       {step === 0 && <StepCouple f={f} set={set} />}
-      {step === 1 && <StepDetails f={f} set={set} />}
+      {step === 1 && <StepDetails f={f} set={set} setF={setF} />}
       {step === 2 && <StepVenue f={f} set={set} />}
       {step === 3 && <StepMedia f={f} set={set} setF={setF} />}
       {step === 4 && <StepProgram f={f} setF={setF} />}

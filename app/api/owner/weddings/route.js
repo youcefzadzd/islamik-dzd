@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { getAdminClient, generateWeddingId, sanitizeWedding } from "@/lib/wedding-service";
+import {
+  getAdminClient,
+  generateWeddingId,
+  sanitizeWedding,
+  normalizeRsvpSettings,
+} from "@/lib/wedding-service";
 import { hashPassword, safeEqual } from "@/lib/passwords";
 
 /** owner-only: gated by OWNER_PASSWORD from the environment */
@@ -94,6 +99,7 @@ export async function POST(request) {
     texts: body.texts || {},
     media: body.media || {},
     contact: body.contact || {},
+    rsvp_settings: normalizeRsvpSettings(body.rsvpSettings),
     dashboard_password_hash: hashPassword(body.dashboardPassword),
   };
 

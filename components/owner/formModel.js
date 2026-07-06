@@ -16,6 +16,7 @@ export function rowToForm(w = {}) {
   const theme = w.theme || {};
   const media = w.media || {};
   const contact = w.contact || {};
+  const rsvpSettings = w.rsvp_settings || {};
   return {
     // step 1 — couple & date
     groomName: w.groom_name || "",
@@ -27,6 +28,10 @@ export function rowToForm(w = {}) {
     weddingDate: w.wedding_date || "",
     weddingTime: w.wedding_time || "",
     rsvpDeadline: w.rsvp_deadline || "",
+    // RSVP companion settings
+    allowCompanions: rsvpSettings.allow_companions === true,
+    maxCompanions: String(rsvpSettings.max_companions ?? 0),
+    childrenAllowed: rsvpSettings.children_allowed === true,
     // step 2 — venue
     locationName: w.location_name || "",
     locationNameAr: texts.location?.nameAr || "",
@@ -119,6 +124,13 @@ export function formToBody(f) {
       openingSound: f.openingSound.trim() || undefined,
     },
     contact: { phone: f.phone.trim(), whatsapp: f.whatsapp.trim() },
+    rsvpSettings: {
+      allow_companions: f.allowCompanions === true,
+      max_companions: f.allowCompanions
+        ? Math.max(0, Math.min(10, parseInt(f.maxCompanions, 10) || 0))
+        : 0,
+      children_allowed: f.allowCompanions ? f.childrenAllowed === true : false,
+    },
     dashboardPassword: f.dashboardPassword || undefined,
   };
 }

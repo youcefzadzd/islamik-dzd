@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAdminClient, sanitizeWedding } from "@/lib/wedding-service";
+import { getAdminClient, sanitizeWedding, normalizeRsvpSettings } from "@/lib/wedding-service";
 import { hashPassword, safeEqual } from "@/lib/passwords";
 
 function guard(request) {
@@ -61,6 +61,11 @@ export async function PUT(request, { params }) {
     media: body.media || {},
     contact: body.contact || {},
   };
+  // only touch companion settings when the caller sends them (older
+  // clients that omit rsvpSettings keep the wedding's current value)
+  if (body.rsvpSettings !== undefined) {
+    patch.rsvp_settings = normalizeRsvpSettings(body.rsvpSettings);
+  }
   if (body.dashboardPassword) {
     patch.dashboard_password_hash = hashPassword(body.dashboardPassword);
   }

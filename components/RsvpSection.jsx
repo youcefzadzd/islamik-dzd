@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Reveal from "./Reveal";
 import SectionPanel from "./SectionPanel";
@@ -8,16 +8,56 @@ import { getSupabase } from "@/lib/supabase";
 
 export default function RsvpSection({ data }) {
   const rsvp = data.rsvp;
-  const [form, setForm] = useState({ name: "", attending: "yes", guests: "", message: "" });
+  const companionsCfg = rsvp.companions || { enabled: false, max: 0, childrenAllowed: false, t: {} };
+  const ct = companionsCfg.t || {};
+  const [form, setForm] = useState({ name: "", attending: "yes", message: "" });
+  const [companions, setCompanions] = useState([]); // [{ id, name, type: "adult" | "child" }]
+  const companionSeq = useRef(0);
+  const [formError, setFormError] = useState("");
   const [status, setStatus] = useState("idle"); // idle | submitting | success | error
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  const atMax = companions.length >= companionsCfg.max;
+
+  function addCompanion(type) {
+    if (atMax) return;
+    setFormError("");
+    setCompanions((list) => [...list, { id: ++companionSeq.current, name: "", type }]);
+  }
+
+  function updateCompanion(index, name) {
+    setFormError("");
+    setCompanions((list) => list.map((c, i) => (i === index ? { ...c, name } : c)));
+  }
+
+  function removeCompanion(index) {
+    setFormError("");
+    setCompanions((list) => list.filter((_, i) => i !== index));
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.name.trim() || status === "submitting") return;
+
+    const attending = form.attending === "yes";
+    const list = attending && companionsCfg.enabled ? companions.slice(0, companionsCfg.max) : [];
+    if (list.some((c) => !c.name.trim())) {
+      setFormError(ct.missingName || "");
+      return;
+    }
+    setFormError("");
+
+    const cleaned = list.map((c) => ({
+      name: c.name.trim(),
+      type: c.type === "child" ? "child" : "adult",
+    }));
+    const adultCount = attending ? 1 + cleaned.filter((c) => c.type === "adult").length : 0;
+    const childCount = attending ? cleaned.filter((c) => c.type === "child").length : 0;
+    const totalGuests = adultCount + childCount;
+
     setStatus("submitting");
     try {
       const supabase = getSupabase();
@@ -27,7 +67,11 @@ export default function RsvpSection({ data }) {
           wedding_id: rsvp.weddingId,
           guest_name: form.name.trim(),
           attendance_status: form.attending,
-          guest_count: form.attending === "yes" ? Number(form.guests) || 1 : 0,
+          guest_count: totalGuests, // kept in sync for backward compatibility
+          adult_count: adultCount,
+          child_count: childCount,
+          total_guests: totalGuests,
+          companions: attending ? cleaned : [],
           message: form.message.trim(),
           language: data.lang,
         });
@@ -36,7 +80,13 @@ export default function RsvpSection({ data }) {
         const res = await fetch(rsvp.submitEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify({
+            ...form,
+            adult_count: adultCount,
+            child_count: childCount,
+            total_guests: totalGuests,
+            companions: attending ? cleaned : [],
+          }),
         });
         if (!res.ok) throw new Error("submit failed");
       } else {
@@ -128,28 +178,69 @@ export default function RsvpSection({ data }) {
                   </div>
                 </div>
 
-                {form.attending === "yes" && (
+                {form.attending === "yes" && companionsCfg.enabled && (
                   <div>
-                    <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
-                      {rsvp.guestsLabel}
+                    <label className="mb-3 block text-xs uppercase tracking-widest text-gold-dark">
+                      {ct.title}
                     </label>
-                    <select
-                      required
-                      value={form.guests}
-                      onChange={(e) => update("guests", e.target.value)}
-                      className={`w-full border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy ${
-                        form.guests === "" ? "text-ink/50" : ""
-                      }`}
-                    >
-                      <option value="" disabled>
-                        {rsvp.guestsPlaceholder}
-                      </option>
-                      {rsvp.guestsOptions.map((label, n) => (
-                        <option key={label} value={n + 1}>
-                          {label}
-                        </option>
+
+                    <AnimatePresence initial={false}>
+                      {companions.map((c, i) => (
+                        <motion.div
+                          key={c.id}
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          className="mb-3 rounded-xl border border-gold/40 bg-white/40 px-4 py-3"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="rounded-full border border-gold/50 px-3 py-0.5 text-xs uppercase tracking-wider text-gold-dark">
+                              {c.type === "child" ? ct.child : ct.adult}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => removeCompanion(i)}
+                              className="rounded-full border border-burgundy/40 px-3 py-0.5 text-xs uppercase tracking-wider text-burgundy transition-colors hover:bg-burgundy hover:text-ivory-light"
+                            >
+                              {ct.remove}
+                            </button>
+                          </div>
+                          <input
+                            value={c.name}
+                            onChange={(e) => updateCompanion(i, e.target.value)}
+                            className="mt-2 w-full border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
+                            placeholder={ct.nameLabel}
+                            aria-label={ct.nameLabel}
+                          />
+                        </motion.div>
                       ))}
-                    </select>
+                    </AnimatePresence>
+
+                    {atMax ? (
+                      <p className="font-body text-sm italic text-ink/60">{ct.maxReached}</p>
+                    ) : (
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <button
+                          type="button"
+                          onClick={() => addCompanion("adult")}
+                          className="flex-1 rounded-full border border-gold/50 px-4 py-2.5 font-body text-sm text-gold-dark transition-colors hover:bg-ivory-dark"
+                        >
+                          {ct.addAdult}
+                        </button>
+                        {companionsCfg.childrenAllowed && (
+                          <button
+                            type="button"
+                            onClick={() => addCompanion("child")}
+                            className="flex-1 rounded-full border border-gold/50 px-4 py-2.5 font-body text-sm text-gold-dark transition-colors hover:bg-ivory-dark"
+                          >
+                            {ct.addChild}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {!companionsCfg.childrenAllowed && (
+                      <p className="mt-2 font-body text-sm italic text-ink/60">{ct.noChildrenNote}</p>
+                    )}
                   </div>
                 )}
 
@@ -190,6 +281,7 @@ export default function RsvpSection({ data }) {
                   <p className="mt-3 font-body text-sm italic text-ink/60">{rsvp.sealButtonHint}</p>
                 </div>
 
+                {formError && <p className="text-center text-sm text-burgundy">{formError}</p>}
                 {status === "error" && (
                   <p className="text-center text-sm text-burgundy">{rsvp.errorMessage}</p>
                 )}
