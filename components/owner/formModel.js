@@ -28,10 +28,16 @@ export function rowToForm(w = {}) {
     weddingDate: w.wedding_date || "",
     weddingTime: w.wedding_time || "",
     rsvpDeadline: w.rsvp_deadline || "",
-    // RSVP companion settings
+    // RSVP companion settings (max_companions = legacy combined limit)
     allowCompanions: rsvpSettings.allow_companions === true,
-    maxCompanions: String(rsvpSettings.max_companions ?? 0),
+    maxAdultCompanions: String(
+      rsvpSettings.max_adult_companions ?? rsvpSettings.max_companions ?? 0
+    ),
     childrenAllowed: rsvpSettings.children_allowed === true,
+    maxChildren: String(
+      rsvpSettings.max_children ??
+        (rsvpSettings.children_allowed === true ? rsvpSettings.max_companions ?? 0 : 0)
+    ),
     // step 2 — venue
     locationName: w.location_name || "",
     locationNameAr: texts.location?.nameAr || "",
@@ -126,10 +132,14 @@ export function formToBody(f) {
     contact: { phone: f.phone.trim(), whatsapp: f.whatsapp.trim() },
     rsvpSettings: {
       allow_companions: f.allowCompanions === true,
-      max_companions: f.allowCompanions
-        ? Math.max(0, Math.min(10, parseInt(f.maxCompanions, 10) || 0))
+      max_adult_companions: f.allowCompanions
+        ? Math.max(0, Math.min(10, parseInt(f.maxAdultCompanions, 10) || 0))
         : 0,
       children_allowed: f.allowCompanions ? f.childrenAllowed === true : false,
+      max_children:
+        f.allowCompanions && f.childrenAllowed === true
+          ? Math.max(0, Math.min(10, parseInt(f.maxChildren, 10) || 0))
+          : 0,
     },
     dashboardPassword: f.dashboardPassword || undefined,
   };

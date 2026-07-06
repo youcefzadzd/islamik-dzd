@@ -8,7 +8,8 @@ import { getSupabase } from "@/lib/supabase";
 
 export default function RsvpSection({ data }) {
   const rsvp = data.rsvp;
-  const companionsCfg = rsvp.companions || { enabled: false, max: 0, childrenAllowed: false, t: {} };
+  const companionsCfg =
+    rsvp.companions || { enabled: false, maxAdults: 0, childrenAllowed: false, maxChildren: 0, t: {} };
   const ct = companionsCfg.t || {};
   const [form, setForm] = useState({ name: "", attending: "yes", message: "" });
   const [companions, setCompanions] = useState([]); // [{ id, name, type: "adult" | "child" }]
@@ -20,10 +21,15 @@ export default function RsvpSection({ data }) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  const atMax = companions.length >= companionsCfg.max;
+  const adultCompanions = companions.filter((c) => c.type === "adult").length;
+  const childCompanions = companions.filter((c) => c.type === "child").length;
+  const atAdultMax = adultCompanions >= companionsCfg.maxAdults;
+  const atChildMax = childCompanions >= companionsCfg.maxChildren;
+  // nothing more can be added at all → show the "maximum reached" note
+  const atMax = atAdultMax && (!companionsCfg.childrenAllowed || atChildMax);
 
   function addCompanion(type) {
-    if (atMax) return;
+    if (type === "adult" ? atAdultMax : atChildMax) return;
     setFormError("");
     setCompanions((list) => [...list, { id: ++companionSeq.current, name: "", type }]);
   }
@@ -43,7 +49,16 @@ export default function RsvpSection({ data }) {
     if (!form.name.trim() || status === "submitting") return;
 
     const attending = form.attending === "yes";
-    const list = attending && companionsCfg.enabled ? companions.slice(0, companionsCfg.max) : [];
+    const withinLimits = (() => {
+      let adults = 0;
+      let children = 0;
+      return companions.filter((c) =>
+        c.type === "child"
+          ? companionsCfg.childrenAllowed && ++children <= companionsCfg.maxChildren
+          : ++adults <= companionsCfg.maxAdults
+      );
+    })();
+    const list = attending && companionsCfg.enabled ? withinLimits : [];
     if (list.some((c) => !c.name.trim())) {
       setFormError(ct.missingName || "");
       return;
@@ -220,14 +235,16 @@ export default function RsvpSection({ data }) {
                       <p className="font-body text-sm italic text-ink/60">{ct.maxReached}</p>
                     ) : (
                       <div className="flex flex-col gap-2 sm:flex-row">
-                        <button
-                          type="button"
-                          onClick={() => addCompanion("adult")}
-                          className="flex-1 rounded-full border border-gold/50 px-4 py-2.5 font-body text-sm text-gold-dark transition-colors hover:bg-ivory-dark"
-                        >
-                          {ct.addAdult}
-                        </button>
-                        {companionsCfg.childrenAllowed && (
+                        {!atAdultMax && (
+                          <button
+                            type="button"
+                            onClick={() => addCompanion("adult")}
+                            className="flex-1 rounded-full border border-gold/50 px-4 py-2.5 font-body text-sm text-gold-dark transition-colors hover:bg-ivory-dark"
+                          >
+                            {ct.addAdult}
+                          </button>
+                        )}
+                        {companionsCfg.childrenAllowed && !atChildMax && (
                           <button
                             type="button"
                             onClick={() => addCompanion("child")}

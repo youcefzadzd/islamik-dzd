@@ -133,31 +133,41 @@ function StepDetails({ f, set, setF }) {
         </label>
         {f.allowCompanions && (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <Field label="Nombre maximum d'accompagnants">
+            <Field label="Maximum d'accompagnants adultes (0-10)">
               <input
                 type="number"
                 min={0}
                 max={10}
                 className={inputCls}
-                value={f.maxCompanions}
-                onChange={set("maxCompanions")}
+                value={f.maxAdultCompanions}
+                onChange={set("maxAdultCompanions")}
               />
               <p className="mt-1 text-xs text-ink/50">
                 0 = aucun · l'invité principal n'est pas compté
               </p>
             </Field>
-            <Field label="Politique enfants">
-              <select
-                className={inputCls}
-                value={f.childrenAllowed ? "yes" : "no"}
-                onChange={(e) =>
-                  setF((prev) => ({ ...prev, childrenAllowed: e.target.value === "yes" }))
-                }
-              >
-                <option value="no">Enfants non autorisés</option>
-                <option value="yes">Enfants autorisés</option>
-              </select>
-            </Field>
+            <div>
+              <label className="mb-2 flex items-center gap-2 pt-1 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  checked={f.childrenAllowed}
+                  onChange={set("childrenAllowed")}
+                />
+                Autoriser les enfants
+              </label>
+              {f.childrenAllowed && (
+                <Field label="Maximum d'enfants (0-10)">
+                  <input
+                    type="number"
+                    min={0}
+                    max={10}
+                    className={inputCls}
+                    value={f.maxChildren}
+                    onChange={set("maxChildren")}
+                  />
+                </Field>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -413,7 +423,11 @@ function Review({ f, requirePassword }) {
     [
       "Accompagnants RSVP",
       f.allowCompanions
-        ? `max ${parseInt(f.maxCompanions, 10) || 0} · enfants ${f.childrenAllowed ? "autorisés" : "non autorisés"}`
+        ? `${parseInt(f.maxAdultCompanions, 10) || 0} adulte(s) max · ${
+            f.childrenAllowed
+              ? `${parseInt(f.maxChildren, 10) || 0} enfant(s) max`
+              : "enfants non autorisés"
+          }`
         : "désactivés",
     ],
     ["Lieu", [f.locationName, f.address].filter(Boolean).join(", ") || "—"],
