@@ -17,6 +17,17 @@ export function getDisplayText(value, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
+/* formal professional name casing — first letter of each word (also
+   after hyphens/apostrophes) capitalized, the rest lowercase:
+   "ABDELAZIZ JEFAL" / "abdelaziz jefal" → "Abdelaziz Jefal".
+   Arabic script has no letter case, so it passes through untouched. */
+export function toFormalName(value) {
+  if (typeof value !== "string") return value;
+  return value
+    .toLowerCase()
+    .replace(/(^|[\s\-'’])(\p{L})/gu, (m, sep, ch) => sep + ch.toUpperCase());
+}
+
 export const HERITAGE_DEFAULTS = {
   /* hero media — the template's own footage; the poster covers devices
      that refuse to play video at all */

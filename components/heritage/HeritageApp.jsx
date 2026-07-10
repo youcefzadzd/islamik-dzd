@@ -31,7 +31,7 @@ import Reveal from "../Reveal";
 import MusicPlayer from "../MusicPlayer";
 import HeritageRsvp from "./HeritageRsvp";
 import { HERITAGE_DEFAULT_GALLERY } from "./galleryConfig";
-import { HERITAGE_DEFAULTS, getDisplayText } from "./digitalInviteLuxuryDefaults";
+import { HERITAGE_DEFAULTS, getDisplayText, toFormalName } from "./digitalInviteLuxuryDefaults";
 
 const scriptFont = Great_Vibes({
   subsets: ["latin"],
@@ -1167,8 +1167,10 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
         ? invSaved.honoreeGender
         : "",
     basmala: getDisplayText(invSaved.basmala, HERITAGE_DEFAULTS.basmala),
-    fatherName: getDisplayText(invSaved.fatherName),
-    motherName: getDisplayText(invSaved.motherName),
+    /* parents' names in formal casing (Abdelaziz Jefal) however the
+       owner typed them; Arabic passes through unchanged */
+    fatherName: toFormalName(getDisplayText(invSaved.fatherName)),
+    motherName: toFormalName(getDisplayText(invSaved.motherName)),
     invitationText: getDisplayText(invSaved.invitationText, DEF.invitationText),
     mainTitle: getDisplayText(invSaved.mainTitle, lang === "ar" ? DEF.invitationTitle : ""),
     brideName: getDisplayText(invSaved.brideName),
