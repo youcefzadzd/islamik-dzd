@@ -25,7 +25,7 @@ import {
   useMotionTemplate,
   useReducedMotion,
 } from "framer-motion";
-import { Great_Vibes, Montserrat, Pinyon_Script } from "next/font/google";
+import { Allura, Great_Vibes, Montserrat, Pinyon_Script } from "next/font/google";
 import { getData } from "@/lib/i18n";
 import Reveal from "../Reveal";
 import MusicPlayer from "../MusicPlayer";
@@ -53,6 +53,15 @@ const monogramFont = Pinyon_Script({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-heritage-monogram",
+  display: "swap",
+});
+
+/* luxury handwritten signature — used ONLY for the bride's name line in
+   the invitation section (Arabic names fall back to Amiri) */
+const brideFont = Allura({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-heritage-bride",
   display: "swap",
 });
 
@@ -1174,7 +1183,7 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
   const invItalic = lang === "ar" ? "" : "italic";
 
   return (
-    <div className={`heritage-root ${scriptFont.variable} ${sansFont.variable} ${monogramFont.variable}`}>
+    <div className={`heritage-root ${scriptFont.variable} ${sansFont.variable} ${monogramFont.variable} ${brideFont.variable}`}>
       <style dangerouslySetInnerHTML={{ __html: HERITAGE_VARS }} />
 
       {/* language pill (🌐 FR / AR) */}
@@ -1436,6 +1445,11 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   {inv.invitationText && (
                     <p className={`mt-4 text-lg leading-relaxed text-ink/65 ${invFont} ${invItalic}`}>
                       {inv.invitationText}
+                      {/* FR: the gendered word completes this very line —
+                          "…du mariage de leur fille" — the name itself
+                          stands alone below as a signature */}
+                      {lang !== "ar" && inv.honoreeGender === "male" && ` ${ui.son}`}
+                      {lang !== "ar" && inv.honoreeGender === "female" && ` ${ui.daughter}`}
                     </p>
                   )}
                 </Reveal>
@@ -1456,18 +1470,29 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
               )}
               {inv.brideName && (
                 <Reveal delay={0.2}>
-                  {/* honoree line — the phrase follows honoreeGender
-                      (male: ابنهما/leur fils · female: ابنتهما/leur
-                      fille); only the phrase is gendered, the name stays
-                      exactly as the owner typed it */}
-                  <p className={`mt-5 text-2xl text-gold-dark ${invFont}`}>
-                    {inv.honoreeGender === "male"
-                      ? `${ui.son} `
-                      : inv.honoreeGender === "female"
-                        ? `${ui.daughter} `
-                        : ""}
+                  {/* AR keeps the gendered word (ابنهما/ابنتهما) as its
+                      own quiet line right above the name */}
+                  {lang === "ar" && inv.honoreeGender && (
+                    <p className={`mt-5 text-lg leading-relaxed text-ink/65 ${invFont}`}>
+                      {inv.honoreeGender === "male" ? ui.son : ui.daughter}
+                    </p>
+                  )}
+                  {/* the name alone — a luxury handwritten signature:
+                      Allura 400, 58px on phones / 72px on desktop, the
+                      invitation's dark ink, generous breathing room */}
+                  <p
+                    className="mt-6 text-[58px] leading-[1.15] text-ink sm:text-[72px]"
+                    style={{
+                      fontFamily:
+                        "var(--font-heritage-bride), 'Italianno', var(--font-heritage-script), 'Amiri', cursive",
+                      fontWeight: 400,
+                    }}
+                  >
                     {inv.brideName}
                   </p>
+                  {/* thin gold divider — outlined heart centered between
+                      two hairlines, directly under the signature */}
+                  <HeartDivider className="mt-6" />
                 </Reveal>
               )}
               {(inv.dateIntro || inv.weddingDate || inv.time) && (
@@ -1493,9 +1518,12 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                     <p className={`mt-8 text-base text-ink/60 ${invFont}`}>{inv.hallIntro}</p>
                   )}
                   {inv.hallName && (
+                    /* hall name in the elegant high-contrast serif (the
+                       template's title face) — script fonts fall apart on
+                       latin all-caps venue names like "AB PARK" */
                     <p
                       dir="auto"
-                      className="mt-1 text-4xl text-gold-dark [font-family:var(--font-heritage-script)]"
+                      className={`mt-1 text-3xl font-medium tracking-[0.06em] text-gold-dark sm:text-4xl ${serifClass(lang)}`}
                     >
                       {inv.hallName}
                     </p>
