@@ -31,6 +31,7 @@ import Reveal from "../Reveal";
 import MusicPlayer from "../MusicPlayer";
 import HeritageRsvp from "./HeritageRsvp";
 import { HERITAGE_DEFAULT_GALLERY } from "./galleryConfig";
+import { HERITAGE_DEFAULTS, getDisplayText } from "./digitalInviteLuxuryDefaults";
 
 const scriptFont = Great_Vibes({
   subsets: ["latin"],
@@ -157,7 +158,7 @@ const UI = {
   },
   ar: {
     open: "اضغطوا على الختم للفتح",
-    programSub: "ما أعددناه لأجلكم",
+    programSub: "ما أعددناه لكم في هذا اليوم المميز",
     rsvpCta: "تأكيد الحضور",
     galleryEyebrow: "ذكرياتنا",
     galleryTitle: "لحظات من فرحتنا",
@@ -943,6 +944,47 @@ function HeritageGallery({ images }) {
   );
 }
 
+/* ---------- hero video with a full fallback chain ----------
+   owner's video → (load error) template default video → (that fails
+   too, or the device refuses playback) the template poster image.
+   The hero section itself never disappears: the cream gradients behind
+   it always render, and the poster attribute covers devices that block
+   autoplay (e.g. iPhone low-power mode). Muted/inline/looped — sound is
+   never relied on. */
+function HeroVideo({ src }) {
+  // 0 = play the given src · 1 = play the template default · 2 = poster
+  const [stage, setStage] = useState(0);
+  useEffect(() => setStage(src === HERITAGE_DEFAULTS.heroVideo ? 1 : 0), [src]);
+
+  if (stage === 2) {
+    return (
+      <img
+        src={HERITAGE_DEFAULTS.heroPoster}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ filter: "brightness(1.12) saturate(0.78) contrast(0.9)" }}
+      />
+    );
+  }
+  const activeSrc = stage === 0 ? src : HERITAGE_DEFAULTS.heroVideo;
+  return (
+    <video
+      key={activeSrc}
+      src={activeSrc}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      poster={HERITAGE_DEFAULTS.heroPoster}
+      onError={() => setStage(stage === 0 ? 1 : 2)}
+      className="absolute inset-0 h-full w-full object-cover"
+      style={{ filter: "brightness(1.12) saturate(0.78) contrast(0.9)" }}
+    />
+  );
+}
+
 /* ---------- minimal countdown row for the cream hero ---------- */
 function HeritageCountdown({ data }) {
   // `now` stays null during SSR/hydration so server and client render the
@@ -1037,6 +1079,8 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
   }, [lang, weddingIdOverride, initialData]);
 
   const ui = UI[lang] || UI.fr;
+  /* template display defaults for the current language (never persisted) */
+  const DEF = HERITAGE_DEFAULTS[lang] || HERITAGE_DEFAULTS.fr;
   const calendarUrl = useMemo(() => googleCalendarUrl(data), [data]);
   const hashtag = useMemo(() => hashtagOf(data), [data]);
   /* wax-seal monogram: first letter of each name. Latin names preferred
@@ -1090,8 +1134,26 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
     );
     return (owner.length ? owner : HERITAGE_DEFAULT_GALLERY).slice(0, 8);
   }, [data]);
-  /* Wedding Invitation section: the owner's own words for this language */
-  const inv = data.invitation || null;
+  /* Wedding Invitation section: the owner's words for this language,
+     each line falling back to the template default when left empty.
+     Personal fields (names, footer message) get NO invented default —
+     they simply hide; date/time/venue fall back to the real values the
+     owner already saved in the standard dashboard fields. */
+  const invSaved = data.invitation || {};
+  const inv = {
+    basmala: getDisplayText(invSaved.basmala, HERITAGE_DEFAULTS.basmala),
+    fatherName: getDisplayText(invSaved.fatherName),
+    motherName: getDisplayText(invSaved.motherName),
+    invitationText: getDisplayText(invSaved.invitationText, DEF.invitationText),
+    mainTitle: getDisplayText(invSaved.mainTitle, lang === "ar" ? DEF.invitationTitle : ""),
+    brideName: getDisplayText(invSaved.brideName),
+    dateIntro: getDisplayText(invSaved.dateIntro, DEF.dateIntro),
+    weddingDate: getDisplayText(invSaved.weddingDate, data.event.displayDate),
+    time: getDisplayText(invSaved.time, data.event.displayTime),
+    hallIntro: getDisplayText(invSaved.hallIntro, DEF.hallIntro),
+    hallName: getDisplayText(invSaved.hallName, data.location.venueName || ""),
+    footerMessage: getDisplayText(invSaved.footerMessage),
+  };
   const invFont = lang === "ar" ? "font-arabicText" : "font-body";
   const invItalic = lang === "ar" ? "" : "italic";
 
@@ -1170,25 +1232,16 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   "radial-gradient(90% 40% at 50% 100%, rgb(230 196 162 / 0.3), transparent 70%)",
               }}
             >
-              {/* optional hero VIDEO (owner-uploaded, muted/looped —
-                  Safari-safe): plays softly behind the texts under a
-                  cream veil that keeps everything readable */}
-              {/* hero VIDEO shown at full clarity — no veil; a hair-light
-                  gradient at the very bottom only eases into the next
-                  section */}
-              {data.assets.heroVideo && (
+              {/* hero VIDEO — ALWAYS present: the owner's footage when
+                  set, else the template's own default; HeroVideo handles
+                  broken sources and playback-refusing devices (poster).
+                  Shown at full clarity with the editorial color grade;
+                  a hair-light gradient at the very bottom eases into the
+                  next section */}
+              {(
                 <>
-                  {/* editorial color grade (CSS only, footage untouched):
-                      brighter, airier, softer contrast, tamed reds */}
-                  <video
-                    src={data.assets.heroVideo}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    className="absolute inset-0 h-full w-full object-cover"
-                    style={{ filter: "brightness(1.12) saturate(0.78) contrast(0.9)" }}
+                  <HeroVideo
+                    src={getDisplayText(data.assets.heroVideo, HERITAGE_DEFAULTS.heroVideo)}
                   />
                   {/* warm soft-light wash — lifts shadows, keeps Morocco warm */}
                   <div
@@ -1227,15 +1280,15 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   key="eyebrow"
                   className={`text-[0.72rem] uppercase tracking-[0.4em] text-gold-dark ${sansClass}`}
                 >
-                  {data.hero.eyebrow}
+                  {getDisplayText(data.hero.eyebrow, DEF.heroEyebrow)}
                 </p>,
                 <h1
                   key="names"
                   className={`mt-6 text-5xl leading-tight text-ink sm:text-7xl ${scriptClass(lang)}`}
                 >
-                  {data.couple.groomName}
+                  {getDisplayText(data.couple.groomName, DEF.groomName)}
                   <span className="mx-3 align-middle text-4xl text-gold sm:text-5xl">&amp;</span>
-                  {data.couple.brideName}
+                  {getDisplayText(data.couple.brideName, DEF.brideName)}
                 </h1>,
                 <div
                   key="ornament"
@@ -1250,7 +1303,7 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   key="date"
                   className={`mt-6 text-sm uppercase tracking-[0.35em] text-ink/70 ${sansClass}`}
                 >
-                  {data.event.displayDate}
+                  {getDisplayText(data.event.displayDate, DEF.heroDate)}
                 </p>,
                 <HeritageCountdown key="countdown" data={data} />,
                 <DovesOrnament key="doves" className="mt-12" />,
@@ -1615,7 +1668,11 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                 <SectionDivider className="mb-12" />
               </Reveal>
               <Reveal>
-                <SectionHeading eyebrow={ui.beOurGuest} title={data.rsvp.heading} lang={lang} />
+                <SectionHeading
+                  eyebrow={ui.beOurGuest}
+                  title={getDisplayText(data.rsvp.heading, DEF.rsvpTitle)}
+                  lang={lang}
+                />
               </Reveal>
               <p className={`mx-auto -mt-4 mb-9 max-w-md text-center text-base leading-relaxed text-ink/70 ${sansClass}`}>
                 {data.rsvp.subheading}
