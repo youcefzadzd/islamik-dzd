@@ -31,8 +31,9 @@ export const HERITAGE_DEFAULTS = {
     groomName: "Alexandre",
     brideName: "Diane",
     heroDate: "18 Septembre 2026",
+    /* the gendered "leur fils/leur fille [nom]" line follows separately */
     invitationText:
-      "ont l’immense plaisir de vous convier à la célébration du mariage de leur fille",
+      "ont l’immense plaisir de vous convier à la célébration du mariage de",
     dateIntro: "qui sera célébré, si Dieu le veut,",
     hallIntro: "à la salle",
     rsvpTitle: "Confirmez votre présence",

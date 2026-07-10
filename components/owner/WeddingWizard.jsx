@@ -344,8 +344,37 @@ function StepInvitation({ f, setF }) {
       <p className="text-sm text-ink/60">
         Section « Wedding Invitation » (modèle Heritage) : chaque ligne est
         affichée telle quelle selon la langue choisie par l'invité. Les
-        champs vides sont masqués.
+        champs vides sont masqués. Les noms du père et de la mère sont
+        obligatoires.
       </p>
+
+      {/* gender of the celebrated person — one technical value
+          (honoree_gender: male | female), the template swaps the phrase
+          ابنهما/ابنتهما · leur fils/leur fille accordingly */}
+      <fieldset className="rounded-xl border border-gold/30 bg-white/50 p-4">
+        <legend className="px-2 text-sm font-semibold text-ink">
+          جنس صاحب/صاحبة الدعوة — Genre de la personne célébrée
+        </legend>
+        <div className="flex flex-wrap gap-4">
+          {[
+            ["male", "رجل — Homme"],
+            ["female", "امرأة — Femme"],
+          ].map(([value, label]) => (
+            <label key={value} className="flex cursor-pointer items-center gap-2 text-sm text-ink">
+              <input
+                type="radio"
+                name="honoreeGender"
+                value={value}
+                checked={f.honoreeGender === value}
+                onChange={() => setF((prev) => ({ ...prev, honoreeGender: value }))}
+                className="accent-burgundy"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
       <InvitationGroup
         title="العربية — Arabic"
         group={f.invitationAr || {}}
@@ -578,6 +607,15 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
   function validate(i) {
     if (i === 0 && (!f.groomName.trim() || !f.brideName.trim()))
       return "Les deux prénoms (FR) sont obligatoires.";
+    if (i === 4 && f.template === "heritage") {
+      /* Heritage: the parents' names are mandatory in BOTH language
+         groups — the invitation must never publish without them */
+      const empty = (v) => !(typeof v === "string" && v.trim());
+      if (empty(f.invitationAr?.fatherName)) return "اسم الأب مطلوب";
+      if (empty(f.invitationAr?.motherName)) return "اسم الأم مطلوب";
+      if (empty(f.invitationFr?.fatherName)) return "Le nom du père est obligatoire";
+      if (empty(f.invitationFr?.motherName)) return "Le nom de la mère est obligatoire";
+    }
     if (i === 6 && requirePassword && !f.dashboardPassword)
       return "Le mot de passe du client est obligatoire.";
     if (i === 6 && !f.langFr && !f.langAr) return "Activez au moins une langue.";
@@ -592,7 +630,7 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
   }
 
   function finish() {
-    const err = validate(0) || validate(6);
+    const err = validate(0) || validate(4) || validate(6);
     if (err) return setStepError(err);
     setStepError("");
     onFinish(formToBody(f));

@@ -98,6 +98,13 @@ export function rowToForm(w = {}) {
     textColor: theme.textColor || "#5A4636",
     invitationAr: invitationGroupToForm(texts.invitation?.ar),
     invitationFr: invitationGroupToForm(texts.invitation?.fr),
+    /* language-independent: gender of the celebrated person (male|female),
+       drives the "ابنهما/ابنتهما · leur fils/leur fille" phrase */
+    honoreeGender:
+      texts.invitation?.honoreeGender === "male" ||
+      texts.invitation?.honoreeGender === "female"
+        ? texts.invitation.honoreeGender
+        : "",
     heroTitleFr: texts.fr?.heroTitle || "",
     heroTitleAr: texts.ar?.heroTitle || "",
     rsvpTitleFr: texts.fr?.rsvpTitle || "",
@@ -158,7 +165,11 @@ export function formToBody(f) {
       invitation: (() => {
         const ar = invitationGroupToBody(f.invitationAr || {});
         const fr = invitationGroupToBody(f.invitationFr || {});
-        return ar || fr ? { ar, fr } : undefined;
+        const honoreeGender =
+          f.honoreeGender === "male" || f.honoreeGender === "female"
+            ? f.honoreeGender
+            : undefined;
+        return ar || fr || honoreeGender ? { ar, fr, honoreeGender } : undefined;
       })(),
     },
     media: {

@@ -144,6 +144,12 @@ const HERITAGE_VARS = `
 const UI = {
   fr: {
     open: "Touchez le sceau pour ouvrir",
+    /* invitation-line framing (template chrome around the owner's names) */
+    fatherPrefix: "Monsieur ",
+    fatherSuffix: "",
+    motherPrefix: "et son épouse ",
+    son: "leur fils",
+    daughter: "leur fille",
     programSub: "Ce que nous avons préparé pour vous",
     rsvpCta: "Confirm Attendance",
     galleryEyebrow: "Nos souvenirs",
@@ -158,6 +164,12 @@ const UI = {
   },
   ar: {
     open: "اضغطوا على الختم للفتح",
+    /* invitation-line framing (template chrome around the owner's names) */
+    fatherPrefix: "السيد ",
+    fatherSuffix: " وحرمه",
+    motherPrefix: "",
+    son: "ابنهما",
+    daughter: "ابنتهما",
     programSub: "ما أعددناه لكم في هذا اليوم المميز",
     rsvpCta: "تأكيد الحضور",
     galleryEyebrow: "ذكرياتنا",
@@ -1141,6 +1153,10 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
      owner already saved in the standard dashboard fields. */
   const invSaved = data.invitation || {};
   const inv = {
+    honoreeGender:
+      invSaved.honoreeGender === "male" || invSaved.honoreeGender === "female"
+        ? invSaved.honoreeGender
+        : "",
     basmala: getDisplayText(invSaved.basmala, HERITAGE_DEFAULTS.basmala),
     fatherName: getDisplayText(invSaved.fatherName),
     motherName: getDisplayText(invSaved.motherName),
@@ -1401,13 +1417,21 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
               )}
               {(inv.fatherName || inv.motherName || inv.invitationText) && (
                 <Reveal delay={0.08}>
+                  {/* the template frames the RAW names: "السيد X وحرمه"
+                      + "Y" in Arabic, "Monsieur X" + "et son épouse Y"
+                      in French — the owner types only the names */}
                   {inv.fatherName && (
                     <p className={`mt-9 text-2xl leading-relaxed text-ink/90 ${invFont}`}>
+                      {ui.fatherPrefix}
                       {inv.fatherName}
+                      {ui.fatherSuffix}
                     </p>
                   )}
                   {inv.motherName && (
-                    <p className={`mt-1 text-2xl text-ink/90 ${invFont}`}>{inv.motherName}</p>
+                    <p className={`mt-1 text-2xl text-ink/90 ${invFont}`}>
+                      {ui.motherPrefix}
+                      {inv.motherName}
+                    </p>
                   )}
                   {inv.invitationText && (
                     <p className={`mt-4 text-lg leading-relaxed text-ink/65 ${invFont} ${invItalic}`}>
@@ -1432,7 +1456,18 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
               )}
               {inv.brideName && (
                 <Reveal delay={0.2}>
-                  <p className={`mt-5 text-2xl text-gold-dark ${invFont}`}>{inv.brideName}</p>
+                  {/* honoree line — the phrase follows honoreeGender
+                      (male: ابنهما/leur fils · female: ابنتهما/leur
+                      fille); only the phrase is gendered, the name stays
+                      exactly as the owner typed it */}
+                  <p className={`mt-5 text-2xl text-gold-dark ${invFont}`}>
+                    {inv.honoreeGender === "male"
+                      ? `${ui.son} `
+                      : inv.honoreeGender === "female"
+                        ? `${ui.daughter} `
+                        : ""}
+                    {inv.brideName}
+                  </p>
                 </Reveal>
               )}
               {(inv.dateIntro || inv.weddingDate || inv.time) && (
