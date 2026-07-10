@@ -2,6 +2,7 @@
  * Wizard data model: wedding row <-> form state <-> API body.
  * Anything left empty falls back to the wedding-config.json template.
  */
+import { normalizeTemplateId } from "@/lib/templates";
 
 export const EMPTY_PROGRAM_STEP = {
   time: "",
@@ -9,6 +10,35 @@ export const EMPTY_PROGRAM_STEP = {
   title_ar: "",
   description_fr: "",
   description_ar: "",
+};
+
+/* Wedding Invitation section (Heritage template): one group of fully
+   owner-edited lines per language, stored in texts.invitation.{ar,fr} */
+export const INVITATION_FIELDS = [
+  "basmala",
+  "fatherName",
+  "motherName",
+  "invitationText",
+  "mainTitle",
+  "brideName",
+  "dateIntro",
+  "weddingDate",
+  "time",
+  "hallIntro",
+  "hallName",
+  "footerMessage",
+];
+
+const invitationGroupToForm = (g = {}) =>
+  Object.fromEntries(INVITATION_FIELDS.map((k) => [k, g?.[k] || ""]));
+
+const invitationGroupToBody = (g = {}) => {
+  const out = {};
+  for (const k of INVITATION_FIELDS) {
+    const v = (g[k] || "").trim();
+    if (v) out[k] = v;
+  }
+  return Object.keys(out).length ? out : undefined;
 };
 
 export function rowToForm(w = {}) {
@@ -47,6 +77,7 @@ export function rowToForm(w = {}) {
     mapEmbedUrl: media.mapEmbedUrl || "",
     // step 3 — media
     heroImage: media.heroImage || "",
+    heroVideo: media.heroVideo || "",
     thankYouImage: media.thankYouImage || "",
     galleryText: Array.isArray(media.gallery) ? media.gallery.join("\n") : "",
     music: media.music || "",
@@ -57,6 +88,7 @@ export function rowToForm(w = {}) {
         ? w.program
         : [{ ...EMPTY_PROGRAM_STEP }],
     // step 5 — settings
+    template: normalizeTemplateId(theme.template),
     defaultLanguage: w.default_language || "fr",
     langFr: (w.languages || ["fr", "ar"]).includes("fr"),
     langAr: (w.languages || ["fr", "ar"]).includes("ar"),
@@ -64,6 +96,8 @@ export function rowToForm(w = {}) {
     goldColor: theme.goldColor || "#C6A15B",
     backgroundColor: theme.backgroundColor || "#F8F3EA",
     textColor: theme.textColor || "#5A4636",
+    invitationAr: invitationGroupToForm(texts.invitation?.ar),
+    invitationFr: invitationGroupToForm(texts.invitation?.fr),
     heroTitleFr: texts.fr?.heroTitle || "",
     heroTitleAr: texts.ar?.heroTitle || "",
     rsvpTitleFr: texts.fr?.rsvpTitle || "",
@@ -104,6 +138,7 @@ export function formToBody(f) {
     languages: languages.length ? languages : ["fr", "ar"],
     program: f.program.filter((s) => s.time && (s.title_fr || s.title_ar)),
     theme: {
+      template: normalizeTemplateId(f.template),
       primaryColor: f.primaryColor,
       goldColor: f.goldColor,
       backgroundColor: f.backgroundColor,
@@ -120,10 +155,16 @@ export function formToBody(f) {
       },
       fr: langTexts(f.heroTitleFr, f.rsvpTitleFr, f.rsvpSubtitleFr),
       ar: langTexts(f.heroTitleAr, f.rsvpTitleAr, f.rsvpSubtitleAr),
+      invitation: (() => {
+        const ar = invitationGroupToBody(f.invitationAr || {});
+        const fr = invitationGroupToBody(f.invitationFr || {});
+        return ar || fr ? { ar, fr } : undefined;
+      })(),
     },
     media: {
       mapEmbedUrl: f.mapEmbedUrl.trim() || undefined,
       heroImage: f.heroImage.trim() || undefined,
+      heroVideo: f.heroVideo.trim() || undefined,
       thankYouImage: f.thankYouImage.trim() || undefined,
       gallery: gallery.length ? gallery : undefined,
       music: f.music.trim() || undefined,

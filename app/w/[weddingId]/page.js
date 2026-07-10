@@ -1,8 +1,16 @@
 import InvitationApp from "@/components/InvitationApp";
+import HeritageApp from "@/components/heritage/HeritageApp";
 import InvitationNotFound from "@/components/InvitationNotFound";
 import { buildAllData } from "@/lib/config-adapter";
 import { getWeddingByPublicId, rowToOverrides } from "@/lib/wedding-service";
+import { templateIdFromRow } from "@/lib/templates";
 import config from "@/wedding-config.json";
+
+/* one renderer per live template in lib/templates.js */
+const TEMPLATE_RENDERERS = {
+  "islamic-royal": InvitationApp,
+  heritage: HeritageApp,
+};
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +26,8 @@ export default async function WeddingPage({ params }) {
   const { configured, wedding } = await getWeddingByPublicId(weddingId);
 
   if (wedding) {
-    return <InvitationApp initialData={buildAllData(rowToOverrides(wedding))} />;
+    const Renderer = TEMPLATE_RENDERERS[templateIdFromRow(wedding)] || InvitationApp;
+    return <Renderer initialData={buildAllData(rowToOverrides(wedding))} />;
   }
 
   // template/demo wedding from the local config keeps working

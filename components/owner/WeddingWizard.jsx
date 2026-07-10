@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { EMPTY_PROGRAM_STEP, formToBody } from "./formModel";
+import { EMPTY_PROGRAM_STEP, INVITATION_FIELDS, formToBody } from "./formModel";
 import { ownerHeaders } from "./shared";
+import { TEMPLATES, getTemplate, DEFAULT_TEMPLATE_ID } from "@/lib/templates";
 
-const STEPS = ["Couple", "Détails", "Lieu", "Médias", "Programme", "Design", "Résumé"];
+const STEPS = ["Couple", "Détails", "Lieu", "Médias", "Invitation", "Programme", "Design", "Résumé"];
 
 const inputCls =
   "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-burgundy";
@@ -211,6 +212,13 @@ function StepMedia({ f, set, setF }) {
         placeholder="/assets/hero-background.webp"
       />
       <UploadField
+        label="Vidéo du hero (mp4, optionnel — modèle Heritage)"
+        value={f.heroVideo}
+        onChange={(v) => setF((p) => ({ ...p, heroVideo: v }))}
+        accept="video/mp4,video/webm"
+        placeholder="https://…/hero.mp4"
+      />
+      <UploadField
         label="Image de la page finale"
         value={f.thankYouImage}
         onChange={(v) => setF((p) => ({ ...p, thankYouImage: v }))}
@@ -277,6 +285,83 @@ function GalleryUploader({ onUploaded }) {
   );
 }
 
+/* Wedding Invitation section (Heritage) — every line is owner-edited,
+   one field group per language; nothing is hardcoded in the template */
+const INVITATION_LABELS = {
+  basmala: "Basmala",
+  fatherName: "Nom du père",
+  motherName: "Nom de la mère",
+  invitationText: "Texte d'invitation",
+  mainTitle: "Titre principal",
+  brideName: "Nom de la mariée",
+  dateIntro: "Intro de la date",
+  weddingDate: "Date (texte affiché)",
+  time: "Heure (texte affiché)",
+  hallIntro: "Intro de la salle",
+  hallName: "Nom de la salle",
+  footerMessage: "Message de clôture",
+};
+const INVITATION_TEXTAREAS = new Set(["invitationText", "footerMessage"]);
+
+function InvitationGroup({ title, group, rtl, onChange }) {
+  return (
+    <fieldset className="rounded-xl border border-gold/30 bg-white/50 p-4">
+      <legend className="px-2 text-sm font-semibold text-ink">{title}</legend>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {INVITATION_FIELDS.map((key) => (
+          <Field key={key} label={INVITATION_LABELS[key]} full={INVITATION_TEXTAREAS.has(key)}>
+            {INVITATION_TEXTAREAS.has(key) ? (
+              <textarea
+                dir={rtl ? "rtl" : "ltr"}
+                rows={2}
+                className={`${inputCls} resize-none`}
+                value={group[key] || ""}
+                onChange={(e) => onChange(key, e.target.value)}
+              />
+            ) : (
+              <input
+                dir={rtl ? "rtl" : "ltr"}
+                className={inputCls}
+                value={group[key] || ""}
+                onChange={(e) => onChange(key, e.target.value)}
+              />
+            )}
+          </Field>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function StepInvitation({ f, setF }) {
+  const setInv = (groupKey) => (field, value) =>
+    setF((prev) => ({
+      ...prev,
+      [groupKey]: { ...prev[groupKey], [field]: value },
+    }));
+  return (
+    <div className="space-y-5">
+      <p className="text-sm text-ink/60">
+        Section « Wedding Invitation » (modèle Heritage) : chaque ligne est
+        affichée telle quelle selon la langue choisie par l'invité. Les
+        champs vides sont masqués.
+      </p>
+      <InvitationGroup
+        title="العربية — Arabic"
+        group={f.invitationAr || {}}
+        rtl
+        onChange={setInv("invitationAr")}
+      />
+      <InvitationGroup
+        title="Français — French"
+        group={f.invitationFr || {}}
+        rtl={false}
+        onChange={setInv("invitationFr")}
+      />
+    </div>
+  );
+}
+
 function StepProgram({ f, setF }) {
   const setStep = (i, key, value) =>
     setF((prev) => ({
@@ -328,24 +413,39 @@ function StepProgram({ f, setF }) {
   );
 }
 
-function StepDesign({ f, set, requirePassword }) {
+function StepDesign({ f, setF, set, requirePassword }) {
+  const selected = f.template || DEFAULT_TEMPLATE_ID;
   return (
     <div className="space-y-5">
       <div>
         <label className={labelCls}>Modèle</label>
-        <div className="flex gap-3">
-          <div className="w-44 rounded-xl border-2 border-burgundy bg-white p-2 text-center">
-            <img
-              src="/assets/hero-background.webp"
-              alt=""
-              className="h-20 w-full rounded-lg object-cover"
-            />
-            <p className="mt-1 text-sm font-semibold text-ink">Islamic Royal</p>
-            <p className="text-[0.6rem] uppercase tracking-wider text-gold-dark">sélectionné</p>
-          </div>
-          <div className="flex w-44 items-center justify-center rounded-xl border border-dashed border-gold/40 p-2 text-center text-xs text-ink/40">
-            D'autres modèles arrivent bientôt
-          </div>
+        <div className="flex flex-wrap gap-3">
+          {TEMPLATES.map((t) =>
+            t.status === "live" ? (
+              <button
+                type="button"
+                key={t.id}
+                onClick={() => setF((p) => ({ ...p, template: t.id }))}
+                className={`w-44 rounded-xl border-2 bg-white p-2 text-center transition-colors ${
+                  selected === t.id ? "border-burgundy" : "border-gold/30 hover:border-gold"
+                }`}
+              >
+                <img src={t.preview} alt="" className="h-20 w-full rounded-lg object-cover" />
+                <p className="mt-1 text-sm font-semibold text-ink">{t.name}</p>
+                <p className="text-[0.6rem] uppercase tracking-wider text-gold-dark">
+                  {selected === t.id ? "sélectionné" : "choisir"}
+                </p>
+              </button>
+            ) : (
+              <div
+                key={t.id}
+                className="flex w-44 flex-col items-center justify-center rounded-xl border border-dashed border-gold/40 p-2 text-center text-xs text-ink/40"
+              >
+                <span className="font-medium">{t.name}</span>
+                <span>bientôt</span>
+              </div>
+            )
+          )}
         </div>
       </div>
 
@@ -433,11 +533,18 @@ function Review({ f, requirePassword }) {
     ["Lieu", [f.locationName, f.address].filter(Boolean).join(", ") || "—"],
     ["Google Maps", f.googleMapsUrl || "—"],
     ["Hero", f.heroImage || "modèle par défaut"],
+    [
+      "Invitation (texte)",
+      Object.values(f.invitationAr || {}).some((v) => (v || "").trim()) ||
+      Object.values(f.invitationFr || {}).some((v) => (v || "").trim())
+        ? "personnalisée ✓"
+        : "—",
+    ],
     ["Galerie", `${f.galleryText.split("\n").filter((s) => s.trim()).length || "modèle"} photo(s)`],
     ["Musique", f.music || "modèle par défaut"],
     ["Son d'ouverture", f.openingSound || "modèle par défaut"],
     ["Programme", `${f.program.filter((s) => s.time && (s.title_fr || s.title_ar)).length} événement(s)`],
-    ["Modèle", "Islamic Royal"],
+    ["Modèle", getTemplate(f.template)?.name || "Islamic Royal"],
     ["Couleurs", `${f.primaryColor} · ${f.goldColor} · ${f.backgroundColor}`],
     ["Langues", [f.langFr && "FR", f.langAr && "AR"].filter(Boolean).join(" · ") + ` (défaut : ${f.defaultLanguage.toUpperCase()})`],
     ["Contact", [f.phone, f.whatsapp].filter(Boolean).join(" · ") || "—"],
@@ -471,9 +578,9 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
   function validate(i) {
     if (i === 0 && (!f.groomName.trim() || !f.brideName.trim()))
       return "Les deux prénoms (FR) sont obligatoires.";
-    if (i === 5 && requirePassword && !f.dashboardPassword)
+    if (i === 6 && requirePassword && !f.dashboardPassword)
       return "Le mot de passe du client est obligatoire.";
-    if (i === 5 && !f.langFr && !f.langAr) return "Activez au moins une langue.";
+    if (i === 6 && !f.langFr && !f.langAr) return "Activez au moins une langue.";
     return "";
   }
 
@@ -485,7 +592,7 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
   }
 
   function finish() {
-    const err = validate(0) || validate(5);
+    const err = validate(0) || validate(6);
     if (err) return setStepError(err);
     setStepError("");
     onFinish(formToBody(f));
@@ -536,9 +643,10 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
       {step === 1 && <StepDetails f={f} set={set} setF={setF} />}
       {step === 2 && <StepVenue f={f} set={set} />}
       {step === 3 && <StepMedia f={f} set={set} setF={setF} />}
-      {step === 4 && <StepProgram f={f} setF={setF} />}
-      {step === 5 && <StepDesign f={f} set={set} requirePassword={requirePassword} />}
-      {step === 6 && <Review f={f} requirePassword={requirePassword} />}
+      {step === 4 && <StepInvitation f={f} setF={setF} />}
+      {step === 5 && <StepProgram f={f} setF={setF} />}
+      {step === 6 && <StepDesign f={f} setF={setF} set={set} requirePassword={requirePassword} />}
+      {step === 7 && <Review f={f} requirePassword={requirePassword} />}
 
       {(stepError || error) && <p className="mt-4 text-sm text-burgundy">{stepError || error}</p>}
 
