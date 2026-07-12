@@ -1,5 +1,6 @@
 import InvitationApp from "@/components/InvitationApp";
 import HeritageApp from "@/components/heritage/HeritageApp";
+import FloralRomanticApp from "@/components/floral-romantic/FloralRomanticApp";
 import InvitationNotFound from "@/components/InvitationNotFound";
 import { buildAllData } from "@/lib/config-adapter";
 import { getWeddingByPublicId, rowToOverrides } from "@/lib/wedding-service";
@@ -10,6 +11,7 @@ import config from "@/wedding-config.json";
 const TEMPLATE_RENDERERS = {
   "islamic-royal": InvitationApp,
   heritage: HeritageApp,
+  "floral-romantic": FloralRomanticApp,
 };
 
 export const dynamic = "force-dynamic";
