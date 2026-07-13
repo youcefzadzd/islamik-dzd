@@ -740,8 +740,9 @@ function RowDetails({
             ) : null}
           </ul>
 
-          {/* معلومات التسليم للزبون: رابط الدعوة + لوحة المتابعة + كلمة السر */}
-          {o.wedding_id ? (
+          {/* معلومات التسليم للزبون: رابط الدعوة + لوحة المتابعة + كلمة السر
+              — تظهر فقط بعد اكتمال المعلومات (Infos complètes) */}
+          {o.wedding_id && o.infos_complete ? (
             <div className="mt-3 space-y-1.5 rounded-xl bg-ivory-light p-3 text-xs text-ink/75">
               <p className="text-[0.65rem] font-bold uppercase tracking-wider text-ink/45">
                 Accès du client
