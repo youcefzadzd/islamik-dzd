@@ -13,8 +13,24 @@ const STATUSES = [
   { id: "delivering", label: "En livraison", cls: "bg-amber-100 text-amber-700" },
   { id: "delivered", label: "Livré", cls: "bg-emerald/10 text-emerald" },
   { id: "returned", label: "Retour", cls: "bg-rose-100 text-rose-700" },
+  { id: "cancelled", label: "Annulé", cls: "bg-ink/10 text-ink/50" },
 ];
 
+/* motifs محاولات الاتصال (نمط EcoManager) — عدّل القائمة بحرّية */
+const MOTIFS = [
+  "DAY 1 NRP 1",
+  "DAY 1 NRP 2",
+  "DAY 1 NRP 3 SMS",
+  "DAY 2 NRP 1",
+  "DAY 2 NRP 2",
+  "DAY 3 NRP 1",
+  "En attente de confirmation du client",
+  "Confirmer todkhol nb3toha",
+  "N3awdou n3aytolou ki todkhol",
+  "WhatsApp",
+];
+
+const LIVE_TEMPLATES = CATALOG.filter((c) => !c.comingSoon);
 const templateName = (id) => CATALOG.find((c) => c.id === id)?.name || id || "—";
 const packOf = (id) => PRICING.find((p) => p.id === id) || null;
 
@@ -34,6 +50,7 @@ export default function SiteOrders() {
   const [filter, setFilter] = useState("all");
   const [creatingId, setCreatingId] = useState(null); // طلب يجري إنشاء عرسه
   const [editorWedding, setEditorWedding] = useState(null); // WED-XXX المفتوح في نافذة التحرير
+  const [expandedId, setExpandedId] = useState(null); // الصف المفتوح بزر ➕
 
   async function load() {
     setLoadError("");
@@ -68,6 +85,10 @@ export default function SiteOrders() {
     return body.order;
   }
 
+  function applySaved(order) {
+    setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
+  }
+
   async function setStatus(id, status) {
     const before = orders;
     setOrders(orders.map((o) => (o.id === id ? { ...o, status } : o)));
@@ -78,10 +99,21 @@ export default function SiteOrders() {
     }
   }
 
+  async function deleteOrder(id) {
+    if (!window.confirm("Supprimer définitivement cette commande ?")) return;
+    const res = await fetch("/api/owner/site-orders", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", ...ownerHeaders() },
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) {
+      setExpandedId(null);
+      setOrders((prev) => prev.filter((o) => o.id !== id));
+    }
+  }
+
   /* «Modifier» = نافذة فيها محرر العرس الكامل لهذا الطلب:
-     أول ضغطة تُنشئ العرس من بيانات الطلب وتربطه به، ثم تفتح النافذة —
-     **دون تغيير حالة الطلب** (يبقى Nouveau).
-     زر «Confirmer» المنفصل هو الذي ينقله إلى En préparation. */
+     أول ضغطة تُنشئ العرس من بيانات الطلب وتربطه به — دون تغيير حالته. */
   async function openWedding(o) {
     if (o.wedding_id) {
       setEditorWedding(o.wedding_id);
@@ -110,7 +142,7 @@ export default function SiteOrders() {
       const weddingId = body.wedding?.wedding_id;
       if (!weddingId) throw new Error("Réponse inattendue du serveur.");
       const saved = await patchOrder(o.id, { weddingId });
-      setOrders((prev) => prev.map((x) => (x.id === o.id ? saved : x)));
+      applySaved(saved);
       setEditorWedding(weddingId);
     } catch (e) {
       setLoadError(e.message);
@@ -171,15 +203,16 @@ export default function SiteOrders() {
 
       {shown?.length > 0 && (
         <div className={`overflow-x-auto ${glass}`}>
-          <table className="w-full min-w-[920px] text-sm">
+          <table className="w-full min-w-[1000px] text-sm">
             <thead>
               <tr className="border-b border-gold/25 text-left text-xs uppercase tracking-wider text-ink/45">
+                <th className="w-10 px-3 py-3" />
                 <th className="px-4 py-3">Reçue le</th>
                 <th className="px-4 py-3">Couple</th>
+                <th className="px-4 py-3">Statut de confirmation</th>
                 <th className="px-4 py-3">Téléphone</th>
                 <th className="px-4 py-3">Modèle</th>
                 <th className="px-4 py-3">Pack</th>
-                <th className="px-4 py-3">Mariage</th>
                 <th className="px-4 py-3">Statut</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -190,72 +223,72 @@ export default function SiteOrders() {
                 const wa = customerWhatsApp(o.phone);
                 const st = STATUSES.find((s) => s.id === o.status) || STATUSES[0];
                 const busy = creatingId === o.id;
+                const open = expandedId === o.id;
                 return (
-                  <tr key={o.id} className="border-b border-gold/10 last:border-0 hover:bg-white/50">
-                    <td className="whitespace-nowrap px-4 py-3 text-ink/60">
-                      {(o.created_at || "").slice(0, 16).replace("T", " ")}
-                      <span className="ml-2 rounded bg-ivory-dark px-1.5 py-0.5 text-[0.65rem] uppercase text-ink/45">
-                        {o.lang}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 font-medium text-ink">
-                      {o.groom_name} & {o.bride_name}
-                      {o.venue ? (
-                        <span className="block text-xs font-normal text-ink/45">📍 {o.venue}</span>
-                      ) : null}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <span dir="ltr" className="tabular-nums text-ink/80">{o.phone}</span>
-                      <span className="ml-2 inline-flex gap-1.5 align-middle">
-                        <CopyButton text={o.phone} />
-                        {wa && (
-                          <a
-                            href={wa}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Ouvrir WhatsApp"
-                            className="rounded-md border border-emerald/40 px-2 py-0.5 text-xs text-emerald transition-colors hover:bg-emerald/10"
-                          >
-                            WhatsApp
-                          </a>
-                        )}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-ink/75">{templateName(o.template_id)}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-ink/75">
-                      {pack ? (
-                        <>
-                          {pack.name.fr}
-                          <span className="block text-xs text-ink/45">{formatDZD(pack.price, "fr")}</span>
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-ink/60">
-                      {o.wedding_id ? (
-                        <span className="rounded bg-emerald/10 px-1.5 py-0.5 text-xs font-semibold text-emerald">
-                          {o.wedding_id}
+                  <RowGroup key={o.id}>
+                    <tr
+                      className={`border-b border-gold/10 last:border-0 ${
+                        open ? "bg-white/70" : "hover:bg-white/50"
+                      }`}
+                    >
+                      <td className="px-3 py-3">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedId(open ? null : o.id)}
+                          aria-label={open ? "Réduire" : "Détails"}
+                          className={`flex h-7 w-7 items-center justify-center rounded-lg text-sm font-bold text-white transition-colors ${
+                            open ? "bg-burgundy" : "bg-sky-500 hover:bg-sky-600"
+                          }`}
+                        >
+                          {open ? "−" : "+"}
+                        </button>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-ink/60">
+                        {(o.created_at || "").slice(0, 16).replace("T", " ")}
+                        <span className="ml-2 rounded bg-ivory-dark px-1.5 py-0.5 text-[0.65rem] uppercase text-ink/45">
+                          {o.lang}
                         </span>
-                      ) : (
-                        o.wedding_date || "—"
-                      )}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <select
-                        value={o.status}
-                        onChange={(e) => setStatus(o.id, e.target.value)}
-                        className={`rounded-lg border border-gold/30 px-2 py-1 text-xs font-semibold outline-none ${st.cls}`}
-                      >
-                        {STATUSES.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.label}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
-                      <span className="inline-flex gap-1.5">
+                      </td>
+                      <td className="px-4 py-3 font-medium text-ink">
+                        {o.groom_name} & {o.bride_name}
+                        {o.wedding_id ? (
+                          <span className="ml-2 rounded bg-emerald/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-emerald">
+                            {o.wedding_id}
+                          </span>
+                        ) : null}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        {o.confirmation_status ? (
+                          <span className="rounded-full bg-gold/15 px-2.5 py-1 text-xs font-semibold text-gold-dark">
+                            {o.confirmation_status}
+                          </span>
+                        ) : (
+                          <span className="text-ink/30">—</span>
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <span dir="ltr" className="tabular-nums text-ink/80">{o.phone}</span>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-ink/75">
+                        {templateName(o.template_id)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-ink/75">
+                        {pack ? `${pack.name.fr} — ${formatDZD(pack.price, "fr")}` : "—"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <select
+                          value={o.status}
+                          onChange={(e) => setStatus(o.id, e.target.value)}
+                          className={`rounded-lg border border-gold/30 px-2 py-1 text-xs font-semibold outline-none ${st.cls}`}
+                        >
+                          {STATUSES.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-right">
                         <button
                           type="button"
                           disabled={busy}
@@ -268,19 +301,25 @@ export default function SiteOrders() {
                         >
                           {busy ? "Création…" : o.wedding_id ? "Ouvrir le mariage" : "✎ Modifier"}
                         </button>
-                        {o.status === "new" && (
-                          <button
-                            type="button"
-                            onClick={() => setStatus(o.id, "preparing")}
-                            title="Passer en préparation"
-                            className="rounded-lg bg-emerald px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90"
-                          >
-                            ✓ Confirmer
-                          </button>
-                        )}
-                      </span>
-                    </td>
-                  </tr>
+                      </td>
+                    </tr>
+                    {open && (
+                      <tr className="border-b border-gold/10 bg-ivory-light/60">
+                        <td colSpan={9} className="px-4 py-5">
+                          <RowDetails
+                            order={o}
+                            wa={wa}
+                            pack={pack}
+                            patchOrder={patchOrder}
+                            applySaved={applySaved}
+                            onConfirm={() => setStatus(o.id, "preparing")}
+                            onCancel={() => setStatus(o.id, "cancelled")}
+                            onDelete={() => deleteOrder(o.id)}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </RowGroup>
                 );
               })}
             </tbody>
@@ -316,5 +355,166 @@ export default function SiteOrders() {
         </div>
       )}
     </OwnerLayout>
+  );
+}
+
+/* React fragment مسمّى حتى يبقى مفتاح كل مجموعة صفوف واحدًا */
+function RowGroup({ children }) {
+  return <>{children}</>;
+}
+
+/* ------------------------------------------------------------------ */
+/* تفاصيل الطلب داخل الجدول (نمط EcoManager)                            */
+/* ------------------------------------------------------------------ */
+
+function RowDetails({ order: o, wa, pack, patchOrder, applySaved, onConfirm, onCancel, onDelete }) {
+  const [motif, setMotif] = useState(o.confirmation_status || "");
+  const [comment, setComment] = useState(o.comment || "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [savedTick, setSavedTick] = useState(false);
+
+  async function saveFollowUp() {
+    setSaving(true);
+    setError("");
+    try {
+      const saved = await patchOrder(o.id, { confirmationStatus: motif, comment });
+      applySaved(saved);
+      setSavedTick(true);
+      setTimeout(() => setSavedTick(false), 1600);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const card = "rounded-2xl border border-gold/25 bg-white/70 p-4";
+  const heading = "mb-3 text-xs font-bold uppercase tracking-wider text-ink/50";
+  const input =
+    "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-burgundy";
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* بطاقة معلومات الزبون */}
+        <section className={card}>
+          <h3 className={heading}>Informations client</h3>
+          <ul className="space-y-1.5 text-sm text-ink/80">
+            <li className="font-semibold text-ink">
+              👤 {o.groom_name} & {o.bride_name}
+            </li>
+            <li className="flex items-center gap-2">
+              📞 <span dir="ltr" className="tabular-nums">{o.phone}</span>
+              <CopyButton text={o.phone} />
+              {wa && (
+                <a
+                  href={wa}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-md border border-emerald/40 px-2 py-0.5 text-xs text-emerald hover:bg-emerald/10"
+                >
+                  WhatsApp
+                </a>
+              )}
+            </li>
+            <li>📅 {o.wedding_date || <span className="text-ink/40">date non fournie</span>}</li>
+            <li>📍 {o.venue || <span className="text-ink/40">lieu non fourni</span>}</li>
+            <li>
+              🌐 {o.lang === "ar" ? "Arabe" : "Français"} · reçue le{" "}
+              {(o.created_at || "").slice(0, 16).replace("T", " ")}
+            </li>
+            {o.wedding_id ? (
+              <li>
+                💍 Mariage lié :{" "}
+                <span className="font-semibold text-emerald">{o.wedding_id}</span>
+              </li>
+            ) : null}
+          </ul>
+        </section>
+
+        {/* متابعة التأكيد: motif + تعليق */}
+        <section className={card}>
+          <h3 className={heading}>Statut de confirmation</h3>
+          <select className={input} value={motif} onChange={(e) => setMotif(e.target.value)}>
+            <option value="">Sélectionner un motif</option>
+            {MOTIFS.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+          <textarea
+            rows={3}
+            className={`${input} mt-2 resize-none`}
+            placeholder="Votre commentaire…"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+          {error && <p className="mt-2 text-xs text-burgundy">{error}</p>}
+          <button
+            type="button"
+            disabled={saving}
+            onClick={saveFollowUp}
+            className="mt-2 rounded-lg border border-gold/50 px-4 py-2 text-xs font-semibold text-gold-dark transition-colors hover:bg-ivory-dark disabled:opacity-60"
+          >
+            {saving ? "…" : savedTick ? "✓ Enregistré" : "Enregistrer"}
+          </button>
+        </section>
+
+        {/* ملخص الطلب */}
+        <section className={card}>
+          <h3 className={heading}>Commande</h3>
+          <ul className="space-y-1.5 text-sm text-ink/80">
+            <li>
+              🖼 Modèle : <span className="font-semibold">{templateName(o.template_id)}</span>
+            </li>
+            <li>
+              📦 Pack :{" "}
+              {pack ? (
+                <span className="font-semibold">{pack.name.fr}</span>
+              ) : (
+                <span className="text-ink/40">non choisi</span>
+              )}
+            </li>
+            {pack ? (
+              <li className="mt-2 flex items-baseline justify-between rounded-xl bg-ivory-light px-3 py-2">
+                <span className="text-xs uppercase tracking-wider text-ink/50">Total</span>
+                <span className="font-serif text-lg font-bold text-burgundy-dark tabular-nums">
+                  {formatDZD(pack.price, "fr")}
+                </span>
+              </li>
+            ) : null}
+          </ul>
+        </section>
+      </div>
+
+      {/* أزرار الإجراءات (نمط EcoManager) */}
+      <div className="flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          onClick={onDelete}
+          className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-rose-700"
+        >
+          🗑 Supprimer
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-lg bg-ink/70 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink"
+        >
+          ✖ Annuler
+        </button>
+        {o.status === "new" && (
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="rounded-lg bg-emerald px-5 py-2 text-xs font-semibold text-white transition-colors hover:opacity-90"
+          >
+            ✔ Confirmer → En préparation
+          </button>
+        )}
+      </div>
+    </div>
   );
 }

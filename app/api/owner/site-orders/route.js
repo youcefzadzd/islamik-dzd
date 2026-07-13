@@ -9,8 +9,16 @@ import { CATALOG, PRICING } from "@/components/site/site-config";
  * PATCH → تعديل طلب: الحالة و/أو أي حقل من حقول الطلب { id, ...fields }
  */
 
-/* new = En confirmation، ثم سلسلة التحضير والتوصيل */
-const STATUSES = new Set(["new", "preparing", "dispatch", "delivering", "delivered", "returned"]);
+/* new = En confirmation، ثم سلسلة التحضير والتوصيل + cancelled للإلغاء */
+const STATUSES = new Set([
+  "new",
+  "preparing",
+  "dispatch",
+  "delivering",
+  "delivered",
+  "returned",
+  "cancelled",
+]);
 const TEMPLATE_IDS = new Set(CATALOG.filter((c) => !c.comingSoon).map((c) => c.id));
 const PACK_IDS = new Set(PRICING.map((p) => p.id));
 
@@ -32,7 +40,9 @@ export async function GET(request) {
 
   const { data, error } = await supabase
     .from("site_orders")
-    .select("id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id")
+    .select(
+      "id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id, confirmation_status, comment"
+    )
     .order("created_at", { ascending: false })
     .limit(500);
 
@@ -117,6 +127,16 @@ export async function PATCH(request) {
     }
     update.wedding_id = w || null;
   }
+  if (body.confirmationStatus !== undefined) {
+    const c = String(body.confirmationStatus).trim();
+    if (c.length > 60) return NextResponse.json({ error: "invalid motif" }, { status: 400 });
+    update.confirmation_status = c || null;
+  }
+  if (body.comment !== undefined) {
+    const c = String(body.comment).trim();
+    if (c.length > 500) return NextResponse.json({ error: "invalid comment" }, { status: 400 });
+    update.comment = c || null;
+  }
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "nothing to update" }, { status: 400 });
@@ -126,8 +146,31 @@ export async function PATCH(request) {
     .from("site_orders")
     .update(update)
     .eq("id", id)
-    .select("id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id")
+    .select(
+      "id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id, confirmation_status, comment"
+    )
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, order: data });
+}
+
+/* DELETE — حذف نهائي لطلب (زر Supprimer في لوحة الطلبات) */
+export async function DELETE(request) {
+  const denied = authError(request);
+  if (denied) return denied;
+  const supabase = getAdminClient();
+  if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "invalid json" }, { status: 400 });
+  }
+  const id = String(body.id || "").trim();
+  if (!id) return NextResponse.json({ error: "missing id" }, { status: 400 });
+
+  const { error } = await supabase.from("site_orders").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
 }
