@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CATALOG, PRICING, SITE, formatDZD, whatsappLink } from "./site-config";
 import { COPY } from "./site-copy";
 import { CheckIcon, WhatsAppIcon } from "./ui";
+import { useSiteWhatsApp } from "./useSiteWhatsApp";
 
 const LANG_KEY = "dawati-site-lang";
 const LIVE_TEMPLATES = CATALOG.filter((c) => !c.comingSoon);
@@ -128,7 +129,8 @@ export default function OrderForm() {
   ]
     .filter(Boolean)
     .join("\n");
-  const wa = whatsappLink(waSummary);
+  const waNumber = useSiteWhatsApp();
+  const wa = whatsappLink(waSummary, waNumber);
 
   const inputCls = `w-full rounded-2xl border border-gold/30 bg-cream px-5 py-3.5 text-base text-ink shadow-sm outline-none transition-colors placeholder:text-ink/30 focus:border-gold ${font}`;
   const labelCls = `mb-2 block text-sm font-semibold text-ink/75 ${font}`;

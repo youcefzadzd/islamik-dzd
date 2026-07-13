@@ -21,6 +21,7 @@ import {
   SectionHead,
   WhatsAppIcon,
 } from "./ui";
+import { useSiteWhatsApp } from "./useSiteWhatsApp";
 
 const sectionPad = "px-5 py-20 sm:px-8 sm:py-24";
 
@@ -246,7 +247,8 @@ export function FaqSection({ lang, t }) {
 export function ContactSection({ lang, t }) {
   const arabic = lang === "ar";
   const font = arabic ? "font-arabicText" : "font-body";
-  const wa = whatsappLink(t.contact.defaultMessage);
+  const waNumber = useSiteWhatsApp();
+  const wa = whatsappLink(t.contact.defaultMessage, waNumber);
 
   return (
     <section id="contact" className={sectionPad}>

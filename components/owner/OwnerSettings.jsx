@@ -10,15 +10,61 @@ import { OwnerGate, OwnerLayout, ownerHeaders, glass, OWNER_PASS_KEY } from "./s
 export default function OwnerSettings() {
   const [granted, setGranted] = useState(false);
   const [company, setCompany] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [waState, setWaState] = useState("idle"); // idle | saving | saved | error
+  const [waError, setWaError] = useState("");
+
+  async function loadSettings() {
+    const res = await fetch("/api/owner/site-settings", { headers: ownerHeaders() });
+    if (res.ok) {
+      const j = await res.json();
+      setWhatsapp(j.whatsappNumber || "");
+    }
+  }
 
   useEffect(() => {
     setCompany(localStorage.getItem("platform-company") || "Invitations Royales");
     if (sessionStorage.getItem(OWNER_PASS_KEY)) {
-      fetch("/api/owner/weddings", { headers: ownerHeaders() }).then((r) => setGranted(r.ok));
+      fetch("/api/owner/weddings", { headers: ownerHeaders() }).then((r) => {
+        setGranted(r.ok);
+        if (r.ok) loadSettings();
+      });
     }
   }, []);
 
-  if (!granted) return <OwnerGate onGranted={() => setGranted(true)} />;
+  async function saveWhatsapp() {
+    setWaState("saving");
+    setWaError("");
+    const res = await fetch("/api/owner/site-settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...ownerHeaders() },
+      body: JSON.stringify({ whatsappNumber: whatsapp }),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setWaState("error");
+      setWaError(
+        j.error === "invalid number"
+          ? "Numéro invalide — format international sans +, ex : 213550123456."
+          : j.error || "Erreur serveur."
+      );
+      return;
+    }
+    setWhatsapp(j.whatsappNumber || "");
+    setWaState("saved");
+    setTimeout(() => setWaState("idle"), 2000);
+  }
+
+  if (!granted) {
+    return (
+      <OwnerGate
+        onGranted={() => {
+          setGranted(true);
+          loadSettings();
+        }}
+      />
+    );
+  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseRef = supabaseUrl.replace("https://", "").split(".")[0];
@@ -41,6 +87,37 @@ export default function OwnerSettings() {
           />
           <p className="mt-1 text-xs text-ink/45">
             Enregistré dans ce navigateur. Logo et domaine personnalisé : bientôt.
+          </p>
+        </section>
+
+        <section className={`p-5 ${glass}`}>
+          <h2 className="mb-3 font-semibold text-ink">Site vitrine — WhatsApp</h2>
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-ink/60">
+            Numéro WhatsApp du site
+          </label>
+          <div className="flex gap-2">
+            <input
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="213550123456"
+              dir="ltr"
+              inputMode="tel"
+              className="w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm tabular-nums outline-none focus:border-burgundy"
+            />
+            <button
+              type="button"
+              disabled={waState === "saving"}
+              onClick={saveWhatsapp}
+              className="shrink-0 rounded-lg bg-burgundy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-burgundy-dark disabled:opacity-60"
+            >
+              {waState === "saving" ? "…" : waState === "saved" ? "✓ Enregistré" : "Enregistrer"}
+            </button>
+          </div>
+          {waState === "error" && <p className="mt-2 text-xs text-burgundy">{waError}</p>}
+          <p className="mt-2 text-xs text-ink/45">
+            Format international sans « + » (ex : 213550123456). Utilisé par tous les boutons
+            WhatsApp du site vitrine (/site) — vide : les boutons renvoient vers la section
+            contact. Prise en compte en ~1 minute.
           </p>
         </section>
 

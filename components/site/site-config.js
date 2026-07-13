@@ -313,9 +313,11 @@ export const FAQ = [
   },
 ];
 
-/** يبني رابط واتساب برسالة جاهزة، أو يرجع null إذا لم يُضبط الرقم بعد */
-export function whatsappLink(message) {
-  const num = SITE.whatsappNumber || "";
+/** يبني رابط واتساب برسالة جاهزة، أو يرجع null إذا لم يُضبط الرقم بعد.
+ *  number اختياري — مرّر قيمة useSiteWhatsApp() لقراءة الرقم المحفوظ
+ *  في لوحة التحكم؛ بدونها يُستعمل رقم site-config الثابت. */
+export function whatsappLink(message, number) {
+  const num = (number ?? SITE.whatsappNumber) || "";
   if (!/^\d{8,15}$/.test(num)) return null;
   return `https://wa.me/${num}?text=${encodeURIComponent(message)}`;
 }
