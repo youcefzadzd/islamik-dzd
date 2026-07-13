@@ -247,7 +247,6 @@ export default function SiteOrders() {
                 <th className="px-4 py-3">Téléphone</th>
                 <th className="px-4 py-3">Modèle</th>
                 <th className="px-4 py-3">Pack</th>
-                {filter !== "new" && <th className="px-4 py-3">Statut</th>}
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -282,6 +281,14 @@ export default function SiteOrders() {
                         <span className="ml-2 rounded bg-ivory-dark px-1.5 py-0.5 text-[0.65rem] uppercase text-ink/45">
                           {o.lang}
                         </span>
+                        {/* في «Toutes»: شارة الحالة تعوّض عمود Statut المحذوف */}
+                        {filter === "all" && (
+                          <span
+                            className={`ml-2 rounded-full px-2 py-0.5 text-[0.65rem] font-semibold ${st.cls}`}
+                          >
+                            {st.label}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 font-medium text-ink">
                         {o.groom_name} & {o.bride_name}
@@ -323,21 +330,6 @@ export default function SiteOrders() {
                       <td className="whitespace-nowrap px-4 py-3 text-ink/75">
                         {pack ? `${pack.name.fr} — ${formatDZD(pack.price, "fr")}` : "—"}
                       </td>
-                      {filter !== "new" && (
-                        <td className="whitespace-nowrap px-4 py-3">
-                          <select
-                            value={o.status}
-                            onChange={(e) => setStatus(o.id, e.target.value)}
-                            className={`rounded-lg border border-gold/30 px-2 py-1 text-xs font-semibold outline-none ${st.cls}`}
-                          >
-                            {STATUSES.map((s) => (
-                              <option key={s.id} value={s.id}>
-                                {s.label}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                      )}
                       <td className="whitespace-nowrap px-4 py-3 text-right">
                         <span className="inline-flex gap-1.5">
                           {o.status === "new" && (
@@ -348,6 +340,34 @@ export default function SiteOrders() {
                             >
                               ✔ Confirmer
                             </button>
+                          )}
+                          {/* بعد حذف عمود Statut: أزرار انتقال حسب المرحلة */}
+                          {o.status === "dispatch" && (
+                            <button
+                              type="button"
+                              onClick={() => setStatus(o.id, "delivering")}
+                              className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-600"
+                            >
+                              → En livraison
+                            </button>
+                          )}
+                          {o.status === "delivering" && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setStatus(o.id, "delivered")}
+                                className="rounded-lg bg-emerald px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90"
+                              >
+                                ✓ Livré
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setStatus(o.id, "returned")}
+                                className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-rose-700"
+                              >
+                                ↩ Retour
+                              </button>
+                            </>
                           )}
                           {o.status === "preparing" ? (
                             <>
@@ -386,7 +406,7 @@ export default function SiteOrders() {
                     </tr>
                     {open && (
                       <tr className="border-b border-gold/10 bg-ivory-light/60">
-                        <td colSpan={filter === "new" ? 8 : 9} className="px-4 py-5">
+                        <td colSpan={8} className="px-4 py-5">
                           <RowDetails
                             order={o}
                             wa={wa}
