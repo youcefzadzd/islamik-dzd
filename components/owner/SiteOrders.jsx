@@ -100,6 +100,17 @@ export default function SiteOrders() {
     }
   }
 
+  /* تغيير motif التأكيد مباشرة من عمود الجدول (تبويب En confirmation) */
+  async function setMotif(id, motif) {
+    const before = orders;
+    setOrders(orders.map((o) => (o.id === id ? { ...o, confirmation_status: motif || null } : o)));
+    try {
+      await patchOrder(id, { confirmationStatus: motif });
+    } catch {
+      setOrders(before);
+    }
+  }
+
   async function deleteOrder(id) {
     if (!window.confirm("Supprimer définitivement cette commande ?")) return;
     const res = await fetch("/api/owner/site-orders", {
@@ -214,7 +225,7 @@ export default function SiteOrders() {
                 <th className="px-4 py-3">Téléphone</th>
                 <th className="px-4 py-3">Modèle</th>
                 <th className="px-4 py-3">Pack</th>
-                <th className="px-4 py-3">Statut</th>
+                {filter !== "new" && <th className="px-4 py-3">Statut</th>}
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -259,7 +270,21 @@ export default function SiteOrders() {
                         ) : null}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
-                        {o.confirmation_status ? (
+                        {filter === "new" ? (
+                          /* في تبويب En confirmation: الـ motif يُعدَّل مباشرة من الجدول */
+                          <select
+                            value={o.confirmation_status || ""}
+                            onChange={(e) => setMotif(o.id, e.target.value)}
+                            className="rounded-lg border border-gold/30 bg-gold/10 px-2 py-1 text-xs font-semibold text-gold-dark outline-none"
+                          >
+                            <option value="">—</option>
+                            {MOTIFS.map((m) => (
+                              <option key={m} value={m}>
+                                {m}
+                              </option>
+                            ))}
+                          </select>
+                        ) : o.confirmation_status ? (
                           <span className="rounded-full bg-gold/15 px-2.5 py-1 text-xs font-semibold text-gold-dark">
                             {o.confirmation_status}
                           </span>
@@ -276,19 +301,21 @@ export default function SiteOrders() {
                       <td className="whitespace-nowrap px-4 py-3 text-ink/75">
                         {pack ? `${pack.name.fr} — ${formatDZD(pack.price, "fr")}` : "—"}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <select
-                          value={o.status}
-                          onChange={(e) => setStatus(o.id, e.target.value)}
-                          className={`rounded-lg border border-gold/30 px-2 py-1 text-xs font-semibold outline-none ${st.cls}`}
-                        >
-                          {STATUSES.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {s.label}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
+                      {filter !== "new" && (
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <select
+                            value={o.status}
+                            onChange={(e) => setStatus(o.id, e.target.value)}
+                            className={`rounded-lg border border-gold/30 px-2 py-1 text-xs font-semibold outline-none ${st.cls}`}
+                          >
+                            {STATUSES.map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                      )}
                       <td className="whitespace-nowrap px-4 py-3 text-right">
                         <span className="inline-flex gap-1.5">
                           {o.status === "new" && (
@@ -337,7 +364,7 @@ export default function SiteOrders() {
                     </tr>
                     {open && (
                       <tr className="border-b border-gold/10 bg-ivory-light/60">
-                        <td colSpan={9} className="px-4 py-5">
+                        <td colSpan={filter === "new" ? 8 : 9} className="px-4 py-5">
                           <RowDetails
                             order={o}
                             wa={wa}
