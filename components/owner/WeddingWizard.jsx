@@ -301,21 +301,53 @@ const INVITATION_LABELS = {
   hallName: "Nom de la salle",
   footerMessage: "Message de clôture",
 };
+/* المجموعة العربية: عناوين عربية + مثال توضيحي داخل كل خانة */
+const INVITATION_LABELS_AR = {
+  basmala: "البسملة",
+  fatherName: "اسم الأب",
+  motherName: "اسم الأم",
+  invitationText: "نص الدعوة",
+  mainTitle: "العنوان الرئيسي",
+  brideName: "اسم العروس",
+  dateIntro: "تمهيد التاريخ",
+  weddingDate: "التاريخ (كما سيظهر في الدعوة)",
+  time: "التوقيت (كما سيظهر في الدعوة)",
+  hallIntro: "تمهيد القاعة",
+  hallName: "اسم القاعة",
+  footerMessage: "رسالة الختام",
+};
+const INVITATION_PLACEHOLDERS_AR = {
+  basmala: "مثال: بسم الله الرحمن الرحيم",
+  fatherName: "مثال: السيد محمد بن أحمد",
+  motherName: "مثال: السيدة فاطمة بنت علي",
+  invitationText: "مثال: يتشرفان بدعوتكم لحضور حفل زفاف ابنتهما",
+  mainTitle: "مثال: حفل زفاف",
+  brideName: "مثال: كاتية",
+  dateIntro: "مثال: وذلك يوم",
+  weddingDate: "مثال: السبت 15 أوت 2026",
+  time: "مثال: على الساعة السابعة مساءً",
+  hallIntro: "مثال: بقاعة الحفلات",
+  hallName: "مثال: قاعة الياسمين — الجزائر العاصمة",
+  footerMessage: "مثال: حضوركم يزيد فرحتنا شرفًا وسرورًا",
+};
 const INVITATION_TEXTAREAS = new Set(["invitationText", "footerMessage"]);
 
 function InvitationGroup({ title, group, rtl, onChange }) {
+  const labels = rtl ? INVITATION_LABELS_AR : INVITATION_LABELS;
+  const placeholders = rtl ? INVITATION_PLACEHOLDERS_AR : {};
   return (
     <fieldset className="rounded-xl border border-gold/30 bg-white/50 p-4">
       <legend className="px-2 text-sm font-semibold text-ink">{title}</legend>
       <div className="grid gap-3 sm:grid-cols-2">
         {INVITATION_FIELDS.map((key) => (
-          <Field key={key} label={INVITATION_LABELS[key]} full={INVITATION_TEXTAREAS.has(key)}>
+          <Field key={key} label={labels[key]} full={INVITATION_TEXTAREAS.has(key)}>
             {INVITATION_TEXTAREAS.has(key) ? (
               <textarea
                 dir={rtl ? "rtl" : "ltr"}
                 rows={2}
                 className={`${inputCls} resize-none`}
                 value={group[key] || ""}
+                placeholder={placeholders[key]}
                 onChange={(e) => onChange(key, e.target.value)}
               />
             ) : (
@@ -323,6 +355,7 @@ function InvitationGroup({ title, group, rtl, onChange }) {
                 dir={rtl ? "rtl" : "ltr"}
                 className={inputCls}
                 value={group[key] || ""}
+                placeholder={placeholders[key]}
                 onChange={(e) => onChange(key, e.target.value)}
               />
             )}
