@@ -76,9 +76,9 @@ export default function SiteOrders() {
   }
 
   /* «Modifier» = فتح العرس الكامل لهذا الطلب:
-     أول ضغطة تُنشئ العرس من بيانات الطلب، تربطه به، تنقله إلى
-     «En préparation» ثم تفتح محرر العرس الكامل. الضغطات التالية
-     تفتح المحرر مباشرة. */
+     أول ضغطة تُنشئ العرس من بيانات الطلب وتربطه به ثم تفتح محرر
+     العرس الكامل — **دون تغيير حالة الطلب** (يبقى Nouveau).
+     زر «Confirmer» المنفصل هو الذي ينقله إلى En préparation. */
   async function openWedding(o) {
     if (o.wedding_id) {
       window.location.href = `/owner/weddings/${encodeURIComponent(o.wedding_id)}/edit`;
@@ -106,7 +106,7 @@ export default function SiteOrders() {
       if (!res.ok) throw new Error(body.error || "Erreur serveur.");
       const weddingId = body.wedding?.wedding_id;
       if (!weddingId) throw new Error("Réponse inattendue du serveur.");
-      await patchOrder(o.id, { weddingId, status: "preparing" });
+      await patchOrder(o.id, { weddingId });
       window.location.href = `/owner/weddings/${encodeURIComponent(weddingId)}/edit`;
     } catch (e) {
       setLoadError(e.message);
@@ -250,18 +250,30 @@ export default function SiteOrders() {
                       </select>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => openWedding(o)}
-                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
-                          o.wedding_id
-                            ? "border border-emerald/50 text-emerald hover:bg-emerald/10"
-                            : "bg-burgundy text-white hover:bg-burgundy-dark"
-                        }`}
-                      >
-                        {busy ? "Création…" : o.wedding_id ? "Ouvrir le mariage" : "✎ Modifier"}
-                      </button>
+                      <span className="inline-flex gap-1.5">
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => openWedding(o)}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
+                            o.wedding_id
+                              ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
+                              : "bg-burgundy text-white hover:bg-burgundy-dark"
+                          }`}
+                        >
+                          {busy ? "Création…" : o.wedding_id ? "Ouvrir le mariage" : "✎ Modifier"}
+                        </button>
+                        {(o.status === "new" || o.status === "contacted") && (
+                          <button
+                            type="button"
+                            onClick={() => setStatus(o.id, "preparing")}
+                            title="Passer en préparation"
+                            className="rounded-lg bg-emerald px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90"
+                          >
+                            ✓ Confirmer
+                          </button>
+                        )}
+                      </span>
                     </td>
                   </tr>
                 );
