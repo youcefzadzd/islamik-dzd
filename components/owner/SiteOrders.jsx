@@ -72,6 +72,32 @@ export default function SiteOrders() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* صفحة Saisir les infos (داخل iframe) تُرسل رسالة عند حفظ المعلومات
+     كاملة → نغلق النافذة ونُعلّم الطلبية كمكتملة */
+  useEffect(() => {
+    function onMessage(e) {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type !== "dawati-infos-saved") return;
+      const { weddingId, dashboardPassword } = e.data;
+      setEditorWedding(null);
+      setOrders((prev) => {
+        const target = prev?.find((o) => o.wedding_id === weddingId);
+        if (target) {
+          patchOrder(target.id, {
+            infosComplete: true,
+            ...(dashboardPassword ? { dashboardPassword } : {}),
+          })
+            .then((saved) => applySaved(saved))
+            .catch(() => {});
+        }
+        return prev;
+      });
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function patchOrder(id, fields) {
     const res = await fetch("/api/owner/site-orders", {
       method: "PATCH",
@@ -141,6 +167,7 @@ export default function SiteOrders() {
     }
     setCreatingId(o.id);
     setLoadError("");
+    const generatedPassword = Math.random().toString(36).slice(2, 10);
     try {
       const res = await fetch("/api/owner/weddings", {
         method: "POST",
@@ -153,15 +180,19 @@ export default function SiteOrders() {
           defaultLanguage: o.lang === "ar" ? "ar" : "fr",
           theme: { template: o.template_id || "islamic-royal" },
           contact: { phone: o.phone },
-          // كلمة مؤقتة للوحة الزوجين — غيّرها من محرر العرس قبل التسليم
-          dashboardPassword: Math.random().toString(36).slice(2, 10),
+          // كلمة لوحة الزوجين — تُحفظ على الطلب لتسليمها للزبون،
+          // وتتحدّث تلقائيًا إن غُيّرت من صفحة Saisir les infos
+          dashboardPassword: generatedPassword,
         }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || "Erreur serveur.");
       const weddingId = body.wedding?.wedding_id;
       if (!weddingId) throw new Error("Réponse inattendue du serveur.");
-      const saved = await patchOrder(o.id, { weddingId });
+      const saved = await patchOrder(o.id, {
+        weddingId,
+        dashboardPassword: generatedPassword,
+      });
       applySaved(saved);
       setEditorWedding(weddingId);
     } catch (e) {
@@ -272,7 +303,11 @@ export default function SiteOrders() {
                   <RowGroup key={o.id}>
                     <tr
                       className={`border-b border-gold/10 last:border-0 ${
-                        open ? "bg-white/70" : "hover:bg-white/50"
+                        open
+                          ? "bg-white/70"
+                          : o.infos_complete
+                            ? "bg-emerald/5 hover:bg-emerald/10"
+                            : "hover:bg-white/50"
                       }`}
                     >
                       <td className="px-3 py-3">
@@ -306,6 +341,16 @@ export default function SiteOrders() {
                         {o.wedding_id ? (
                           <span className="ml-2 rounded bg-emerald/10 px-1.5 py-0.5 text-[0.65rem] font-semibold text-emerald">
                             {o.wedding_id}
+                          </span>
+                        ) : null}
+                        {/* شارة اكتمال المعلومات — تميّز الطلبية الجاهزة */}
+                        {o.infos_complete ? (
+                          <span className="ml-2 rounded-full bg-emerald px-2 py-0.5 text-[0.65rem] font-bold text-white">
+                            ✓ Infos complètes
+                          </span>
+                        ) : o.status === "preparing" ? (
+                          <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[0.65rem] font-bold text-amber-700">
+                            ⚠ Infos à saisir
                           </span>
                         ) : null}
                       </td>
@@ -694,6 +739,54 @@ function RowDetails({
               </li>
             ) : null}
           </ul>
+
+          {/* معلومات التسليم للزبون: رابط الدعوة + لوحة المتابعة + كلمة السر */}
+          {o.wedding_id ? (
+            <div className="mt-3 space-y-1.5 rounded-xl bg-ivory-light p-3 text-xs text-ink/75">
+              <p className="text-[0.65rem] font-bold uppercase tracking-wider text-ink/45">
+                Accès du client
+              </p>
+              <p className="flex flex-wrap items-center gap-1.5">
+                🔗 Invitation :
+                <a
+                  href={`/w/${o.wedding_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  dir="ltr"
+                  className="font-semibold text-burgundy underline-offset-4 hover:underline"
+                >
+                  /w/{o.wedding_id}
+                </a>
+                <CopyButton
+                  text={`${typeof window !== "undefined" ? window.location.origin : ""}/w/${o.wedding_id}`}
+                />
+              </p>
+              <p className="flex flex-wrap items-center gap-1.5">
+                📊 Dashboard :
+                <a
+                  href={`/dashboard/${o.wedding_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  dir="ltr"
+                  className="font-semibold text-burgundy underline-offset-4 hover:underline"
+                >
+                  /dashboard/{o.wedding_id}
+                </a>
+                <CopyButton
+                  text={`${typeof window !== "undefined" ? window.location.origin : ""}/dashboard/${o.wedding_id}`}
+                />
+              </p>
+              {o.dashboard_password ? (
+                <p className="flex flex-wrap items-center gap-1.5">
+                  🔑 Mot de passe :
+                  <code dir="ltr" className="rounded bg-white px-1.5 py-0.5 font-bold text-ink">
+                    {o.dashboard_password}
+                  </code>
+                  <CopyButton text={o.dashboard_password} />
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </section>
 
         {/* متابعة التأكيد: motif + تعليق */}

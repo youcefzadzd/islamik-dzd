@@ -41,7 +41,7 @@ export async function GET(request) {
   const { data, error } = await supabase
     .from("site_orders")
     .select(
-      "id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id, confirmation_status, comment"
+      "id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id, confirmation_status, comment, infos_complete, dashboard_password"
     )
     .order("created_at", { ascending: false })
     .limit(500);
@@ -137,6 +137,14 @@ export async function PATCH(request) {
     if (c.length > 500) return NextResponse.json({ error: "invalid comment" }, { status: 400 });
     update.comment = c || null;
   }
+  if (body.infosComplete !== undefined) {
+    update.infos_complete = Boolean(body.infosComplete);
+  }
+  if (body.dashboardPassword !== undefined) {
+    const p = String(body.dashboardPassword).trim();
+    if (p.length > 60) return NextResponse.json({ error: "invalid password" }, { status: 400 });
+    update.dashboard_password = p || null;
+  }
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "nothing to update" }, { status: 400 });
@@ -147,7 +155,7 @@ export async function PATCH(request) {
     .update(update)
     .eq("id", id)
     .select(
-      "id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id, confirmation_status, comment"
+      "id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id, confirmation_status, comment, infos_complete, dashboard_password"
     )
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

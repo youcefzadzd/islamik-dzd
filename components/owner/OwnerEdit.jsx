@@ -41,6 +41,19 @@ export default function OwnerEdit({ weddingId, embed = false }) {
       if (!res.ok) throw new Error(json.error || "erreur serveur");
       setSaved(true);
       setWedding(json.wedding);
+      /* وضع embed (صفحة Saisir les infos داخل لوحة الطلبات):
+         نُخطر الصفحة الأم أن المعلومات اكتملت — فتغلق النافذة
+         وتُعلّم الطلبية كمكتملة، مع تمرير كلمة السر إن غُيّرت. */
+      if (embed && typeof window !== "undefined" && window.parent !== window) {
+        window.parent.postMessage(
+          {
+            type: "dawati-infos-saved",
+            weddingId,
+            dashboardPassword: body.dashboardPassword || null,
+          },
+          window.location.origin
+        );
+      }
     } catch (e) {
       setError(String(e.message || e));
     } finally {

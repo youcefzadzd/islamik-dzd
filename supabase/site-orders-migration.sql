@@ -39,6 +39,9 @@ alter table public.site_orders add column if not exists wedding_id   text;
 -- متابعة التأكيد (نمط EcoManager): motif محاولة الاتصال + تعليق حر
 alter table public.site_orders add column if not exists confirmation_status text;
 alter table public.site_orders add column if not exists comment             text;
+-- اكتمال معلومات الزبون (بعد حفظ صفحة Saisir les infos) + كلمة سر لوحة الزوجين
+alter table public.site_orders add column if not exists infos_complete boolean not null default false;
+alter table public.site_orders add column if not exists dashboard_password text;
 
 -- النسخة القديمة كانت تُلزم full_name — أزل الإلزام إن وُجد العمود
 do $$
