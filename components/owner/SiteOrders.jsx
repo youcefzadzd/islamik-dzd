@@ -31,6 +31,7 @@ export default function SiteOrders() {
   const [loadError, setLoadError] = useState("");
   const [filter, setFilter] = useState("all");
   const [creatingId, setCreatingId] = useState(null); // طلب يجري إنشاء عرسه
+  const [editorWedding, setEditorWedding] = useState(null); // WED-XXX المفتوح في نافذة التحرير
 
   async function load() {
     setLoadError("");
@@ -75,13 +76,13 @@ export default function SiteOrders() {
     }
   }
 
-  /* «Modifier» = فتح العرس الكامل لهذا الطلب:
-     أول ضغطة تُنشئ العرس من بيانات الطلب وتربطه به ثم تفتح محرر
-     العرس الكامل — **دون تغيير حالة الطلب** (يبقى Nouveau).
+  /* «Modifier» = نافذة فيها محرر العرس الكامل لهذا الطلب:
+     أول ضغطة تُنشئ العرس من بيانات الطلب وتربطه به، ثم تفتح النافذة —
+     **دون تغيير حالة الطلب** (يبقى Nouveau).
      زر «Confirmer» المنفصل هو الذي ينقله إلى En préparation. */
   async function openWedding(o) {
     if (o.wedding_id) {
-      window.location.href = `/owner/weddings/${encodeURIComponent(o.wedding_id)}/edit`;
+      setEditorWedding(o.wedding_id);
       return;
     }
     setCreatingId(o.id);
@@ -106,10 +107,12 @@ export default function SiteOrders() {
       if (!res.ok) throw new Error(body.error || "Erreur serveur.");
       const weddingId = body.wedding?.wedding_id;
       if (!weddingId) throw new Error("Réponse inattendue du serveur.");
-      await patchOrder(o.id, { weddingId });
-      window.location.href = `/owner/weddings/${encodeURIComponent(weddingId)}/edit`;
+      const saved = await patchOrder(o.id, { weddingId });
+      setOrders((prev) => prev.map((x) => (x.id === o.id ? saved : x)));
+      setEditorWedding(weddingId);
     } catch (e) {
       setLoadError(e.message);
+    } finally {
       setCreatingId(null);
     }
   }
@@ -280,6 +283,34 @@ export default function SiteOrders() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* نافذة محرر العرس الكامل — نفس صفحة /owner/weddings/WED-X/edit
+          داخل إطار فوق صفحة الطلبات (بوابة المالك تمرّ تلقائيًا لأن
+          كلمة السر محفوظة في sessionStorage لنفس الأصل) */}
+      {editorWedding && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-ink/50 p-3 backdrop-blur-sm sm:p-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="rounded-lg bg-ivory px-3 py-1.5 text-sm font-semibold text-ink shadow">
+              Mariage {editorWedding}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setEditorWedding(null);
+                load();
+              }}
+              className="rounded-lg bg-burgundy px-4 py-1.5 text-sm font-semibold text-white shadow transition-colors hover:bg-burgundy-dark"
+            >
+              ✕ Fermer
+            </button>
+          </div>
+          <iframe
+            src={`/owner/weddings/${encodeURIComponent(editorWedding)}/edit`}
+            title={`Mariage ${editorWedding}`}
+            className="w-full flex-1 rounded-2xl border border-gold/30 bg-ivory shadow-royal"
+          />
         </div>
       )}
     </OwnerLayout>
