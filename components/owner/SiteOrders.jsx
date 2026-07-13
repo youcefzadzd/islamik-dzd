@@ -51,6 +51,7 @@ export default function SiteOrders() {
   const [creatingId, setCreatingId] = useState(null); // طلب يجري إنشاء عرسه
   const [editorWedding, setEditorWedding] = useState(null); // WED-XXX المفتوح في نافذة التحرير
   const [expandedId, setExpandedId] = useState(null); // الصف المفتوح بزر ➕
+  const [confirmingOrder, setConfirmingOrder] = useState(null); // نافذة اختيار الباقة عند التأكيد
 
   async function load() {
     setLoadError("");
@@ -289,18 +290,49 @@ export default function SiteOrders() {
                         </select>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => openWedding(o)}
-                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
-                            o.wedding_id
-                              ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
-                              : "bg-burgundy text-white hover:bg-burgundy-dark"
-                          }`}
-                        >
-                          {busy ? "Création…" : o.wedding_id ? "Ouvrir le mariage" : "✎ Modifier"}
-                        </button>
+                        <span className="inline-flex gap-1.5">
+                          {o.status === "new" && (
+                            <button
+                              type="button"
+                              onClick={() => setConfirmingOrder(o)}
+                              className="rounded-lg bg-emerald px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90"
+                            >
+                              ✔ Confirmer
+                            </button>
+                          )}
+                          {o.status === "preparing" ? (
+                            <>
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => openWedding(o)}
+                                className="rounded-lg bg-burgundy px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-burgundy-dark disabled:opacity-60"
+                              >
+                                {busy ? "Création…" : "📋 Saisir les infos"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setStatus(o.id, "dispatch")}
+                                className="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-violet-700"
+                              >
+                                → Dispatch
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => openWedding(o)}
+                              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
+                                o.wedding_id
+                                  ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
+                                  : "bg-burgundy text-white hover:bg-burgundy-dark"
+                              }`}
+                            >
+                              {busy ? "Création…" : o.wedding_id ? "Ouvrir le mariage" : "✎ Modifier"}
+                            </button>
+                          )}
+                        </span>
                       </td>
                     </tr>
                     {open && (
@@ -312,7 +344,9 @@ export default function SiteOrders() {
                             pack={pack}
                             patchOrder={patchOrder}
                             applySaved={applySaved}
-                            onConfirm={() => setStatus(o.id, "preparing")}
+                            onConfirm={() => setConfirmingOrder(o)}
+                            onFillInfos={() => openWedding(o)}
+                            onDispatch={() => setStatus(o.id, "dispatch")}
                             onCancel={() => setStatus(o.id, "cancelled")}
                             onDelete={() => deleteOrder(o.id)}
                           />
@@ -325,6 +359,19 @@ export default function SiteOrders() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* نافذة اختيار الباقة عند تأكيد الطلب — الاختيار ينقل الطلب إلى En préparation */}
+      {confirmingOrder && (
+        <PackChooser
+          order={confirmingOrder}
+          onClose={() => setConfirmingOrder(null)}
+          onValidated={(saved) => {
+            applySaved(saved);
+            setConfirmingOrder(null);
+          }}
+          patchOrder={patchOrder}
+        />
       )}
 
       {/* نافذة محرر العرس الكامل — نفس صفحة /owner/weddings/WED-X/edit
@@ -367,7 +414,111 @@ function RowGroup({ children }) {
 /* تفاصيل الطلب داخل الجدول (نمط EcoManager)                            */
 /* ------------------------------------------------------------------ */
 
-function RowDetails({ order: o, wa, pack, patchOrder, applySaved, onConfirm, onCancel, onDelete }) {
+/* نافذة تأكيد الطلب: نتفق مع الزبون على الباقة، واختيارها
+   يحفظها وينقل الطلب مباشرة إلى En préparation */
+function PackChooser({ order, onClose, onValidated, patchOrder }) {
+  const [packId, setPackId] = useState(order.pack_id || "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function validate() {
+    if (!packId) return setError("Choisissez un pack d'abord.");
+    setBusy(true);
+    setError("");
+    try {
+      const saved = await patchOrder(order.id, { packId, status: "preparing" });
+      onValidated(saved);
+    } catch (e) {
+      setError(e.message);
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className={`w-full max-w-2xl p-6 ${glass} !bg-ivory`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-1 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-ink">
+            Confirmer — {order.groom_name} & {order.bride_name}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fermer"
+            className="rounded-lg border border-gold/40 px-2.5 py-1 text-sm text-ink/60 hover:bg-ivory-dark"
+          >
+            ✕
+          </button>
+        </div>
+        <p className="mb-4 text-sm text-ink/55">
+          Quel pack le client a-t-il choisi ? La commande passera en préparation.
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          {PRICING.map((p) => {
+            const selected = packId === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => {
+                  setPackId(p.id);
+                  setError("");
+                }}
+                className={`rounded-2xl border-2 bg-white p-4 text-left transition-all ${
+                  selected ? "border-burgundy shadow-royal" : "border-gold/25 hover:border-gold/60"
+                }`}
+              >
+                <p className="text-sm font-semibold text-burgundy-dark">{p.name.fr}</p>
+                <p className="mt-1 font-serif text-xl font-bold text-ink tabular-nums">
+                  {formatDZD(p.price, "fr")}
+                </p>
+                <ul className="mt-2 space-y-1 text-[0.7rem] leading-snug text-ink/55">
+                  {p.features.fr.slice(0, 3).map((f, i) => (
+                    <li key={i}>• {f}</li>
+                  ))}
+                </ul>
+                {selected ? (
+                  <p className="mt-2 text-xs font-bold text-emerald">✓ Sélectionné</p>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+
+        {error && <p className="mt-3 text-sm text-burgundy">{error}</p>}
+
+        <button
+          type="button"
+          disabled={busy}
+          onClick={validate}
+          className="mt-5 w-full rounded-xl bg-emerald px-5 py-3 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:opacity-60"
+        >
+          {busy ? "…" : "✔ Valider → En préparation"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RowDetails({
+  order: o,
+  wa,
+  pack,
+  patchOrder,
+  applySaved,
+  onConfirm,
+  onFillInfos,
+  onDispatch,
+  onCancel,
+  onDelete,
+}) {
   const [motif, setMotif] = useState(o.confirmation_status || "");
   const [comment, setComment] = useState(o.comment || "");
   const [saving, setSaving] = useState(false);
@@ -511,8 +662,26 @@ function RowDetails({ order: o, wa, pack, patchOrder, applySaved, onConfirm, onC
             onClick={onConfirm}
             className="rounded-lg bg-emerald px-5 py-2 text-xs font-semibold text-white transition-colors hover:opacity-90"
           >
-            ✔ Confirmer → En préparation
+            ✔ Confirmer
           </button>
+        )}
+        {o.status === "preparing" && (
+          <>
+            <button
+              type="button"
+              onClick={onFillInfos}
+              className="rounded-lg bg-burgundy px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-burgundy-dark"
+            >
+              📋 Saisir les infos du client
+            </button>
+            <button
+              type="button"
+              onClick={onDispatch}
+              className="rounded-lg bg-violet-600 px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-700"
+            >
+              → Dispatch
+            </button>
+          </>
         )}
       </div>
     </div>
