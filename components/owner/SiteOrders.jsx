@@ -82,14 +82,18 @@ export default function SiteOrders() {
     setEditing(null);
   }
 
+  /* «Toutes» لا تشمل الطلبات قيد التحضير — لها تبويبها الخاص */
   const counts = useMemo(() => {
-    const c = { all: orders?.length || 0 };
+    const c = { all: orders?.filter((o) => o.status !== "preparing").length || 0 };
     for (const s of STATUSES) c[s.id] = orders?.filter((o) => o.status === s.id).length || 0;
     return c;
   }, [orders]);
 
   const shown = useMemo(
-    () => (filter === "all" ? orders : orders?.filter((o) => o.status === filter)),
+    () =>
+      filter === "all"
+        ? orders?.filter((o) => o.status !== "preparing")
+        : orders?.filter((o) => o.status === filter),
     [orders, filter]
   );
 
