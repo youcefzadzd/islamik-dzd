@@ -59,11 +59,21 @@ module.exports = {
       animation: {
         float: "float 7s ease-in-out infinite",
         spinSlow: "spin 40s linear infinite",
+        marquee: "marquee 45s linear infinite",
+        marqueeReverse: "marqueeReverse 45s linear infinite",
       },
       keyframes: {
         float: {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-12px)" },
+        },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        marqueeReverse: {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
         },
       },
     },

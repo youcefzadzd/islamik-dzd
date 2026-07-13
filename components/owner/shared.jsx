@@ -101,6 +101,7 @@ const NAV = [
   { href: "/owner", label: "Dashboard", icon: "🏠" },
   { href: "/owner/weddings", label: "Mariages", icon: "💍" },
   { href: "/owner/weddings/new", label: "Créer un mariage", icon: "➕" },
+  { href: "/owner/orders", label: "Commandes", icon: "🛒" },
   { href: "/owner/templates", label: "Modèles", icon: "🖼" },
   { href: "/owner/media", label: "Médiathèque", icon: "📁" },
   { href: "/owner/music", label: "Musiques", icon: "🎵" },
