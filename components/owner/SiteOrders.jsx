@@ -108,6 +108,17 @@ export default function SiteOrders() {
     }
   }
 
+  /* تغيير الباقة مباشرة من عمود الجدول — دون فتح التفاصيل */
+  async function setPack(id, packId) {
+    const before = orders;
+    setOrders(orders.map((o) => (o.id === id ? { ...o, pack_id: packId || null } : o)));
+    try {
+      await patchOrder(id, { packId });
+    } catch {
+      setOrders(before);
+    }
+  }
+
   async function deleteOrder(id) {
     if (!window.confirm("Supprimer définitivement cette commande ?")) return;
     const res = await fetch("/api/owner/site-orders", {
@@ -322,13 +333,43 @@ export default function SiteOrders() {
                         )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
-                        <span dir="ltr" className="tabular-nums text-ink/80">{o.phone}</span>
+                        {/* الرقم قابل للنقر: اتصال مباشر + رابط واتساب */}
+                        <a
+                          href={`tel:${o.phone}`}
+                          dir="ltr"
+                          className="tabular-nums font-semibold text-burgundy underline-offset-4 hover:underline"
+                        >
+                          {o.phone}
+                        </a>
+                        {wa && (
+                          <a
+                            href={wa}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Ouvrir WhatsApp"
+                            className="ml-1.5 align-middle text-emerald"
+                          >
+                            🟢
+                          </a>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-ink/75">
                         {templateName(o.template_id)}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-ink/75">
-                        {pack ? `${pack.name.fr} — ${formatDZD(pack.price, "fr")}` : "—"}
+                      <td className="whitespace-nowrap px-4 py-3">
+                        {/* الباقة تُغيَّر مباشرة من الجدول */}
+                        <select
+                          value={o.pack_id || ""}
+                          onChange={(e) => setPack(o.id, e.target.value)}
+                          className="rounded-lg border border-gold/30 bg-white px-2 py-1 text-xs font-semibold text-ink/75 outline-none"
+                        >
+                          <option value="">—</option>
+                          {PRICING.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name.fr} — {formatDZD(p.price, "fr")}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right">
                         <span className="inline-flex gap-1.5">
@@ -369,7 +410,7 @@ export default function SiteOrders() {
                               </button>
                             </>
                           )}
-                          {o.status === "preparing" ? (
+                          {o.status === "preparing" && (
                             <>
                               <button
                                 type="button"
@@ -387,19 +428,6 @@ export default function SiteOrders() {
                                 → Dispatch
                               </button>
                             </>
-                          ) : (
-                            <button
-                              type="button"
-                              disabled={busy}
-                              onClick={() => openWedding(o)}
-                              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
-                                o.wedding_id
-                                  ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
-                                  : "bg-burgundy text-white hover:bg-burgundy-dark"
-                              }`}
-                            >
-                              {busy ? "Création…" : o.wedding_id ? "Ouvrir le mariage" : "✎ Modifier"}
-                            </button>
                           )}
                         </span>
                       </td>
