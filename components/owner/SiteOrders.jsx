@@ -477,8 +477,8 @@ export default function SiteOrders() {
       {editorWedding && (
         <div className="fixed inset-0 z-50 flex flex-col bg-ink/50 p-3 backdrop-blur-sm sm:p-6">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <span className="rounded-lg bg-ivory px-3 py-1.5 text-sm font-semibold text-ink shadow">
-              Mariage {editorWedding}
+            <span className="rounded-lg bg-ivory px-3.5 py-1.5 text-sm font-semibold text-ink shadow">
+              📋 Saisie des informations client — {editorWedding}
             </span>
             <button
               type="button"
@@ -492,7 +492,7 @@ export default function SiteOrders() {
             </button>
           </div>
           <iframe
-            src={`/owner/weddings/${encodeURIComponent(editorWedding)}/edit`}
+            src={`/owner/weddings/${encodeURIComponent(editorWedding)}/edit?embed=1`}
             title={`Mariage ${editorWedding}`}
             className="w-full flex-1 rounded-2xl border border-gold/30 bg-ivory shadow-royal"
           />

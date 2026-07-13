@@ -1,6 +1,8 @@
 import OwnerEdit from "@/components/owner/OwnerEdit";
 
-export default async function OwnerEditPage({ params }) {
+export default async function OwnerEditPage({ params, searchParams }) {
   const { weddingId } = await params;
-  return <OwnerEdit weddingId={weddingId} />;
+  const sp = await searchParams;
+  // ?embed=1 : وضع «صفحة ملء البيانات» — بلا قائمة جانبية ولا شريط علوي
+  return <OwnerEdit weddingId={weddingId} embed={sp?.embed === "1"} />;
 }
