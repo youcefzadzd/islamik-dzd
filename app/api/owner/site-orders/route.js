@@ -9,7 +9,8 @@ import { CATALOG, PRICING } from "@/components/site/site-config";
  * PATCH → تعديل طلب: الحالة و/أو أي حقل من حقول الطلب { id, ...fields }
  */
 
-const STATUSES = new Set(["new", "contacted", "preparing", "done", "cancelled"]);
+/* new = En confirmation، ثم سلسلة التحضير والتوصيل */
+const STATUSES = new Set(["new", "preparing", "dispatch", "delivering", "delivered", "returned"]);
 const TEMPLATE_IDS = new Set(CATALOG.filter((c) => !c.comingSoon).map((c) => c.id));
 const PACK_IDS = new Set(PRICING.map((p) => p.id));
 

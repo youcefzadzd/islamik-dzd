@@ -4,13 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { CATALOG, PRICING, formatDZD } from "@/components/site/site-config";
 import { CopyButton, OwnerGate, OwnerLayout, ownerHeaders, glass, OWNER_PASS_KEY } from "./shared";
 
-/* حالات الطلب — نفس قيم عمود status في site_orders */
+/* حالات الطلب — نفس قيم عمود status في site_orders.
+   الطلب الجديد يصل بحالة new (= En confirmation) ثم يتدرج في السلسلة. */
 const STATUSES = [
-  { id: "new", label: "Nouveau", cls: "bg-gold/20 text-gold-dark" },
-  { id: "contacted", label: "Contacté", cls: "bg-burgundy/10 text-burgundy" },
+  { id: "new", label: "En confirmation", cls: "bg-gold/20 text-gold-dark" },
   { id: "preparing", label: "En préparation", cls: "bg-sky-100 text-sky-700" },
-  { id: "done", label: "Terminé", cls: "bg-emerald/10 text-emerald" },
-  { id: "cancelled", label: "Annulé", cls: "bg-ink/10 text-ink/50" },
+  { id: "dispatch", label: "En dispatch", cls: "bg-violet-100 text-violet-700" },
+  { id: "delivering", label: "En livraison", cls: "bg-amber-100 text-amber-700" },
+  { id: "delivered", label: "Livré", cls: "bg-emerald/10 text-emerald" },
+  { id: "returned", label: "Retour", cls: "bg-rose-100 text-rose-700" },
 ];
 
 const templateName = (id) => CATALOG.find((c) => c.id === id)?.name || id || "—";
@@ -266,7 +268,7 @@ export default function SiteOrders() {
                         >
                           {busy ? "Création…" : o.wedding_id ? "Ouvrir le mariage" : "✎ Modifier"}
                         </button>
-                        {(o.status === "new" || o.status === "contacted") && (
+                        {o.status === "new" && (
                           <button
                             type="button"
                             onClick={() => setStatus(o.id, "preparing")}
