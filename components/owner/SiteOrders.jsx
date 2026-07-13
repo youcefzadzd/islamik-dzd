@@ -52,6 +52,7 @@ export default function SiteOrders() {
   const [editorWedding, setEditorWedding] = useState(null); // WED-XXX المفتوح في نافذة التحرير
   const [expandedId, setExpandedId] = useState(null); // الصف المفتوح بزر ➕
   const [confirmingOrder, setConfirmingOrder] = useState(null); // نافذة اختيار الباقة عند التأكيد
+  const [motifFilter, setMotifFilter] = useState(""); // فلترة بعمود Statut de confirmation
 
   async function load() {
     setLoadError("");
@@ -170,13 +171,15 @@ export default function SiteOrders() {
     return c;
   }, [orders]);
 
-  const shown = useMemo(
-    () =>
+  const shown = useMemo(() => {
+    let rows =
       filter === "all"
         ? orders?.filter((o) => o.status !== "preparing")
-        : orders?.filter((o) => o.status === filter),
-    [orders, filter]
-  );
+        : orders?.filter((o) => o.status === filter);
+    if (motifFilter === "none") rows = rows?.filter((o) => !o.confirmation_status);
+    else if (motifFilter) rows = rows?.filter((o) => o.confirmation_status === motifFilter);
+    return rows;
+  }, [orders, filter, motifFilter]);
 
   if (!granted) return <OwnerGate onGranted={() => load()} />;
 
@@ -188,7 +191,10 @@ export default function SiteOrders() {
           <button
             key={s.id}
             type="button"
-            onClick={() => setFilter(s.id)}
+            onClick={() => {
+              setFilter(s.id);
+              setMotifFilter("");
+            }}
             className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
               filter === s.id ? "border-burgundy bg-burgundy text-white" : `border-gold/30 ${s.cls}`
             }`}
@@ -221,7 +227,27 @@ export default function SiteOrders() {
                 <th className="w-10 px-3 py-3" />
                 <th className="px-4 py-3">Reçue le</th>
                 <th className="px-4 py-3">Couple</th>
-                <th className="px-4 py-3">Statut de confirmation</th>
+                <th className="px-4 py-3">
+                  <span className="block">Statut de confirmation</span>
+                  {/* فلترة بجميع خيارات الـ motif — مثل صف الفلاتر في EcoManager */}
+                  <select
+                    value={motifFilter}
+                    onChange={(e) => setMotifFilter(e.target.value)}
+                    className={`mt-1.5 w-full max-w-[180px] rounded-lg border px-2 py-1 text-[0.68rem] font-semibold normal-case tracking-normal outline-none ${
+                      motifFilter
+                        ? "border-burgundy bg-burgundy/10 text-burgundy"
+                        : "border-gold/30 bg-white text-ink/60"
+                    }`}
+                  >
+                    <option value="">Tous</option>
+                    <option value="none">Sans motif</option>
+                    {MOTIFS.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </th>
                 <th className="px-4 py-3">Téléphone</th>
                 <th className="px-4 py-3">Modèle</th>
                 <th className="px-4 py-3">Pack</th>
