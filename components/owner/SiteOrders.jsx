@@ -19,14 +19,10 @@ const STATUSES = [
 /* motifs محاولات الاتصال (نمط EcoManager) — عدّل القائمة بحرّية */
 const MOTIFS = [
   "DAY 1 NRP 1",
-  "DAY 1 NRP 2",
   "DAY 1 NRP 3 SMS",
   "DAY 2 NRP 1",
-  "DAY 2 NRP 2",
   "DAY 3 NRP 1",
   "En attente de confirmation du client",
-  "Confirmer todkhol nb3toha",
-  "N3awdou n3aytolou ki todkhol",
   "WhatsApp",
 ];
 
