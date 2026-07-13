@@ -13,7 +13,6 @@ const STATUSES = [
   { id: "cancelled", label: "Annulé", cls: "bg-ink/10 text-ink/50" },
 ];
 
-const LIVE_TEMPLATES = CATALOG.filter((c) => !c.comingSoon);
 const templateName = (id) => CATALOG.find((c) => c.id === id)?.name || id || "—";
 const packOf = (id) => PRICING.find((p) => p.id === id) || null;
 
@@ -31,7 +30,7 @@ export default function SiteOrders() {
   const [orders, setOrders] = useState(null);
   const [loadError, setLoadError] = useState("");
   const [filter, setFilter] = useState("all");
-  const [editing, setEditing] = useState(null); // الطلب المفتوح في نافذة التعديل
+  const [creatingId, setCreatingId] = useState(null); // طلب يجري إنشاء عرسه
 
   async function load() {
     setLoadError("");
@@ -55,7 +54,6 @@ export default function SiteOrders() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* تعديل جزئي (الحالة من الجدول) — متفائل مع تراجع عند الفشل */
   async function patchOrder(id, fields) {
     const res = await fetch("/api/owner/site-orders", {
       method: "PATCH",
@@ -77,9 +75,43 @@ export default function SiteOrders() {
     }
   }
 
-  function applySaved(order) {
-    setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
-    setEditing(null);
+  /* «Modifier» = فتح العرس الكامل لهذا الطلب:
+     أول ضغطة تُنشئ العرس من بيانات الطلب، تربطه به، تنقله إلى
+     «En préparation» ثم تفتح محرر العرس الكامل. الضغطات التالية
+     تفتح المحرر مباشرة. */
+  async function openWedding(o) {
+    if (o.wedding_id) {
+      window.location.href = `/owner/weddings/${encodeURIComponent(o.wedding_id)}/edit`;
+      return;
+    }
+    setCreatingId(o.id);
+    setLoadError("");
+    try {
+      const res = await fetch("/api/owner/weddings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...ownerHeaders() },
+        body: JSON.stringify({
+          groomName: o.groom_name,
+          brideName: o.bride_name,
+          weddingDate: o.wedding_date || undefined,
+          locationName: o.venue || undefined,
+          defaultLanguage: o.lang === "ar" ? "ar" : "fr",
+          theme: { template: o.template_id || "islamic-royal" },
+          contact: { phone: o.phone },
+          // كلمة مؤقتة للوحة الزوجين — غيّرها من محرر العرس قبل التسليم
+          dashboardPassword: Math.random().toString(36).slice(2, 10),
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || "Erreur serveur.");
+      const weddingId = body.wedding?.wedding_id;
+      if (!weddingId) throw new Error("Réponse inattendue du serveur.");
+      await patchOrder(o.id, { weddingId, status: "preparing" });
+      window.location.href = `/owner/weddings/${encodeURIComponent(weddingId)}/edit`;
+    } catch (e) {
+      setLoadError(e.message);
+      setCreatingId(null);
+    }
   }
 
   /* «Toutes» لا تشمل الطلبات قيد التحضير — لها تبويبها الخاص */
@@ -152,6 +184,7 @@ export default function SiteOrders() {
                 const pack = packOf(o.pack_id);
                 const wa = customerWhatsApp(o.phone);
                 const st = STATUSES.find((s) => s.id === o.status) || STATUSES[0];
+                const busy = creatingId === o.id;
                 return (
                   <tr key={o.id} className="border-b border-gold/10 last:border-0 hover:bg-white/50">
                     <td className="whitespace-nowrap px-4 py-3 text-ink/60">
@@ -194,7 +227,15 @@ export default function SiteOrders() {
                         "—"
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-ink/60">{o.wedding_date || "—"}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-ink/60">
+                      {o.wedding_id ? (
+                        <span className="rounded bg-emerald/10 px-1.5 py-0.5 text-xs font-semibold text-emerald">
+                          {o.wedding_id}
+                        </span>
+                      ) : (
+                        o.wedding_date || "—"
+                      )}
+                    </td>
                     <td className="whitespace-nowrap px-4 py-3">
                       <select
                         value={o.status}
@@ -211,10 +252,15 @@ export default function SiteOrders() {
                     <td className="whitespace-nowrap px-4 py-3 text-right">
                       <button
                         type="button"
-                        onClick={() => setEditing(o)}
-                        className="rounded-lg border border-gold/40 px-3 py-1.5 text-xs font-semibold text-gold-dark transition-colors hover:bg-ivory-dark"
+                        disabled={busy}
+                        onClick={() => openWedding(o)}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
+                          o.wedding_id
+                            ? "border border-emerald/50 text-emerald hover:bg-emerald/10"
+                            : "bg-burgundy text-white hover:bg-burgundy-dark"
+                        }`}
                       >
-                        ✎ Modifier
+                        {busy ? "Création…" : o.wedding_id ? "Ouvrir le mariage" : "✎ Modifier"}
                       </button>
                     </td>
                   </tr>
@@ -224,151 +270,6 @@ export default function SiteOrders() {
           </table>
         </div>
       )}
-
-      {editing && (
-        <EditOrderModal
-          order={editing}
-          onClose={() => setEditing(null)}
-          onSaved={applySaved}
-          patchOrder={patchOrder}
-        />
-      )}
     </OwnerLayout>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* نافذة تعديل الطلب — كل الحقول + «Confirmer» ينقله إلى En préparation */
-/* ------------------------------------------------------------------ */
-
-function EditOrderModal({ order, onClose, onSaved, patchOrder }) {
-  const [groom, setGroom] = useState(order.groom_name || "");
-  const [bride, setBride] = useState(order.bride_name || "");
-  const [phone, setPhone] = useState(order.phone || "");
-  const [date, setDate] = useState(order.wedding_date || "");
-  const [venue, setVenue] = useState(order.venue || "");
-  const [templateId, setTemplateId] = useState(order.template_id || "");
-  const [packId, setPackId] = useState(order.pack_id || "");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-
-  const fields = () => ({
-    groomName: groom,
-    brideName: bride,
-    phone,
-    weddingDate: date,
-    venue,
-    templateId,
-    packId,
-  });
-
-  async function save(extra = {}) {
-    setError("");
-    if (groom.trim().length < 2) return setError("Nom du marié invalide.");
-    if (bride.trim().length < 2) return setError("Nom de la mariée invalide.");
-    const digits = phone.replace(/\D/g, "");
-    if (digits.length < 8 || digits.length > 15) return setError("Téléphone invalide.");
-    setBusy(true);
-    try {
-      const saved = await patchOrder(order.id, { ...fields(), ...extra });
-      onSaved(saved);
-    } catch (e) {
-      setError(e.message);
-      setBusy(false);
-    }
-  }
-
-  const input =
-    "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-burgundy";
-  const label = "mb-1 block text-xs font-semibold uppercase tracking-wider text-ink/50";
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className={`max-h-[90vh] w-full max-w-lg overflow-y-auto p-6 ${glass} !bg-ivory`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-ink">Modifier la commande</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fermer"
-            className="rounded-lg border border-gold/40 px-2.5 py-1 text-sm text-ink/60 hover:bg-ivory-dark"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className={label}>Marié</label>
-            <input className={input} value={groom} onChange={(e) => setGroom(e.target.value)} />
-          </div>
-          <div>
-            <label className={label}>Mariée</label>
-            <input className={input} value={bride} onChange={(e) => setBride(e.target.value)} />
-          </div>
-          <div>
-            <label className={label}>Téléphone</label>
-            <input className={input} dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} />
-          </div>
-          <div>
-            <label className={label}>Date du mariage</label>
-            <input className={input} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={label}>Lieu / salle</label>
-            <input className={input} value={venue} onChange={(e) => setVenue(e.target.value)} />
-          </div>
-          <div>
-            <label className={label}>Modèle</label>
-            <select className={input} value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
-              <option value="">—</option>
-              {LIVE_TEMPLATES.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className={label}>Pack</label>
-            <select className={input} value={packId} onChange={(e) => setPackId(e.target.value)}>
-              <option value="">—</option>
-              {PRICING.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name.fr} — {formatDZD(p.price, "fr")}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {error && <p className="mt-4 rounded-lg bg-burgundy/10 px-3 py-2 text-sm text-burgundy">{error}</p>}
-
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => save()}
-            className="rounded-xl border border-gold/50 px-5 py-2.5 text-sm font-semibold text-gold-dark transition-colors hover:bg-ivory-dark disabled:opacity-60"
-          >
-            Enregistrer
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => save({ status: "preparing" })}
-            className="flex-1 rounded-xl bg-burgundy px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-burgundy-dark disabled:opacity-60"
-          >
-            {busy ? "…" : "Confirmer → En préparation"}
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }

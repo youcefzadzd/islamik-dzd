@@ -34,6 +34,8 @@ alter table public.site_orders add column if not exists groom_name   text;
 alter table public.site_orders add column if not exists bride_name   text;
 alter table public.site_orders add column if not exists wedding_date date;
 alter table public.site_orders add column if not exists venue        text;
+-- ربط الطلب بالعرس المُنشأ منه (WED-XXXXXX) — زر Modifier في لوحة الطلبات
+alter table public.site_orders add column if not exists wedding_id   text;
 
 -- النسخة القديمة كانت تُلزم full_name — أزل الإلزام إن وُجد العمود
 do $$

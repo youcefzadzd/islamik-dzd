@@ -31,7 +31,7 @@ export async function GET(request) {
 
   const { data, error } = await supabase
     .from("site_orders")
-    .select("id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status")
+    .select("id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id")
     .order("created_at", { ascending: false })
     .limit(500);
 
@@ -109,6 +109,13 @@ export async function PATCH(request) {
     if (p && !PACK_IDS.has(p)) return NextResponse.json({ error: "invalid pack" }, { status: 400 });
     update.pack_id = p || null;
   }
+  if (body.weddingId !== undefined) {
+    const w = String(body.weddingId).trim();
+    if (w && !/^WED-[A-Z0-9]{4,12}$/i.test(w)) {
+      return NextResponse.json({ error: "invalid wedding id" }, { status: 400 });
+    }
+    update.wedding_id = w || null;
+  }
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "nothing to update" }, { status: 400 });
@@ -118,7 +125,7 @@ export async function PATCH(request) {
     .from("site_orders")
     .update(update)
     .eq("id", id)
-    .select("id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status")
+    .select("id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id")
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, order: data });
