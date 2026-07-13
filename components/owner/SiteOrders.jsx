@@ -524,6 +524,21 @@ function RowDetails({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [savedTick, setSavedTick] = useState(false);
+  const [packSaving, setPackSaving] = useState(false);
+
+  /* تغيير الباقة من بطاقة Commande — يُحفظ فورًا دون تغيير الحالة */
+  async function changePack(packId) {
+    setPackSaving(true);
+    setError("");
+    try {
+      const saved = await patchOrder(o.id, { packId });
+      applySaved(saved);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setPackSaving(false);
+    }
+  }
 
   async function saveFollowUp() {
     setSaving(true);
@@ -613,7 +628,7 @@ function RowDetails({
           </button>
         </section>
 
-        {/* ملخص الطلب */}
+        {/* ملخص الطلب — الباقة قابلة للتغيير مباشرة من هنا */}
         <section className={card}>
           <h3 className={heading}>Commande</h3>
           <ul className="space-y-1.5 text-sm text-ink/80">
@@ -621,18 +636,26 @@ function RowDetails({
               🖼 Modèle : <span className="font-semibold">{templateName(o.template_id)}</span>
             </li>
             <li>
-              📦 Pack :{" "}
-              {pack ? (
-                <span className="font-semibold">{pack.name.fr}</span>
-              ) : (
-                <span className="text-ink/40">non choisi</span>
-              )}
+              <label className="mb-1 block text-xs text-ink/50">📦 Pack</label>
+              <select
+                className={input}
+                value={o.pack_id || ""}
+                disabled={packSaving}
+                onChange={(e) => changePack(e.target.value)}
+              >
+                <option value="">— non choisi —</option>
+                {PRICING.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name.fr} — {formatDZD(p.price, "fr")}
+                  </option>
+                ))}
+              </select>
             </li>
             {pack ? (
               <li className="mt-2 flex items-baseline justify-between rounded-xl bg-ivory-light px-3 py-2">
                 <span className="text-xs uppercase tracking-wider text-ink/50">Total</span>
                 <span className="font-serif text-lg font-bold text-burgundy-dark tabular-nums">
-                  {formatDZD(pack.price, "fr")}
+                  {packSaving ? "…" : formatDZD(pack.price, "fr")}
                 </span>
               </li>
             ) : null}
