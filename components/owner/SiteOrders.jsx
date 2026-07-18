@@ -301,7 +301,7 @@ export default function SiteOrders() {
         <div className={`overflow-x-auto ${glass}`}>
           <table className="w-full min-w-[1000px] text-sm">
             <thead>
-              <tr className="border-b border-gold/25 text-left text-xs uppercase tracking-wider text-ink/45">
+              <tr className="border-b border-stone-200 bg-stone-50/60 text-left text-xs uppercase tracking-wider text-stone-500">
                 <th className="w-10 px-3 py-3" />
                 <th className="px-4 py-3">Reçue le</th>
                 <th className="px-4 py-3">Couple</th>
@@ -531,7 +531,7 @@ export default function SiteOrders() {
                       </td>
                     </tr>
                     {open && (
-                      <tr className="border-b border-gold/10 bg-ivory-light/60">
+                      <tr className="border-b border-stone-200 bg-stone-50">
                         <td colSpan={filter === "preparing" ? 7 : 8} className="px-4 py-5">
                           <RowDetails
                             order={o}
@@ -750,7 +750,7 @@ function RowDetails({
     }
   }
 
-  const card = "rounded-2xl border border-gold/25 bg-white/70 p-4";
+  const card = "rounded-xl border border-stone-200 bg-white p-4 shadow-sm";
   const heading = "mb-3 text-xs font-bold uppercase tracking-wider text-ink/50";
   const input =
     "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-burgundy";

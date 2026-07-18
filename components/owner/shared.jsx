@@ -8,9 +8,8 @@ export function ownerHeaders() {
   return { "x-owner-password": sessionStorage.getItem(OWNER_PASS_KEY) || "" };
 }
 
-/* one glass card style for the whole admin */
-export const glass =
-  "rounded-2xl border border-gold/25 bg-white/60 shadow-card backdrop-blur-md";
+/* بطاقة موحّدة لكل صفحات الإدارة — نمط SaaS نظيف على خلفية رمادية فاتحة */
+export const glass = "rounded-xl border border-stone-200 bg-white shadow-sm";
 
 /* wedding status derived from its date + archive flag */
 export function statusOf(w) {
@@ -37,14 +36,14 @@ export function CopyButton({ text, label = "copier" }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      className="rounded-md border border-gold/50 px-2 py-0.5 text-xs text-gold-dark transition-colors hover:bg-ivory-dark"
+      className="rounded-md border border-stone-300 px-2 py-0.5 text-xs text-stone-500 transition-colors hover:border-gold hover:text-gold-dark"
     >
       {copied ? "✓" : label}
     </button>
   );
 }
 
-/* password gate for the whole owner area */
+/* password gate for the whole owner area — dark professional */
 export function OwnerGate({ onGranted }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -70,12 +69,27 @@ export function OwnerGate({ onGranted }) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-ivory px-4">
-      <form onSubmit={tryLogin} className={`w-full max-w-xs space-y-4 p-6 ${glass}`}>
-        <p className="text-center font-monogram text-3xl text-gold-dark">Invitations Royales</p>
-        <h1 className="text-center text-sm uppercase tracking-[0.2em] text-ink/60">
-          Espace propriétaire
-        </h1>
+    <main className="flex min-h-screen items-center justify-center bg-stone-950 px-4">
+      {/* توهج ذهبي خفيف خلف البطاقة */}
+      <div
+        className="pointer-events-none fixed inset-0 overflow-hidden"
+        aria-hidden
+      >
+        <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 rounded-full bg-gold/10 blur-3xl" />
+      </div>
+      <form
+        onSubmit={tryLogin}
+        className="relative w-full max-w-sm space-y-5 rounded-2xl border border-stone-800 bg-stone-900 p-8 shadow-2xl"
+      >
+        <div className="text-center">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-gold to-gold-dark font-monogram text-2xl text-white shadow-lg">
+            D
+          </span>
+          <p className="mt-4 font-monogram text-3xl text-gold">Dawati</p>
+          <h1 className="mt-1 text-xs font-semibold uppercase tracking-[0.3em] text-stone-500">
+            Espace propriétaire
+          </h1>
+        </div>
         <input
           type="password"
           required
@@ -83,12 +97,12 @@ export function OwnerGate({ onGranted }) {
           placeholder="Mot de passe"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-burgundy"
+          className="w-full rounded-xl border border-stone-700 bg-stone-950 px-4 py-3 text-sm text-stone-100 outline-none transition-colors placeholder:text-stone-600 focus:border-gold"
         />
-        {error && <p className="text-sm text-burgundy">{error}</p>}
+        {error && <p className="text-sm text-rose-400">{error}</p>}
         <button
           type="submit"
-          className="w-full rounded-xl bg-burgundy px-6 py-2.5 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-burgundy-dark"
+          className="w-full rounded-xl bg-gradient-to-r from-burgundy to-burgundy-dark px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
         >
           Entrer
         </button>
@@ -109,73 +123,87 @@ const NAV = [
   { href: "/owner/settings", label: "Paramètres", icon: "⚙️" },
 ];
 
-/* SaaS admin shell: left sidebar + top bar + content */
+/* SaaS admin shell — قائمة داكنة + محتوى فاتح نظيف */
 export function OwnerLayout({ children, active, title, actions }) {
   const [open, setOpen] = useState(false);
 
   const nav = (
-    <nav className="space-y-1">
-      {NAV.map((item) => (
-        <a
-          key={item.href}
-          href={item.href}
-          className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors ${
-            active === item.href
-              ? "bg-burgundy text-white shadow-card"
-              : "text-ink/75 hover:bg-white/70"
-          }`}
-        >
-          <span className="w-5 text-center">{item.icon}</span>
-          {item.label}
-        </a>
-      ))}
+    <nav className="space-y-0.5">
+      {NAV.map((item) => {
+        const isActive = active === item.href;
+        return (
+          <a
+            key={item.href}
+            href={item.href}
+            className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+              isActive
+                ? "bg-stone-800 font-semibold text-white"
+                : "text-stone-400 hover:bg-stone-800/60 hover:text-stone-100"
+            }`}
+          >
+            {/* مؤشر ذهبي للعنصر النشط */}
+            {isActive && (
+              <span className="absolute inset-y-2 left-0 w-1 rounded-full bg-gold" aria-hidden />
+            )}
+            <span className="w-5 text-center text-base">{item.icon}</span>
+            {item.label}
+          </a>
+        );
+      })}
     </nav>
   );
 
   return (
-    <main className="min-h-screen bg-ivory md:pl-60">
-      {/* sidebar — fixed on desktop, slide-over on mobile */}
+    <main className="min-h-screen bg-stone-100 md:pl-60">
+      {/* sidebar — داكن ثابت على المكتب، منزلق على الجوال */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-60 border-r border-gold/25 bg-ivory-light/90 p-4 backdrop-blur-md transition-transform md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col bg-stone-900 p-4 transition-transform md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <a href="/owner" className="mb-6 block px-2">
-          <p className="font-monogram text-2xl text-gold-dark">Invitations Royales</p>
-          <p className="text-[0.65rem] uppercase tracking-[0.25em] text-ink/45">admin</p>
+        <a href="/owner" className="mb-6 flex items-center gap-3 px-2 pt-1">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-dark font-monogram text-xl text-white shadow">
+            D
+          </span>
+          <span>
+            <span className="block font-monogram text-2xl leading-none text-gold">Dawati</span>
+            <span className="block text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-stone-500">
+              admin
+            </span>
+          </span>
         </a>
-        {nav}
-        <p className="absolute bottom-4 left-4 right-4 text-[0.65rem] text-ink/35">
-          © {new Date().getFullYear()} — plateforme privée
+        <div className="flex-1 overflow-y-auto">{nav}</div>
+        <p className="mt-4 border-t border-stone-800 px-2 pt-3 text-[0.65rem] text-stone-600">
+          © {new Date().getFullYear()} Dawati — plateforme privée
         </p>
       </aside>
       {open && (
         <button
           aria-label="Fermer le menu"
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-30 bg-ink/30 md:hidden"
+          className="fixed inset-0 z-30 bg-stone-950/60 backdrop-blur-sm md:hidden"
         />
       )}
 
-      {/* top bar */}
-      <header className="sticky top-0 z-20 border-b border-gold/25 bg-ivory/85 backdrop-blur-md">
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
+      {/* top bar — أبيض نظيف بظل خفيف */}
+      <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/90 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-3 px-5 py-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               aria-label="Menu"
               onClick={() => setOpen(true)}
-              className="rounded-lg border border-gold/40 px-2.5 py-1.5 text-sm text-gold-dark md:hidden"
+              className="rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm text-stone-600 md:hidden"
             >
               ☰
             </button>
-            <h1 className="text-lg font-semibold text-ink">{title}</h1>
+            <h1 className="text-lg font-bold tracking-tight text-stone-900">{title}</h1>
           </div>
           <div className="flex items-center gap-2">
             {actions}
             <a
               href="/owner/weddings/new"
-              className="rounded-xl bg-burgundy px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-burgundy-dark"
+              className="rounded-lg bg-burgundy px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-burgundy-dark hover:shadow"
             >
               + Créer
             </a>
@@ -183,7 +211,7 @@ export function OwnerLayout({ children, active, title, actions }) {
         </div>
       </header>
 
-      <div className="px-4 py-6">{children}</div>
+      <div className="px-5 py-6">{children}</div>
     </main>
   );
 }
