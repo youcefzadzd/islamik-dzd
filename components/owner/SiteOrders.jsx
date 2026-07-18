@@ -49,6 +49,7 @@ export default function SiteOrders() {
   const [expandedId, setExpandedId] = useState(null); // الصف المفتوح بزر ➕
   const [confirmingOrder, setConfirmingOrder] = useState(null); // نافذة اختيار الباقة عند التأكيد
   const [motifFilter, setMotifFilter] = useState(""); // فلترة بعمود Statut de confirmation
+  const [infosFilter, setInfosFilter] = useState(""); // "" | todo | done — فلترة اكتمال المعلومات (En préparation)
 
   async function load() {
     setLoadError("");
@@ -216,8 +217,22 @@ export default function SiteOrders() {
         : orders?.filter((o) => o.status === filter);
     if (motifFilter === "none") rows = rows?.filter((o) => !o.confirmation_status);
     else if (motifFilter) rows = rows?.filter((o) => o.confirmation_status === motifFilter);
+    if (filter === "preparing" && infosFilter === "todo")
+      rows = rows?.filter((o) => !o.infos_complete);
+    else if (filter === "preparing" && infosFilter === "done")
+      rows = rows?.filter((o) => o.infos_complete);
     return rows;
-  }, [orders, filter, motifFilter]);
+  }, [orders, filter, motifFilter, infosFilter]);
+
+  /* عدّادا فلتر اكتمال المعلومات في En préparation */
+  const infosCounts = useMemo(() => {
+    const prep = orders?.filter((o) => o.status === "preparing") || [];
+    return {
+      all: prep.length,
+      todo: prep.filter((o) => !o.infos_complete).length,
+      done: prep.filter((o) => o.infos_complete).length,
+    };
+  }, [orders]);
 
   if (!granted) return <OwnerGate onGranted={() => load()} />;
 
@@ -232,6 +247,7 @@ export default function SiteOrders() {
             onClick={() => {
               setFilter(s.id);
               setMotifFilter("");
+              setInfosFilter("");
             }}
             className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
               filter === s.id ? "border-burgundy bg-burgundy text-white" : `border-gold/30 ${s.cls}`
@@ -248,6 +264,30 @@ export default function SiteOrders() {
           ↻ Actualiser
         </button>
       </div>
+
+      {/* فلتر اكتمال المعلومات — يظهر في تبويب En préparation فقط */}
+      {filter === "preparing" && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {[
+            { id: "", label: "Toutes", cls: "bg-white/70 text-ink/70" },
+            { id: "todo", label: "⚠ Infos à saisir", cls: "bg-amber-100 text-amber-700" },
+            { id: "done", label: "✓ Infos complètes", cls: "bg-emerald/10 text-emerald" },
+          ].map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setInfosFilter(f.id)}
+              className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                infosFilter === f.id
+                  ? "border-burgundy bg-burgundy text-white"
+                  : `border-gold/30 ${f.cls}`
+              }`}
+            >
+              {f.label} · {infosCounts[f.id || "all"]}
+            </button>
+          ))}
+        </div>
+      )}
 
       {loadError && <p className={`mb-4 p-4 text-sm text-burgundy ${glass}`}>{loadError}</p>}
       {!orders && !loadError && <p className="py-10 text-center text-ink/55">Chargement…</p>}
