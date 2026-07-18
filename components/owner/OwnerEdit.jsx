@@ -72,14 +72,14 @@ export default function OwnerEdit({ weddingId, embed = false }) {
             href={`/w/${weddingId}`}
             target="_blank"
             rel="noreferrer"
-            className="text-burgundy underline-offset-4 hover:underline"
+            className="text-stone-700 underline-offset-4 hover:underline"
           >
             Voir l'invitation
           </a>
         </p>
       )}
       {!wedding && !error && <p className="py-8 text-center text-ink/55">Chargement…</p>}
-      {error && !wedding && <p className="py-8 text-center text-burgundy">{error}</p>}
+      {error && !wedding && <p className="py-8 text-center text-rose-600">{error}</p>}
       {wedding && (
         <WeddingWizard
           key={wedding.updated_at}
@@ -105,14 +105,14 @@ export default function OwnerEdit({ weddingId, embed = false }) {
         <div className="mx-auto max-w-4xl">
           <header className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-gold/25 pb-4">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/50 bg-white font-monogram text-xl text-burgundy shadow-sm">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/50 bg-white font-monogram text-xl text-stone-700 shadow-sm">
                 {(coupleName || "D").charAt(0)}
               </span>
               <div>
                 <p className="text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gold-dark">
                   Fiche client — {weddingId}
                 </p>
-                <h1 className="font-serif text-xl font-bold text-burgundy-dark">{coupleName}</h1>
+                <h1 className="font-serif text-xl font-bold text-stone-900">{coupleName}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2 text-sm">
@@ -125,7 +125,7 @@ export default function OwnerEdit({ weddingId, embed = false }) {
                 href={`/w/${weddingId}`}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-burgundy/40 px-3.5 py-1.5 text-xs font-semibold text-burgundy transition-colors hover:bg-burgundy hover:text-white"
+                className="rounded-full border border-stone-400 px-3.5 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-900 hover:text-white"
               >
                 👁 Voir l'invitation
               </a>

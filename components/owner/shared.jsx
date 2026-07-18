@@ -17,7 +17,7 @@ export function statusOf(w) {
   if (!w.wedding_date) return { label: "sans date", cls: "bg-ink/10 text-ink/60" };
   const today = new Date().toISOString().slice(0, 10);
   if (w.wedding_date >= today) return { label: "à venir", cls: "bg-gold/20 text-gold-dark" };
-  return { label: "passé", cls: "bg-burgundy/10 text-burgundy" };
+  return { label: "passé", cls: "bg-stone-200 text-stone-700" };
 }
 
 export function daysUntil(dateStr) {
@@ -69,7 +69,7 @@ export function OwnerGate({ onGranted }) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-stone-950 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-stone-950 px-4 font-sans">
       {/* توهج ذهبي خفيف خلف البطاقة */}
       <div
         className="pointer-events-none fixed inset-0 overflow-hidden"
@@ -102,7 +102,7 @@ export function OwnerGate({ onGranted }) {
         {error && <p className="text-sm text-rose-400">{error}</p>}
         <button
           type="submit"
-          className="w-full rounded-xl bg-gradient-to-r from-burgundy to-burgundy-dark px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
+          className="w-full rounded-xl bg-gradient-to-r from-stone-800 to-stone-950 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
         >
           Entrer
         </button>
@@ -154,7 +154,7 @@ export function OwnerLayout({ children, active, title, actions }) {
   );
 
   return (
-    <main className="min-h-screen bg-stone-100 md:pl-60">
+    <main className="min-h-screen bg-stone-100 font-sans md:pl-60">
       {/* sidebar — داكن ثابت على المكتب، منزلق على الجوال */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col bg-stone-900 p-4 transition-transform md:translate-x-0 ${
@@ -203,7 +203,7 @@ export function OwnerLayout({ children, active, title, actions }) {
             {actions}
             <a
               href="/owner/weddings/new"
-              className="rounded-lg bg-burgundy px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-burgundy-dark hover:shadow"
+              className="rounded-lg bg-stone-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-stone-700 hover:shadow"
             >
               + Créer
             </a>

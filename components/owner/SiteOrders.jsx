@@ -250,7 +250,7 @@ export default function SiteOrders() {
               setInfosFilter("");
             }}
             className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
-              filter === s.id ? "border-burgundy bg-burgundy text-white" : `border-gold/30 ${s.cls}`
+              filter === s.id ? "border-stone-900 bg-stone-900 text-white" : `border-gold/30 ${s.cls}`
             }`}
           >
             {s.label} · {counts[s.id]}
@@ -279,7 +279,7 @@ export default function SiteOrders() {
               onClick={() => setInfosFilter(f.id)}
               className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                 infosFilter === f.id
-                  ? "border-burgundy bg-burgundy text-white"
+                  ? "border-stone-900 bg-stone-900 text-white"
                   : `border-gold/30 ${f.cls}`
               }`}
             >
@@ -289,7 +289,7 @@ export default function SiteOrders() {
         </div>
       )}
 
-      {loadError && <p className={`mb-4 p-4 text-sm text-burgundy ${glass}`}>{loadError}</p>}
+      {loadError && <p className={`mb-4 p-4 text-sm text-rose-600 ${glass}`}>{loadError}</p>}
       {!orders && !loadError && <p className="py-10 text-center text-ink/55">Chargement…</p>}
       {orders && !loadError && shown.length === 0 && (
         <p className={`p-8 text-center text-sm text-ink/55 ${glass}`}>
@@ -314,7 +314,7 @@ export default function SiteOrders() {
                     onChange={(e) => setMotifFilter(e.target.value)}
                     className={`mt-1.5 w-full max-w-[180px] rounded-lg border px-2 py-1 text-[0.68rem] font-semibold normal-case tracking-normal outline-none ${
                       motifFilter
-                        ? "border-burgundy bg-burgundy/10 text-burgundy"
+                        ? "border-stone-900 bg-stone-200 text-stone-700"
                         : "border-gold/30 bg-white text-ink/60"
                     }`}
                   >
@@ -358,7 +358,7 @@ export default function SiteOrders() {
                           onClick={() => setExpandedId(open ? null : o.id)}
                           aria-label={open ? "Réduire" : "Détails"}
                           className={`flex h-7 w-7 items-center justify-center rounded-lg text-sm font-bold text-white transition-colors ${
-                            open ? "bg-burgundy" : "bg-sky-500 hover:bg-sky-600"
+                            open ? "bg-stone-900" : "bg-sky-500 hover:bg-sky-600"
                           }`}
                         >
                           {open ? "−" : "+"}
@@ -426,7 +426,7 @@ export default function SiteOrders() {
                         <a
                           href={`tel:${o.phone}`}
                           dir="ltr"
-                          className="tabular-nums font-semibold text-burgundy underline-offset-4 hover:underline"
+                          className="tabular-nums font-semibold text-stone-700 underline-offset-4 hover:underline"
                         >
                           {o.phone}
                         </a>
@@ -509,7 +509,7 @@ export default function SiteOrders() {
                                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
                                   o.infos_complete
                                     ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
-                                    : "bg-burgundy text-white hover:bg-burgundy-dark"
+                                    : "bg-stone-900 text-white hover:bg-stone-700"
                                 }`}
                               >
                                 {busy
@@ -584,7 +584,7 @@ export default function SiteOrders() {
                 setEditorWedding(null);
                 load();
               }}
-              className="rounded-lg bg-burgundy px-4 py-1.5 text-sm font-semibold text-white shadow transition-colors hover:bg-burgundy-dark"
+              className="rounded-lg bg-stone-900 px-4 py-1.5 text-sm font-semibold text-white shadow transition-colors hover:bg-stone-700"
             >
               ✕ Fermer
             </button>
@@ -667,10 +667,10 @@ function PackChooser({ order, onClose, onValidated, patchOrder }) {
                   setError("");
                 }}
                 className={`rounded-2xl border-2 bg-white p-4 text-left transition-all ${
-                  selected ? "border-burgundy shadow-royal" : "border-gold/25 hover:border-gold/60"
+                  selected ? "border-stone-900 shadow-royal" : "border-gold/25 hover:border-gold/60"
                 }`}
               >
-                <p className="text-sm font-semibold text-burgundy-dark">{p.name.fr}</p>
+                <p className="text-sm font-semibold text-stone-900">{p.name.fr}</p>
                 <p className="mt-1 font-serif text-xl font-bold text-ink tabular-nums">
                   {formatDZD(p.price, "fr")}
                 </p>
@@ -687,7 +687,7 @@ function PackChooser({ order, onClose, onValidated, patchOrder }) {
           })}
         </div>
 
-        {error && <p className="mt-3 text-sm text-burgundy">{error}</p>}
+        {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
 
         <button
           type="button"
@@ -753,7 +753,7 @@ function RowDetails({
   const card = "rounded-xl border border-stone-200 bg-white p-4 shadow-sm";
   const heading = "mb-3 text-xs font-bold uppercase tracking-wider text-ink/50";
   const input =
-    "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-burgundy";
+    "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-stone-900";
 
   return (
     <div className="space-y-4">
@@ -807,7 +807,7 @@ function RowDetails({
                   target="_blank"
                   rel="noopener noreferrer"
                   dir="ltr"
-                  className="font-semibold text-burgundy underline-offset-4 hover:underline"
+                  className="font-semibold text-stone-700 underline-offset-4 hover:underline"
                 >
                   /w/{o.wedding_id}
                 </a>
@@ -822,7 +822,7 @@ function RowDetails({
                   target="_blank"
                   rel="noopener noreferrer"
                   dir="ltr"
-                  className="font-semibold text-burgundy underline-offset-4 hover:underline"
+                  className="font-semibold text-stone-700 underline-offset-4 hover:underline"
                 >
                   /dashboard/{o.wedding_id}
                 </a>
@@ -861,7 +861,7 @@ function RowDetails({
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />
-          {error && <p className="mt-2 text-xs text-burgundy">{error}</p>}
+          {error && <p className="mt-2 text-xs text-rose-600">{error}</p>}
           <button
             type="button"
             disabled={saving}
@@ -898,7 +898,7 @@ function RowDetails({
             {pack ? (
               <li className="mt-2 flex items-baseline justify-between rounded-xl bg-ivory-light px-3 py-2">
                 <span className="text-xs uppercase tracking-wider text-ink/50">Total</span>
-                <span className="font-serif text-lg font-bold text-burgundy-dark tabular-nums">
+                <span className="font-serif text-lg font-bold text-stone-900 tabular-nums">
                   {packSaving ? "…" : formatDZD(pack.price, "fr")}
                 </span>
               </li>
@@ -940,7 +940,7 @@ function RowDetails({
               className={`rounded-lg px-4 py-2 text-xs font-semibold transition-colors ${
                 o.infos_complete
                   ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
-                  : "bg-burgundy text-white hover:bg-burgundy-dark"
+                  : "bg-stone-900 text-white hover:bg-stone-700"
               }`}
             >
               {o.infos_complete ? "✎ Modifier les infos" : "📋 Saisir les infos du client"}

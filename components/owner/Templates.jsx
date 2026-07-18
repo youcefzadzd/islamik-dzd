@@ -50,7 +50,7 @@ export default function Templates() {
                   )}
                   <a
                     href="/owner/weddings/new"
-                    className="rounded-lg bg-burgundy px-3 py-1.5 text-sm font-semibold text-white hover:bg-burgundy-dark"
+                    className="rounded-lg bg-stone-900 px-3 py-1.5 text-sm font-semibold text-white hover:bg-stone-700"
                   >
                     Utiliser
                   </a>

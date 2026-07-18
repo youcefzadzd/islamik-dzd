@@ -66,7 +66,7 @@ export default function WeddingCreate() {
               href={`/w/${created.wedding.wedding_id}`}
               target="_blank"
               rel="noreferrer"
-              className="rounded-xl bg-burgundy px-4 py-2 text-sm font-semibold text-white hover:bg-burgundy-dark"
+              className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700"
             >
               Voir l'invitation
             </a>

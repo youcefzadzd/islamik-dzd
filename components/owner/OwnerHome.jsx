@@ -14,7 +14,7 @@ import {
 function StatCard({ label, value, hint }) {
   return (
     <div className={`px-3 py-5 text-center ${glass}`}>
-      <p className="font-serif text-3xl text-burgundy">{value}</p>
+      <p className="font-serif text-3xl text-stone-700">{value}</p>
       <p className="mt-1 text-[0.66rem] uppercase tracking-[0.15em] text-gold-dark">{label}</p>
       {hint && <p className="mt-0.5 text-[0.62rem] text-ink/40">{hint}</p>}
     </div>
@@ -87,7 +87,7 @@ export default function OwnerHome() {
             <section className={`p-4 ${glass}`}>
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="font-semibold text-ink">Activité récente</h2>
-                <a href="/owner/analytics" className="text-sm text-burgundy hover:underline">
+                <a href="/owner/analytics" className="text-sm text-stone-700 hover:underline">
                   statistiques →
                 </a>
               </div>
@@ -113,7 +113,7 @@ export default function OwnerHome() {
             <section className={`p-4 ${glass}`}>
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="font-semibold text-ink">Prochains mariages</h2>
-                <a href="/owner/weddings" className="text-sm text-burgundy hover:underline">
+                <a href="/owner/weddings" className="text-sm text-stone-700 hover:underline">
                   tout voir →
                 </a>
               </div>

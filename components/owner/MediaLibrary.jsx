@@ -99,7 +99,7 @@ export default function MediaLibrary({ kind }) {
         </label>
       }
     >
-      {error && <p className="mb-3 text-sm text-burgundy">{error}</p>}
+      {error && <p className="mb-3 text-sm text-rose-600">{error}</p>}
       {!files && <p className="py-10 text-center text-ink/55">Chargement…</p>}
       {files && files.length === 0 && (
         <div className={`p-10 text-center text-ink/55 ${glass}`}>
@@ -135,7 +135,7 @@ export default function MediaLibrary({ kind }) {
                 <button
                   type="button"
                   onClick={() => remove(f.name, f.bucket)}
-                  className="rounded-md border border-burgundy/40 px-2 py-0.5 text-xs text-burgundy hover:bg-burgundy hover:text-white"
+                  className="rounded-md border border-stone-400 px-2 py-0.5 text-xs text-stone-700 hover:bg-stone-900 hover:text-white"
                 >
                   supprimer
                 </button>
@@ -165,7 +165,7 @@ export default function MediaLibrary({ kind }) {
                   <button
                     type="button"
                     onClick={() => remove(f.name, f.bucket)}
-                    className="rounded-md border border-burgundy/40 px-2 py-0.5 text-xs text-burgundy hover:bg-burgundy hover:text-white"
+                    className="rounded-md border border-stone-400 px-2 py-0.5 text-xs text-stone-700 hover:bg-stone-900 hover:text-white"
                   >
                     ✕
                   </button>

@@ -8,7 +8,7 @@ import { TEMPLATES, getTemplate, DEFAULT_TEMPLATE_ID } from "@/lib/templates";
 const STEPS = ["Couple", "Détails", "Lieu", "Médias", "Invitation", "Programme", "Design", "Résumé"];
 
 const inputCls =
-  "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-burgundy";
+  "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-stone-900";
 const labelCls = "mb-1 block text-xs font-medium uppercase tracking-wider text-ink/60";
 
 function Field({ label, children, full }) {
@@ -70,7 +70,7 @@ function UploadField({ label, value, onChange, accept, placeholder }) {
           />
         </label>
       </div>
-      {err && <p className="mt-1 text-xs text-burgundy">{err}</p>}
+      {err && <p className="mt-1 text-xs text-rose-600">{err}</p>}
     </div>
   );
 }
@@ -400,7 +400,7 @@ function StepInvitation({ f, setF }) {
                 value={value}
                 checked={f.honoreeGender === value}
                 onChange={() => setF((prev) => ({ ...prev, honoreeGender: value }))}
-                className="accent-burgundy"
+                className="accent-stone-900"
               />
               {label}
             </label>
@@ -442,7 +442,7 @@ function StepProgram({ f, setF }) {
               type="button"
               aria-label="Supprimer l'étape"
               onClick={() => setF((prev) => ({ ...prev, program: prev.program.filter((_, j) => j !== i) }))}
-              className="rounded-lg border border-burgundy/40 py-2 text-burgundy hover:bg-burgundy hover:text-white"
+              className="rounded-lg border border-stone-400 py-2 text-stone-700 hover:bg-stone-900 hover:text-white"
             >
               ✕
             </button>
@@ -489,7 +489,7 @@ function StepDesign({ f, setF, set, requirePassword }) {
                 key={t.id}
                 onClick={() => setF((p) => ({ ...p, template: t.id }))}
                 className={`w-44 rounded-xl border-2 bg-white p-2 text-center transition-colors ${
-                  selected === t.id ? "border-burgundy" : "border-gold/30 hover:border-gold"
+                  selected === t.id ? "border-stone-900" : "border-gold/30 hover:border-gold"
                 }`}
               >
                 <img src={t.preview} alt="" className="h-20 w-full rounded-lg object-cover" />
@@ -685,7 +685,7 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
                   i < step
                     ? "border-gold bg-gold text-white"
                     : i === step
-                      ? "border-burgundy bg-burgundy text-white"
+                      ? "border-stone-900 bg-stone-900 text-white"
                       : "border-gold/40 bg-white text-ink/50"
                 }`}
               >
@@ -693,7 +693,7 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
               </span>
               <span
                 className={`hidden text-[0.62rem] uppercase tracking-wider lg:block ${
-                  i === step ? "text-burgundy" : "text-ink/50"
+                  i === step ? "text-stone-700" : "text-ink/50"
                 }`}
               >
                 {label}
@@ -719,7 +719,7 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
       {step === 6 && <StepDesign f={f} setF={setF} set={set} requirePassword={requirePassword} />}
       {step === 7 && <Review f={f} requirePassword={requirePassword} />}
 
-      {(stepError || error) && <p className="mt-4 text-sm text-burgundy">{stepError || error}</p>}
+      {(stepError || error) && <p className="mt-4 text-sm text-rose-600">{stepError || error}</p>}
 
       {/* previous / next / finish */}
       <div className="mt-6 flex items-center justify-between gap-3">
@@ -735,7 +735,7 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
           <button
             type="button"
             onClick={next}
-            className="rounded-xl bg-burgundy px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-burgundy-dark"
+            className="rounded-xl bg-stone-900 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-stone-700"
           >
             Suivant →
           </button>
@@ -744,7 +744,7 @@ export default function WeddingWizard({ initial, onFinish, finishLabel, requireP
             type="button"
             onClick={finish}
             disabled={busy}
-            className="rounded-xl bg-burgundy px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-burgundy-dark disabled:opacity-60"
+            className="rounded-xl bg-stone-900 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-stone-700 disabled:opacity-60"
           >
             {busy ? "Enregistrement…" : finishLabel}
           </button>

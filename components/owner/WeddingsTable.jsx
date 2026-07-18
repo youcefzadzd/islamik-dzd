@@ -83,7 +83,7 @@ export default function WeddingsTable() {
           }
         }}
         className={`text-left text-xs font-semibold uppercase tracking-wider ${
-          sortKey === key ? "text-burgundy" : "text-ink/55"
+          sortKey === key ? "text-stone-700" : "text-ink/55"
         }`}
       >
         {label} {sortKey === key ? (asc ? "↑" : "↓") : ""}
@@ -112,7 +112,7 @@ export default function WeddingsTable() {
           placeholder="Rechercher un couple ou un identifiant…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-xs rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-burgundy"
+          className="w-full max-w-xs rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-stone-900"
         />
         <select
           value={statusFilter}
@@ -229,7 +229,7 @@ export default function WeddingsTable() {
                       if (window.confirm(`Supprimer ${w.wedding_id} et toutes ses réponses RSVP ?`))
                         act("DELETE", `/api/owner/weddings/${encodeURIComponent(w.wedding_id)}`);
                     }}
-                    className="rounded-md border border-burgundy/40 px-2 py-0.5 text-xs text-burgundy hover:bg-burgundy hover:text-white"
+                    className="rounded-md border border-stone-400 px-2 py-0.5 text-xs text-stone-700 hover:bg-stone-900 hover:text-white"
                   >
                     supprimer
                   </button>

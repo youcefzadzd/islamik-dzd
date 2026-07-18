@@ -83,7 +83,7 @@ export default function OwnerSettings() {
               setCompany(e.target.value);
               localStorage.setItem("platform-company", e.target.value);
             }}
-            className="w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-burgundy"
+            className="w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-stone-900"
           />
           <p className="mt-1 text-xs text-ink/45">
             Enregistré dans ce navigateur. Logo et domaine personnalisé : bientôt.
@@ -102,18 +102,18 @@ export default function OwnerSettings() {
               placeholder="213550123456"
               dir="ltr"
               inputMode="tel"
-              className="w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm tabular-nums outline-none focus:border-burgundy"
+              className="w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm tabular-nums outline-none focus:border-stone-900"
             />
             <button
               type="button"
               disabled={waState === "saving"}
               onClick={saveWhatsapp}
-              className="shrink-0 rounded-lg bg-burgundy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-burgundy-dark disabled:opacity-60"
+              className="shrink-0 rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-stone-700 disabled:opacity-60"
             >
               {waState === "saving" ? "…" : waState === "saved" ? "✓ Enregistré" : "Enregistrer"}
             </button>
           </div>
-          {waState === "error" && <p className="mt-2 text-xs text-burgundy">{waError}</p>}
+          {waState === "error" && <p className="mt-2 text-xs text-rose-600">{waError}</p>}
           <p className="mt-2 text-xs text-ink/45">
             Format international sans « + » (ex : 213550123456). Utilisé par tous les boutons
             WhatsApp du site vitrine (/site) — vide : les boutons renvoient vers la section
