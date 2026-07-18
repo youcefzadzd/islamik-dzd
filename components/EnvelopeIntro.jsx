@@ -1,66 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import WaxSeal from "./WaxSeal";
 
 /**
- * Four-way split opening — choreography transcribed from the reference
- * Tilda invitation the owner picked (element sbs configs, in ms):
- *   click →  hint fades (1500)
- *            seal: delay 1000, scale→1.22 + fade over 1500
- *   2500  →  the envelope breaks into four triangular pieces meeting at
- *            the seal: left/right slide off horizontally (2000, then a
- *            500 fade), top slides up & bottom slides down (1500) —
- *            revealing the invitation behind.
- *   5100  →  overlay unmounts (parent crossfade).
+ * Clean full-screen envelope, opened like a real envelope:
+ *  closed → four paper flaps (built from the clean paper texture — no
+ *           baked seal recess, no halo) meet at the wax seal; an HTML
+ *           "tap to open" line + ornament sit under the seal
+ *  press  → the seal compresses (250ms) then cracks into shards
+ *  flap   → the TOP flap folds up & back in 3D around the screen's top
+ *           edge (900ms) — a real envelope opening
+ *  reveal → the invitation mounts beneath and the overlay crossfades
+ *           away immediately (no card, no paper coming out)
  *
- * Our artwork is a single square envelope photo, so the four pieces are
- * four full-screen object-cover copies clipped to triangles that meet
- * at the seal point (49.3% height) — the split follows the envelope's
- * own X-crease geometry.
+ * Pieces are full-screen divs clipped into triangles meeting at CY, all
+ * sharing the same texture/size so the seams are invisible; per-flap
+ * tone gradients + clip-following drop-shadows give the layered look.
  */
 const EASE = [0.22, 1, 0.36, 1];
 // dev-only: slow the whole sequence down to inspect it (keep 1 in production)
 const SLOW = 1;
 
-const CX = "50%";
-const CY = "49.3%"; // matches the baked seal recess of the artwork
+const CY = "47%"; // tip point of the four flaps (and the seal centre)
 
-const PIECES = [
-  {
-    id: "top",
-    clip: `polygon(0% 0%, 100% 0%, ${CX} ${CY})`,
-    open: { y: "-105%", x: "0%" },
-    dur: 1.5,
-    fade: false,
-  },
-  {
-    id: "bottom",
-    clip: `polygon(0% 100%, 100% 100%, ${CX} ${CY})`,
-    open: { y: "105%", x: "0%" },
-    dur: 1.5,
-    fade: false,
-  },
-  {
-    id: "left",
-    clip: `polygon(0% 0%, ${CX} ${CY}, 0% 100%)`,
-    open: { x: "-105%", y: "0%" },
-    dur: 2,
-    fade: true,
-  },
-  {
-    id: "right",
-    clip: `polygon(100% 0%, ${CX} ${CY}, 100% 100%)`,
-    open: { x: "105%", y: "0%" },
-    dur: 2,
-    fade: true,
-  },
-];
+const PAPER = "url(/assets/paper-texture.webp)";
+
+const pieceBase = {
+  backgroundImage: `linear-gradient(rgb(var(--color-ivory-light)), rgb(var(--color-ivory-light))), ${PAPER}`,
+  backgroundBlendMode: "multiply",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+};
+
+/* tone overlays: each flap catches the light slightly differently */
+const TONES = {
+  top: "linear-gradient(to bottom, rgb(var(--color-ivory-light) / 0.9), rgb(var(--color-ivory-dark) / 0.55))",
+  left: "linear-gradient(105deg, rgb(var(--color-ivory) / 0.65), rgb(var(--color-ivory-dark) / 0.5))",
+  right:
+    "linear-gradient(255deg, rgb(var(--color-ivory) / 0.65), rgb(var(--color-ivory-dark) / 0.5))",
+  bottom:
+    "linear-gradient(to top, rgb(var(--color-ivory-light) / 0.85), rgb(var(--color-ivory) / 0.4))",
+};
 
 export default function EnvelopeIntro({ data, onMountMain, onDone }) {
   const [stage, setStage] = useState("closed");
-  const [hovered, setHovered] = useState(false);
+  const [lang, setLang] = useState("fr");
+
+  useEffect(() => {
+    setLang(document.documentElement.lang === "ar" ? "ar" : "fr");
+  }, []);
 
   const initials = `${data.couple.groomName.trim().charAt(0)} & ${data.couple.brideName
     .trim()
@@ -71,88 +61,88 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
   function open() {
     if (stage !== "closed") return;
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
-    setStage("opening");
-    // الدعوة تُركّب خلف الظرف قبيل بدء التفكك مباشرة
-    setTimeout(onMountMain, 2300 * SLOW);
-    setTimeout(onDone, 5100 * SLOW);
+    setStage("press");
+    setTimeout(() => setStage("crack"), 250 * SLOW);
+    setTimeout(onMountMain, 950 * SLOW);
+    setTimeout(onDone, 1300 * SLOW);
   }
 
-  const sealState = stage === "closed" ? "idle" : "press";
+  const sealState = stage === "closed" ? "idle" : stage === "press" ? "press" : "crack";
+
+  const flapShadow = "drop-shadow(0 5px 14px rgb(var(--color-ink) / 0.13))";
 
   return (
     <motion.div
       exit={{ opacity: 0, transition: { duration: 0.5, ease: "easeOut" } }}
-      className="fixed inset-0 z-50 overflow-hidden"
+      className="fixed inset-0 z-50 overflow-hidden bg-ivory"
+      style={{ perspective: 1200 }}
     >
-      {/* أربع قطع مثلثية من نفس صورة الظرف — تغطي الشاشة كاملة وهي مغلقة،
-          وتتفكك في أربعة اتجاهات عند الفتح (توقيتات المرجع حرفيًا) */}
-      {PIECES.map((p) => (
-        <motion.div
-          key={p.id}
-          aria-hidden
-          initial={false}
-          animate={
-            opening
-              ? {
-                  ...p.open,
-                  opacity: p.fade ? [1, 1, 0] : 1,
-                  transition: {
-                    x: { delay: 2.5 * SLOW, duration: p.dur * SLOW, ease: "easeInOut" },
-                    y: { delay: 2.5 * SLOW, duration: p.dur * SLOW, ease: "easeInOut" },
-                    opacity: {
-                      delay: 2.5 * SLOW,
-                      duration: (p.dur + 0.5) * SLOW,
-                      times: [0, 0.8, 1],
-                    },
-                  },
-                }
-              : { x: "0%", y: "0%", opacity: 1 }
-          }
-          className="absolute inset-0"
-          style={{ clipPath: p.clip, willChange: "transform" }}
-        >
-          <img
-            src={data.assets.envelopeClosed}
-            alt={p.id === "top" ? "Enveloppe scellée" : ""}
-            draggable={false}
-            className="h-full w-full select-none object-cover"
-          />
-          {/* حافة ورقية خفيفة على خط القص حتى تبدو القطع حقيقية */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{ boxShadow: "inset 0 0 24px rgb(var(--color-ink) / 0.06)" }}
-          />
-        </motion.div>
+      {/* الجيب السفلي + الجناحان — ثابتة، يكشفها انطواء الغطاء ثم تلاشي الطبقة */}
+      {[
+        { id: "bottom", clip: `polygon(0% 100%, 100% 100%, 50% ${CY})` },
+        { id: "left", clip: `polygon(0% 0%, 50% ${CY}, 0% 100%)` },
+        { id: "right", clip: `polygon(100% 0%, 50% ${CY}, 100% 100%)` },
+      ].map((p) => (
+        <div key={p.id} className="absolute inset-0" style={{ filter: flapShadow }}>
+          <div className="absolute inset-0" style={{ ...pieceBase, clipPath: p.clip }}>
+            <div className="absolute inset-0" style={{ background: TONES[p.id] }} />
+          </div>
+        </div>
       ))}
 
-      {/* توهج دافئ يتنفس فوق الورق */}
+      {/* الغطاء العلوي — ينطوي للأعلى حول حافة الشاشة كظرف حقيقي */}
       <motion.div
         aria-hidden
-        animate={{ opacity: opening ? 0 : hovered ? 0.45 : 0.22 }}
-        transition={{ duration: 0.8, ease: EASE }}
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 38%, rgb(var(--color-gold-light) / 0.5), transparent 60%)",
-          mixBlendMode: "soft-light",
-        }}
-      />
-
-      {/* الختم الذهبي — ضغطة، ثم تضخم ×1.22 وتلاشٍ (منحنى المرجع) */}
-      <motion.div
         animate={
           opening
             ? {
-                scale: 1.22,
-                opacity: 0,
-                transition: { delay: 1.0 * SLOW, duration: 1.5 * SLOW, ease: "easeInOut" },
+                rotateX: 165,
+                transition: { delay: 0.3 * SLOW, duration: 0.9 * SLOW, ease: EASE },
               }
-            : { scale: 1, opacity: 1 }
+            : { rotateX: 0 }
         }
-        onHoverStart={() => setHovered(true)}
-        onHoverEnd={() => setHovered(false)}
-        className="absolute z-40 w-[min(34vmin,190px)]"
-        style={{ left: "50%", top: CY, x: "-50%", y: "-50%" }}
+        className="absolute inset-0 z-10"
+        style={{
+          transformOrigin: "50% 0%",
+          transformStyle: "preserve-3d",
+          filter: flapShadow,
+        }}
+      >
+        <div
+          className="absolute inset-0"
+          style={{ ...pieceBase, clipPath: `polygon(0% 0%, 100% 0%, 50% ${CY})` }}
+        >
+          <div className="absolute inset-0" style={{ background: TONES.top }} />
+        </div>
+      </motion.div>
+
+      {/* نص الفتح + الزخرفة — HTML حقيقي (مترجم) يتلاشى عند النقر */}
+      <motion.div
+        animate={{ opacity: opening ? 0 : 1 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="pointer-events-none absolute left-1/2 z-20 -translate-x-1/2 text-center"
+        style={{ top: `calc(${CY} + min(19vmin, 110px))` }}
+      >
+        <p
+          className={`text-ink/60 ${lang === "ar" ? "font-arabicText" : "font-serif"}`}
+          style={{ fontSize: "clamp(1.3rem, 4.6vmin, 2rem)", letterSpacing: "0.04em" }}
+        >
+          {lang === "ar" ? "اضغط لفتح الدعوة" : "Appuyez pour ouvrir"}
+        </p>
+        <div
+          className="mx-auto mt-4 flex items-center gap-3 text-gold-dark/70"
+          style={{ width: "min(46vmin, 260px)" }}
+        >
+          <span className="h-px flex-1 bg-gold/50" />
+          <span style={{ fontSize: "1.1rem" }}>❖</span>
+          <span className="h-px flex-1 bg-gold/50" />
+        </div>
+      </motion.div>
+
+      {/* الختم الذهبي — بلا هالة ولا ظل (noShadow)، ينكسر عند النقر */}
+      <div
+        className="absolute z-30 w-[min(30vmin,170px)]"
+        style={{ left: "50%", top: CY, transform: "translate(-50%, -50%)" }}
       >
         <WaxSeal
           src={data.assets.envelopeSeal}
@@ -161,8 +151,9 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
           onOpen={open}
           fontSize="clamp(1.3rem, 5vmin, 2rem)"
           flat
+          noShadow
         />
-      </motion.div>
+      </div>
     </motion.div>
   );
 }

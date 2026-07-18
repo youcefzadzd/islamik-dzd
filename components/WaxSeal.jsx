@@ -113,7 +113,15 @@ function WaxBody({ src, initials, fontSize, glossOpacity = 0.55, flat = false })
   );
 }
 
-export default function WaxSeal({ src, initials, state, onOpen, fontSize, flat = false }) {
+export default function WaxSeal({
+  src,
+  initials,
+  state,
+  onOpen,
+  fontSize,
+  flat = false,
+  noShadow = false,
+}) {
   // flat: the seal artwork is already photographic (e.g. the gold bismillah
   // seal) — keep every interaction but skip the CSS sculpting and initials
   const idle = state === "idle";
@@ -149,48 +157,53 @@ export default function WaxSeal({ src, initials, state, onOpen, fontSize, flat =
       className="relative block w-full cursor-pointer outline-none"
     >
       {/* soft golden halo pulsing behind the seal — the "tap me" cue */}
-      <motion.div
-        aria-hidden
-        animate={
-          idle && !reduce
-            ? { opacity: [0.25, 0.6, 0.25], scale: [1.05, 1.14, 1.05] }
-            : { opacity: idle ? 0.35 : 0, scale: 1.08 }
-        }
-        transition={
-          idle && !reduce
-            ? { duration: 2.6, repeat: Infinity, ease: "easeInOut" }
-            : { duration: 0.3 }
-        }
-        className="absolute inset-0 rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgb(216 189 122 / 0.45) 30%, rgb(216 189 122 / 0.18) 58%, transparent 72%)",
-          filter: "blur(10px)",
-        }}
-      />
+      {!noShadow && (
+        <motion.div
+          aria-hidden
+          animate={
+            idle && !reduce
+              ? { opacity: [0.25, 0.6, 0.25], scale: [1.05, 1.14, 1.05] }
+              : { opacity: idle ? 0.35 : 0, scale: 1.08 }
+          }
+          transition={
+            idle && !reduce
+              ? { duration: 2.6, repeat: Infinity, ease: "easeInOut" }
+              : { duration: 0.3 }
+          }
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, rgb(216 189 122 / 0.45) 30%, rgb(216 189 122 / 0.18) 58%, transparent 72%)",
+            filter: "blur(10px)",
+          }}
+        />
+      )}
 
-      {/* ambient shadow underneath */}
-      <motion.div
-        aria-hidden
-        animate={{ opacity: cracked ? 0 : 1 }}
-        transition={{ duration: 0.3, delay: cracked ? 0.15 : 0 }}
-        className="absolute left-1/2 top-[84%] h-[22%] w-[92%] -translate-x-1/2 rounded-[50%]"
-        style={{
-          background: flat ? "rgb(80 55 35 / 0.22)" : "rgb(var(--color-burgundy-dark) / 0.4)",
-          filter: "blur(10px)",
-        }}
-      />
-      {/* tight contact shadow where the wax meets the paper */}
-      <motion.div
-        aria-hidden
-        animate={{ opacity: cracked ? 0 : 1 }}
-        transition={{ duration: 0.25, delay: cracked ? 0.1 : 0 }}
-        className="absolute left-1/2 top-[88%] h-[12%] w-[78%] -translate-x-1/2 rounded-[50%]"
-        style={{
-          background: flat ? "rgb(60 40 25 / 0.28)" : "rgb(20 3 8 / 0.5)",
-          filter: "blur(4px)",
-        }}
-      />
+      {/* ambient + contact shadows (skippable: noShadow) */}
+      {!noShadow && (
+        <>
+          <motion.div
+            aria-hidden
+            animate={{ opacity: cracked ? 0 : 1 }}
+            transition={{ duration: 0.3, delay: cracked ? 0.15 : 0 }}
+            className="absolute left-1/2 top-[84%] h-[22%] w-[92%] -translate-x-1/2 rounded-[50%]"
+            style={{
+              background: flat ? "rgb(80 55 35 / 0.22)" : "rgb(var(--color-burgundy-dark) / 0.4)",
+              filter: "blur(10px)",
+            }}
+          />
+          <motion.div
+            aria-hidden
+            animate={{ opacity: cracked ? 0 : 1 }}
+            transition={{ duration: 0.25, delay: cracked ? 0.1 : 0 }}
+            className="absolute left-1/2 top-[88%] h-[12%] w-[78%] -translate-x-1/2 rounded-[50%]"
+            style={{
+              background: flat ? "rgb(60 40 25 / 0.28)" : "rgb(20 3 8 / 0.5)",
+              filter: "blur(4px)",
+            }}
+          />
+        </>
+      )}
 
       {/* whole seal (hidden the instant it cracks) */}
       <div className="relative" style={{ opacity: cracked ? 0 : 1 }}>
