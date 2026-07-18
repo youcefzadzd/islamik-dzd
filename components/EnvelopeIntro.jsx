@@ -5,20 +5,58 @@ import { motion } from "framer-motion";
 import WaxSeal from "./WaxSeal";
 
 /**
- * Full-screen opening (immersive, like high-end Tilda invitations):
- *  closed   → the envelope artwork fills the ENTIRE viewport (object-cover),
- *             wax seal at its centre, soft float on hover
- *  press    → the seal compresses with a tiny realistic shake (250ms)
- *  sealfade → the seal cracks and fades (300ms)
- *  reveal   → the whole envelope dissolves into the hero: gentle scale-up
- *             while the overlay crossfades away (parent exit, 500ms)
+ * Four-way split opening — choreography transcribed from the reference
+ * Tilda invitation the owner picked (element sbs configs, in ms):
+ *   click →  hint fades (1500)
+ *            seal: delay 1000, scale→1.22 + fade over 1500
+ *   2500  →  the envelope breaks into four triangular pieces meeting at
+ *            the seal: left/right slide off horizontally (2000, then a
+ *            500 fade), top slides up & bottom slides down (1500) —
+ *            revealing the invitation behind.
+ *   5100  →  overlay unmounts (parent crossfade).
  *
- * The previous 3D flap-fold sequence lives in git history (7ba7b94 /
- * revert 3bcec10) if it's ever wanted again.
+ * Our artwork is a single square envelope photo, so the four pieces are
+ * four full-screen object-cover copies clipped to triangles that meet
+ * at the seal point (49.3% height) — the split follows the envelope's
+ * own X-crease geometry.
  */
 const EASE = [0.22, 1, 0.36, 1];
 // dev-only: slow the whole sequence down to inspect it (keep 1 in production)
 const SLOW = 1;
+
+const CX = "50%";
+const CY = "49.3%"; // matches the baked seal recess of the artwork
+
+const PIECES = [
+  {
+    id: "top",
+    clip: `polygon(0% 0%, 100% 0%, ${CX} ${CY})`,
+    open: { y: "-105%", x: "0%" },
+    dur: 1.5,
+    fade: false,
+  },
+  {
+    id: "bottom",
+    clip: `polygon(0% 100%, 100% 100%, ${CX} ${CY})`,
+    open: { y: "105%", x: "0%" },
+    dur: 1.5,
+    fade: false,
+  },
+  {
+    id: "left",
+    clip: `polygon(0% 0%, ${CX} ${CY}, 0% 100%)`,
+    open: { x: "-105%", y: "0%" },
+    dur: 2,
+    fade: true,
+  },
+  {
+    id: "right",
+    clip: `polygon(100% 0%, ${CX} ${CY}, 100% 100%)`,
+    open: { x: "105%", y: "0%" },
+    dur: 2,
+    fade: true,
+  },
+];
 
 export default function EnvelopeIntro({ data, onMountMain, onDone }) {
   const [stage, setStage] = useState("closed");
@@ -28,84 +66,93 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     .trim()
     .charAt(0)}`;
 
-  const revealing = stage === "reveal";
+  const opening = stage !== "closed";
 
   function open() {
     if (stage !== "closed") return;
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
-    setStage("press");
-    setTimeout(() => setStage("sealfade"), 250 * SLOW);
-    setTimeout(() => {
-      setStage("reveal");
-      onMountMain();
-    }, 550 * SLOW);
-    setTimeout(onDone, 900 * SLOW);
+    setStage("opening");
+    // الدعوة تُركّب خلف الظرف قبيل بدء التفكك مباشرة
+    setTimeout(onMountMain, 2300 * SLOW);
+    setTimeout(onDone, 5100 * SLOW);
   }
 
-  const sealState = stage === "closed" ? "idle" : stage === "press" ? "press" : "crack";
+  const sealState = stage === "closed" ? "idle" : "press";
 
   return (
     <motion.div
       exit={{ opacity: 0, transition: { duration: 0.5, ease: "easeOut" } }}
-      className="fixed inset-0 z-50 overflow-hidden bg-ivory"
+      className="fixed inset-0 z-50 overflow-hidden"
     >
-      {/* the envelope fills the whole screen — an immersive giant envelope */}
-      <motion.div
-        initial={{ opacity: 0, scale: 1.04 }}
-        animate={
-          revealing
-            ? { opacity: 1, scale: 1.1, transition: { duration: 0.6, ease: EASE } }
-            : stage === "closed" && hovered
+      {/* أربع قطع مثلثية من نفس صورة الظرف — تغطي الشاشة كاملة وهي مغلقة،
+          وتتفكك في أربعة اتجاهات عند الفتح (توقيتات المرجع حرفيًا) */}
+      {PIECES.map((p) => (
+        <motion.div
+          key={p.id}
+          aria-hidden
+          initial={false}
+          animate={
+            opening
               ? {
-                  opacity: 1,
-                  scale: [1.0, 1.008, 1.0],
-                  transition: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+                  ...p.open,
+                  opacity: p.fade ? [1, 1, 0] : 1,
+                  transition: {
+                    x: { delay: 2.5 * SLOW, duration: p.dur * SLOW, ease: "easeInOut" },
+                    y: { delay: 2.5 * SLOW, duration: p.dur * SLOW, ease: "easeInOut" },
+                    opacity: {
+                      delay: 2.5 * SLOW,
+                      duration: (p.dur + 0.5) * SLOW,
+                      times: [0, 0.8, 1],
+                    },
+                  },
                 }
-              : { opacity: 1, scale: 1, transition: { duration: 1.1, ease: EASE } }
+              : { x: "0%", y: "0%", opacity: 1 }
+          }
+          className="absolute inset-0"
+          style={{ clipPath: p.clip, willChange: "transform" }}
+        >
+          <img
+            src={data.assets.envelopeClosed}
+            alt={p.id === "top" ? "Enveloppe scellée" : ""}
+            draggable={false}
+            className="h-full w-full select-none object-cover"
+          />
+          {/* حافة ورقية خفيفة على خط القص حتى تبدو القطع حقيقية */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ boxShadow: "inset 0 0 24px rgb(var(--color-ink) / 0.06)" }}
+          />
+        </motion.div>
+      ))}
+
+      {/* توهج دافئ يتنفس فوق الورق */}
+      <motion.div
+        aria-hidden
+        animate={{ opacity: opening ? 0 : hovered ? 0.45 : 0.22 }}
+        transition={{ duration: 0.8, ease: EASE }}
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 38%, rgb(var(--color-gold-light) / 0.5), transparent 60%)",
+          mixBlendMode: "soft-light",
+        }}
+      />
+
+      {/* الختم الذهبي — ضغطة، ثم تضخم ×1.22 وتلاشٍ (منحنى المرجع) */}
+      <motion.div
+        animate={
+          opening
+            ? {
+                scale: 1.22,
+                opacity: 0,
+                transition: { delay: 1.0 * SLOW, duration: 1.5 * SLOW, ease: "easeInOut" },
+              }
+            : { scale: 1, opacity: 1 }
         }
         onHoverStart={() => setHovered(true)}
         onHoverEnd={() => setHovered(false)}
-        className="absolute inset-0"
-      >
-        <img
-          src={data.assets.envelopeClosed}
-          alt="Enveloppe scellée"
-          draggable={false}
-          className="h-full w-full select-none object-cover"
-        />
-
-        {/* soft warm light breathing over the paper */}
-        <motion.div
-          aria-hidden
-          animate={{ opacity: hovered && stage === "closed" ? 0.45 : 0.22 }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse at 50% 38%, rgb(var(--color-gold-light) / 0.5), transparent 60%)",
-            mixBlendMode: "soft-light",
-          }}
-        />
-
-        {/* cinematic vignette that deepens as the envelope dissolves */}
-        <motion.div
-          aria-hidden
-          animate={{ opacity: revealing ? 0.35 : 0.14 }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, transparent 50%, rgb(var(--color-burgundy-dark) / 0.5) 135%)",
-          }}
-        />
-      </motion.div>
-
-      {/* the gold bismillah seal — at the centre of the giant envelope.
-          49.3% matches the baked seal recess of the square artwork, which
-          object-cover keeps at (or within ~1% of) the viewport centre. */}
-      <div
         className="absolute z-40 w-[min(34vmin,190px)]"
-        style={{ left: "50%", top: "49.3%", transform: "translate(-50%, -50%)" }}
+        style={{ left: "50%", top: CY, x: "-50%", y: "-50%" }}
       >
         <WaxSeal
           src={data.assets.envelopeSeal}
@@ -115,7 +162,7 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
           fontSize="clamp(1.3rem, 5vmin, 2rem)"
           flat
         />
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
