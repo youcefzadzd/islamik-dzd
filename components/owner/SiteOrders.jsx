@@ -265,6 +265,7 @@ export default function SiteOrders() {
                 <th className="w-10 px-3 py-3" />
                 <th className="px-4 py-3">Reçue le</th>
                 <th className="px-4 py-3">Couple</th>
+                {filter !== "preparing" && (
                 <th className="px-4 py-3">
                   <span className="block">Statut de confirmation</span>
                   {/* فلترة بجميع خيارات الـ motif — مثل صف الفلاتر في EcoManager */}
@@ -286,6 +287,7 @@ export default function SiteOrders() {
                     ))}
                   </select>
                 </th>
+                )}
                 <th className="px-4 py-3">Téléphone</th>
                 <th className="px-4 py-3">Modèle</th>
                 <th className="px-4 py-3">Pack</th>
@@ -354,29 +356,31 @@ export default function SiteOrders() {
                           </span>
                         ) : null}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
-                        {filter === "new" ? (
-                          /* في تبويب En confirmation: الـ motif يُعدَّل مباشرة من الجدول */
-                          <select
-                            value={o.confirmation_status || ""}
-                            onChange={(e) => setMotif(o.id, e.target.value)}
-                            className="rounded-lg border border-gold/30 bg-gold/10 px-2 py-1 text-xs font-semibold text-gold-dark outline-none"
-                          >
-                            <option value="">—</option>
-                            {MOTIFS.map((m) => (
-                              <option key={m} value={m}>
-                                {m}
-                              </option>
-                            ))}
-                          </select>
-                        ) : o.confirmation_status ? (
-                          <span className="rounded-full bg-gold/15 px-2.5 py-1 text-xs font-semibold text-gold-dark">
-                            {o.confirmation_status}
-                          </span>
-                        ) : (
-                          <span className="text-ink/30">—</span>
-                        )}
-                      </td>
+                      {filter !== "preparing" && (
+                        <td className="whitespace-nowrap px-4 py-3">
+                          {filter === "new" ? (
+                            /* في تبويب En confirmation: الـ motif يُعدَّل مباشرة من الجدول */
+                            <select
+                              value={o.confirmation_status || ""}
+                              onChange={(e) => setMotif(o.id, e.target.value)}
+                              className="rounded-lg border border-gold/30 bg-gold/10 px-2 py-1 text-xs font-semibold text-gold-dark outline-none"
+                            >
+                              <option value="">—</option>
+                              {MOTIFS.map((m) => (
+                                <option key={m} value={m}>
+                                  {m}
+                                </option>
+                              ))}
+                            </select>
+                          ) : o.confirmation_status ? (
+                            <span className="rounded-full bg-gold/15 px-2.5 py-1 text-xs font-semibold text-gold-dark">
+                              {o.confirmation_status}
+                            </span>
+                          ) : (
+                            <span className="text-ink/30">—</span>
+                          )}
+                        </td>
+                      )}
                       <td className="whitespace-nowrap px-4 py-3">
                         {/* الرقم قابل للنقر: اتصال مباشر + رابط واتساب */}
                         <a
@@ -479,7 +483,7 @@ export default function SiteOrders() {
                     </tr>
                     {open && (
                       <tr className="border-b border-gold/10 bg-ivory-light/60">
-                        <td colSpan={8} className="px-4 py-5">
+                        <td colSpan={filter === "preparing" ? 7 : 8} className="px-4 py-5">
                           <RowDetails
                             order={o}
                             wa={wa}
