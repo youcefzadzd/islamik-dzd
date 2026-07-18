@@ -62,12 +62,12 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     if (stage !== "closed") return;
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
     setStage("press");
-    setTimeout(() => setStage("crack"), 250 * SLOW);
-    setTimeout(onMountMain, 950 * SLOW);
-    setTimeout(onDone, 1300 * SLOW);
+    // الغطاء يصعد ببطء (ثانيتان) والختم راكب عليه — ثم الصفحة مباشرة
+    setTimeout(onMountMain, 1200 * SLOW);
+    setTimeout(onDone, 2400 * SLOW);
   }
 
-  const sealState = stage === "closed" ? "idle" : stage === "press" ? "press" : "crack";
+  const sealState = stage === "closed" ? "idle" : "press";
 
   const flapShadow = "drop-shadow(0 5px 14px rgb(var(--color-ink) / 0.13))";
 
@@ -90,14 +90,14 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
         </div>
       ))}
 
-      {/* الغطاء العلوي — ينطوي للأعلى حول حافة الشاشة كظرف حقيقي */}
+      {/* الغطاء العلوي — ينطوي للأعلى ببطء حول حافة الشاشة، والختم راكب
+          على طرفه يصعد معه (الختم خارج قصاصة الورق فلا يُقتطع) */}
       <motion.div
-        aria-hidden
         animate={
           opening
             ? {
-                rotateX: 165,
-                transition: { delay: 0.3 * SLOW, duration: 0.9 * SLOW, ease: EASE },
+                rotateX: 150,
+                transition: { delay: 0.25 * SLOW, duration: 2.0 * SLOW, ease: "easeInOut" },
               }
             : { rotateX: 0 }
         }
@@ -109,10 +109,27 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
         }}
       >
         <div
+          aria-hidden
           className="absolute inset-0"
           style={{ ...pieceBase, clipPath: `polygon(0% 0%, 100% 0%, 50% ${CY})` }}
         >
           <div className="absolute inset-0" style={{ background: TONES.top }} />
+        </div>
+
+        {/* الختم الذهبي على طرف الغطاء — بلا هالة ولا ظل */}
+        <div
+          className="absolute z-30 w-[min(30vmin,170px)]"
+          style={{ left: "50%", top: CY, transform: "translate(-50%, -50%)" }}
+        >
+          <WaxSeal
+            src={data.assets.envelopeSeal}
+            initials={initials}
+            state={sealState}
+            onOpen={open}
+            fontSize="clamp(1.3rem, 5vmin, 2rem)"
+            flat
+            noShadow
+          />
         </div>
       </motion.div>
 
@@ -139,21 +156,6 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
         </div>
       </motion.div>
 
-      {/* الختم الذهبي — بلا هالة ولا ظل (noShadow)، ينكسر عند النقر */}
-      <div
-        className="absolute z-30 w-[min(30vmin,170px)]"
-        style={{ left: "50%", top: CY, transform: "translate(-50%, -50%)" }}
-      >
-        <WaxSeal
-          src={data.assets.envelopeSeal}
-          initials={initials}
-          state={sealState}
-          onOpen={open}
-          fontSize="clamp(1.3rem, 5vmin, 2rem)"
-          flat
-          noShadow
-        />
-      </div>
     </motion.div>
   );
 }
