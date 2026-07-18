@@ -32,12 +32,13 @@ export const CATALOG = [
     name: "Islamic Royal",
     badge: { ar: "الأكثر طلبًا", fr: "Le plus demandé" },
     demoUrl: "/",
-    preview: "/assets/envelope-closed.webp",
+    // نسخة مضغوطة خاصة بالموقع — الأصل في /assets يخدم القالب الحقيقي
+    preview: "/assets/site/islamic-envelope.webp",
     previewAlt: "/assets/hero-background.webp",
     // ختم الشمع يُركّب فوق صورة الظرف (الصورة نفسها فيها تجويف فارغ)
     // top/width نسب مئوية من بطاقة المعاينة — عدّلها لضبط الموضع والحجم.
-    // الختم الذهبي بالبسملة — نفس ختم القالب الحقيقي.
-    seal: { src: "/assets/envelope-first1-seal.webp", top: "52%", width: "52%" },
+    // الختم الذهبي بالبسملة — نفس ختم القالب الحقيقي (نسخة مضغوطة).
+    seal: { src: "/assets/site/islamic-seal.webp", top: "52%", width: "52%" },
     video: "/assets/templates/demo-hero.mp4",
     description: {
       ar: "ظرف مختوم بالشمع، بجعتان متحركتان، ورق حرفي فاخر بالذهبي والبورجوندي — ثنائي اللغة مع RSVP.",
@@ -49,7 +50,7 @@ export const CATALOG = [
     name: "Heritage",
     badge: { ar: "كلاسيكي", fr: "Classique" },
     demoUrl: "/w/WED-KXZGMF",
-    preview: "/assets/templates/heritage-envelope.jpg",
+    preview: "/assets/site/heritage-envelope.webp",
     previewAlt: "/assets/templates/heritage-preview.svg",
     description: {
       ar: "حديقة عتيقة: ظرف بلون المريمية بختم تيراكوتا، خط منمّق، وأقسام بلون الكريم والوردي الهادئ.",
@@ -65,7 +66,7 @@ export const CATALOG = [
     previewAlt: "/assets/templates/floral-romantic/reveal-scene.webp",
     video: "/assets/templates/floral-romantic/reveal-scene.mp4",
     seal: {
-      src: "/assets/templates/floral-romantic/wax-seal.png",
+      src: "/assets/site/floral-seal.webp",
       top: "50%",
       width: "38%",
     },
