@@ -501,13 +501,22 @@ export default function SiteOrders() {
                           )}
                           {o.status === "preparing" && (
                             <>
+                              {/* المعلومات مكتملة → «Modifier» بدل «Saisir les infos» */}
                               <button
                                 type="button"
                                 disabled={busy}
                                 onClick={() => openWedding(o)}
-                                className="rounded-lg bg-burgundy px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-burgundy-dark disabled:opacity-60"
+                                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
+                                  o.infos_complete
+                                    ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
+                                    : "bg-burgundy text-white hover:bg-burgundy-dark"
+                                }`}
                               >
-                                {busy ? "Création…" : "📋 Saisir les infos"}
+                                {busy
+                                  ? "Création…"
+                                  : o.infos_complete
+                                    ? "✎ Modifier"
+                                    : "📋 Saisir les infos"}
                               </button>
                               <button
                                 type="button"
@@ -928,9 +937,13 @@ function RowDetails({
             <button
               type="button"
               onClick={onFillInfos}
-              className="rounded-lg bg-burgundy px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-burgundy-dark"
+              className={`rounded-lg px-4 py-2 text-xs font-semibold transition-colors ${
+                o.infos_complete
+                  ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
+                  : "bg-burgundy text-white hover:bg-burgundy-dark"
+              }`}
             >
-              📋 Saisir les infos du client
+              {o.infos_complete ? "✎ Modifier les infos" : "📋 Saisir les infos du client"}
             </button>
             <button
               type="button"
