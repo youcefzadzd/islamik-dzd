@@ -5,21 +5,17 @@ import { motion } from "framer-motion";
 import WaxSeal from "./WaxSeal";
 
 /**
- * Cinematic opening (real-envelope sequence):
+ * Cinematic opening:
  *  closed    → envelope at rest (soft float + warm sheen on hover)
  *  press     → the seal compresses and gives a tiny realistic shake (250ms)
  *  sealfade  → the monogram seal fades out smoothly (250ms)
  *  flap      → the top flap folds back in real 3D around the fold line (900ms)
- *  cardout   → the invitation card slides OUT of the pocket (900ms)
- *  cardzoom  → the card comes toward the viewer, filling the frame (700ms)
+ *  pause     → the open envelope settles (200ms)
  *  done      → overlay crossfades into the hero (500ms)
  *
  * The flap is the envelope image itself, clipped along the crease lines and
  * around the wax seal (real wax stays on the flap), rotating on the X axis
  * with perspective(1200px). Under it, a painted paper interior + shadows.
- * The card sits at z-20 BEHIND a duplicated "pocket front" (the envelope
- * image clipped to the below-fold region, z-25) so it genuinely emerges
- * from inside the pocket, then jumps to the front layer for the zoom.
  */
 const EASE = [0.22, 1, 0.36, 1];
 // dev-only: slow the whole sequence down to inspect it (keep 1 in production)
@@ -35,10 +31,6 @@ const FLAP_CLIP_BACK = "polygon(0% 100%, 100% 100%, 100% 81%, 50% 50.7%, 0% 81%)
 // Slightly inset so the painted interior never bleeds past the deckled
 // envelope edge or the flap silhouette.
 const INTERIOR_CLIP = "polygon(1.5% 1.5%, 98.5% 1.5%, 98.5% 19%, 50% 48.3%, 1.5% 19%)";
-
-// The pocket front: everything below the fold line. Duplicated above the
-// card layer so the card visually rises from inside the envelope.
-const POCKET_CLIP = "polygon(0% 19%, 50% 49.3%, 100% 19%, 100% 100%, 0% 100%)";
 
 const INTERIOR_STYLE = {
   clipPath: INTERIOR_CLIP,
@@ -57,9 +49,7 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     .trim()
     .charAt(0)}`;
 
-  const opening =
-    stage === "flap" || stage === "pause" || stage === "cardout" || stage === "cardzoom";
-  const zooming = stage === "cardzoom";
+  const opening = stage === "flap" || stage === "pause";
 
   function open() {
     if (stage !== "closed") return;
@@ -70,17 +60,9 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
       setStage("flap");
       onMountMain();
     }, 500 * SLOW);
-    setTimeout(() => setStage("cardout"), 1300 * SLOW);
-    setTimeout(() => setStage("cardzoom"), 2200 * SLOW);
-    setTimeout(onDone, 2900 * SLOW);
+    setTimeout(() => setStage("pause"), 1400 * SLOW);
+    setTimeout(onDone, 1600 * SLOW);
   }
-
-  // the invitation card: tucked → slides out of the pocket → toward the viewer
-  const cardAnimate = zooming
-    ? { y: "-46%", scale: 2.1, transition: { duration: 0.7 * SLOW, ease: EASE } }
-    : stage === "cardout"
-      ? { y: "-30%", scale: 1.02, transition: { duration: 0.9 * SLOW, ease: EASE } }
-      : { y: "0%", scale: 1 };
 
   const sealState = stage === "closed" ? "idle" : stage === "press" ? "press" : "crack";
 
@@ -267,79 +249,6 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
               }}
             />
           </motion.div>
-
-          {/* the invitation card — tucked inside, slides out of the pocket */}
-          <motion.div
-            aria-hidden
-            animate={cardAnimate}
-            className="absolute left-[20%] top-[22%] w-[60%]"
-            style={{
-              zIndex: zooming ? 60 : 20,
-              aspectRatio: "3 / 3.75",
-              filter: opening
-                ? "drop-shadow(0 14px 28px rgb(var(--color-ink) / 0.35))"
-                : "none",
-            }}
-          >
-            <div
-              className="absolute inset-0 overflow-hidden rounded-[3px]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to bottom, rgb(var(--color-ivory-light)) 0%, rgb(var(--color-ivory)) 100%), url(/assets/paper-texture.webp)",
-                backgroundBlendMode: "multiply",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            >
-              {/* inner gold frame */}
-              <div
-                className="absolute inset-[4%] rounded-[2px]"
-                style={{ border: "1px solid rgb(var(--color-gold) / 0.65)" }}
-              />
-              <div
-                className="absolute inset-[5.5%] rounded-[2px]"
-                style={{ border: "1px solid rgb(var(--color-gold) / 0.3)" }}
-              />
-              {/* card face: monogram + names */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-[4%] px-[10%] text-center">
-                <span
-                  className="font-monogram leading-none"
-                  style={{
-                    fontSize: "clamp(1.6rem, 11vw, 2.6rem)",
-                    color: "rgb(var(--color-gold-dark))",
-                  }}
-                >
-                  {initials}
-                </span>
-                <span
-                  aria-hidden
-                  style={{ color: "rgb(var(--color-gold) / 0.8)", fontSize: "0.8rem" }}
-                >
-                  ─── ❦ ───
-                </span>
-                <span
-                  className="font-serif font-semibold leading-snug"
-                  style={{
-                    fontSize: "clamp(0.85rem, 5vw, 1.25rem)",
-                    color: "rgb(var(--color-burgundy-dark))",
-                  }}
-                >
-                  {data.couple.groomName} & {data.couple.brideName}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* pocket front — the below-fold envelope face, above the card,
-              so the card genuinely emerges from inside */}
-          <img
-            src={data.assets.envelopeClosed}
-            alt=""
-            aria-hidden
-            draggable={false}
-            className="pointer-events-none absolute inset-0 z-[25] h-full w-full select-none"
-            style={{ clipPath: POCKET_CLIP }}
-          />
 
           {/* warm light reflection on hover */}
           <motion.div
