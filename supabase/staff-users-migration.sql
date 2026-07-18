@@ -28,4 +28,7 @@ do $$ begin
   end if;
 end $$;
 
+-- حساب مدير كامل الصلاحيات (يدخل ببريده مثل العمال، لكن بدور المالك)
+alter table public.staff_users add column if not exists is_admin boolean not null default false;
+
 alter table public.staff_users enable row level security;

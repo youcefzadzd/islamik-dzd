@@ -26,7 +26,7 @@ function cleanPermissions(input) {
   return out;
 }
 
-const SELECT = "id, created_at, email, display_name, permissions, active";
+const SELECT = "id, created_at, email, display_name, permissions, active, is_admin";
 
 export async function GET(request) {
   const { denied } = await ownerOnly(request);
@@ -79,6 +79,7 @@ export async function POST(request) {
       display_name: String(body.displayName || "").trim() || null,
       password_hash: hashPassword(password),
       permissions: cleanPermissions(body.permissions),
+      is_admin: Boolean(body.isAdmin),
     })
     .select(SELECT)
     .single();
@@ -116,6 +117,9 @@ export async function PATCH(request) {
   }
   if (body.active !== undefined) {
     update.active = Boolean(body.active);
+  }
+  if (body.isAdmin !== undefined) {
+    update.is_admin = Boolean(body.isAdmin);
   }
   if (body.password !== undefined && body.password !== "") {
     const password = String(body.password);

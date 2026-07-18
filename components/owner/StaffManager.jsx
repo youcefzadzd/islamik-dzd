@@ -27,6 +27,7 @@ const emptyForm = {
   displayName: "",
   password: "",
   active: true,
+  isAdmin: false,
   permissions: {},
 };
 
@@ -76,6 +77,7 @@ export default function StaffManager() {
                 displayName: form.displayName,
                 password: form.password,
                 permissions: form.permissions,
+                isAdmin: form.isAdmin,
               }
             : {
                 id: form.id,
@@ -83,6 +85,7 @@ export default function StaffManager() {
                 password: form.password || undefined,
                 permissions: form.permissions,
                 active: form.active,
+                isAdmin: form.isAdmin,
               }
         ),
       });
@@ -177,27 +180,42 @@ export default function StaffManager() {
                     <p dir="ltr" className="text-xs text-stone-500">{u.email}</p>
                   </div>
                 </div>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-[0.65rem] font-bold ${
-                    u.active ? "bg-emerald/10 text-emerald" : "bg-stone-200 text-stone-500"
-                  }`}
-                >
-                  {u.active ? "Actif" : "Désactivé"}
+                <span className="flex flex-col items-end gap-1">
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[0.65rem] font-bold ${
+                      u.active ? "bg-emerald/10 text-emerald" : "bg-stone-200 text-stone-500"
+                    }`}
+                  >
+                    {u.active ? "Actif" : "Désactivé"}
+                  </span>
+                  {u.is_admin && (
+                    <span className="rounded-full bg-gradient-to-r from-gold to-gold-dark px-2.5 py-1 text-[0.65rem] font-bold text-white">
+                      👑 Admin
+                    </span>
+                  )}
                 </span>
               </div>
 
               {/* الصلاحيات كشارات */}
               <div className="mt-4 flex flex-wrap gap-1.5">
-                {PERMS.filter((p) => u.permissions?.[p.id]).map((p) => (
-                  <span
-                    key={p.id}
-                    className="rounded-full bg-gold/15 px-2.5 py-1 text-[0.68rem] font-semibold text-gold-dark"
-                  >
-                    {p.label}
+                {u.is_admin ? (
+                  <span className="text-xs font-semibold text-gold-dark">
+                    Accès total — toutes les sections, y compris Équipe
                   </span>
-                ))}
-                {!PERMS.some((p) => u.permissions?.[p.id]) && (
-                  <span className="text-xs text-stone-400">Aucune permission</span>
+                ) : (
+                  <>
+                    {PERMS.filter((p) => u.permissions?.[p.id]).map((p) => (
+                      <span
+                        key={p.id}
+                        className="rounded-full bg-gold/15 px-2.5 py-1 text-[0.68rem] font-semibold text-gold-dark"
+                      >
+                        {p.label}
+                      </span>
+                    ))}
+                    {!PERMS.some((p) => u.permissions?.[p.id]) && (
+                      <span className="text-xs text-stone-400">Aucune permission</span>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -211,6 +229,7 @@ export default function StaffManager() {
                       displayName: u.display_name || "",
                       password: "",
                       active: u.active,
+                      isAdmin: Boolean(u.is_admin),
                       permissions: { ...(u.permissions || {}) },
                     })
                   }
@@ -303,6 +322,26 @@ export default function StaffManager() {
                 />
               </div>
 
+              {/* حساب مدير: كل الصلاحيات + إدارة الفريق — يخفي مربعات الأقسام */}
+              <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-gold/40 bg-gold/5 p-3">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.isAdmin)}
+                  onChange={(e) => setForm({ ...form, isAdmin: e.target.checked })}
+                  className="mt-0.5 accent-stone-900"
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-stone-800">
+                    👑 Administrateur
+                  </span>
+                  <span className="block text-xs text-stone-500">
+                    Accès total : toutes les sections + gestion de l'équipe (comme le
+                    propriétaire)
+                  </span>
+                </span>
+              </label>
+
+              {!form.isAdmin && (
               <div>
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">
                   Permissions — sections accessibles
@@ -329,6 +368,7 @@ export default function StaffManager() {
                   ))}
                 </div>
               </div>
+              )}
             </div>
 
             {formError && <p className="mt-4 text-sm text-rose-600">{formError}</p>}
