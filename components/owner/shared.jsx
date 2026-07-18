@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export const OWNER_PASS_KEY = "owner-pass";
 
@@ -43,10 +44,46 @@ export function CopyButton({ text, label = "copier" }) {
   );
 }
 
-/* password gate for the whole owner area — dark professional */
+/* password gate for the whole owner area — dark professional.
+   عند وجود جلسة محفوظة: شاشة تحقق هادئة بلون المحتوى بدل وميض
+   صفحة الدخول عند كل تنقل بين الأقسام. */
 export function OwnerGate({ onGranted }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem(OWNER_PASS_KEY);
+    if (!stored) return setChecking(false);
+    let alive = true;
+    fetch("/api/owner/weddings", { headers: { "x-owner-password": stored } })
+      .then(async (res) => {
+        if (!alive) return;
+        if (res.ok) return onGranted(await res.json());
+        sessionStorage.removeItem(OWNER_PASS_KEY);
+        setChecking(false);
+      })
+      .catch(() => alive && setChecking(false));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (checking) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-stone-100 font-sans">
+        <div className="flex flex-col items-center gap-3">
+          <span className="flex h-12 w-12 animate-pulse items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-dark font-monogram text-xl text-white shadow">
+            D
+          </span>
+          <span className="text-xs font-semibold uppercase tracking-[0.25em] text-stone-400">
+            Chargement…
+          </span>
+        </div>
+      </main>
+    );
+  }
 
   async function tryLogin(e) {
     e.preventDefault();
@@ -132,9 +169,10 @@ export function OwnerLayout({ children, active, title, actions }) {
       {NAV.map((item) => {
         const isActive = active === item.href;
         return (
-          <a
+          <Link
             key={item.href}
             href={item.href}
+            prefetch
             className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
               isActive
                 ? "bg-stone-800 font-semibold text-white"
@@ -147,7 +185,7 @@ export function OwnerLayout({ children, active, title, actions }) {
             )}
             <span className="w-5 text-center text-base">{item.icon}</span>
             {item.label}
-          </a>
+          </Link>
         );
       })}
     </nav>
@@ -161,7 +199,7 @@ export function OwnerLayout({ children, active, title, actions }) {
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <a href="/owner" className="mb-6 flex items-center gap-3 px-2 pt-1">
+        <Link href="/owner" prefetch className="mb-6 flex items-center gap-3 px-2 pt-1">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-dark font-monogram text-xl text-white shadow">
             D
           </span>
@@ -171,7 +209,7 @@ export function OwnerLayout({ children, active, title, actions }) {
               admin
             </span>
           </span>
-        </a>
+        </Link>
         <div className="flex-1 overflow-y-auto">{nav}</div>
         <p className="mt-4 border-t border-stone-800 px-2 pt-3 text-[0.65rem] text-stone-600">
           © {new Date().getFullYear()} Dawati — plateforme privée
@@ -201,12 +239,13 @@ export function OwnerLayout({ children, active, title, actions }) {
           </div>
           <div className="flex items-center gap-2">
             {actions}
-            <a
+            <Link
               href="/owner/weddings/new"
+              prefetch
               className="rounded-lg bg-stone-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-stone-700 hover:shadow"
             >
               + Créer
-            </a>
+            </Link>
           </div>
         </div>
       </header>
