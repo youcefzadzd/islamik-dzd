@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import WaxSeal from "./WaxSeal";
+import { CornerOrnament, Rosette, CardFlourish, DividerOrnament } from "./ornaments";
 
 /**
  * Clean full-screen envelope, opened like a real envelope:
@@ -70,6 +71,11 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
   const sealState = stage === "closed" ? "idle" : "press";
 
   const flapShadow = "drop-shadow(0 5px 14px rgb(var(--color-ink) / 0.13))";
+  /* نقش مبروز: ظل علوي خافت + إضاءة سفلية — كالتذهيب المضغوط في الورق */
+  const emboss = {
+    filter:
+      "drop-shadow(0 -0.5px 0.5px rgb(var(--color-ink) / 0.25)) drop-shadow(0 1px 0.5px rgb(255 255 255 / 0.85))",
+  };
 
   return (
     <motion.div
@@ -86,6 +92,32 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
         <div key={p.id} className="absolute inset-0" style={{ filter: flapShadow }}>
           <div className="absolute inset-0" style={{ ...pieceBase, clipPath: p.clip }}>
             <div className="absolute inset-0" style={{ background: TONES[p.id] }} />
+
+            {/* زخارف مبروزة خاصة بكل قصاصة */}
+            {p.id === "left" && (
+              <div
+                className="absolute bottom-[2.5%] left-[2.5%] w-[15vmin] max-w-[105px] opacity-55"
+                style={{ ...emboss, transform: "scaleY(-1)" }}
+              >
+                <CornerOrnament className="w-full" />
+              </div>
+            )}
+            {p.id === "right" && (
+              <div
+                className="absolute bottom-[2.5%] right-[2.5%] w-[15vmin] max-w-[105px] opacity-55"
+                style={{ ...emboss, transform: "scale(-1,-1)" }}
+              >
+                <CornerOrnament className="w-full" />
+              </div>
+            )}
+            {p.id === "bottom" && (
+              <div
+                className="absolute bottom-[3%] left-1/2 -translate-x-1/2 opacity-60"
+                style={emboss}
+              >
+                <DividerOrnament className="h-[4.5vmin] w-[24vmin] max-w-[190px]" />
+              </div>
+            )}
           </div>
         </div>
       ))}
@@ -114,6 +146,32 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
           style={{ ...pieceBase, clipPath: `polygon(0% 0%, 100% 0%, 50% ${CY})` }}
         >
           <div className="absolute inset-0" style={{ background: TONES.top }} />
+
+          {/* زخارف الغطاء: زاويتان أرابيسك + وردة أندلسية وزهرية فوق الختم */}
+          <div
+            className="absolute left-[2.5%] top-[3%] w-[15vmin] max-w-[105px] opacity-55"
+            style={emboss}
+          >
+            <CornerOrnament className="w-full" />
+          </div>
+          <div
+            className="absolute right-[2.5%] top-[3%] w-[15vmin] max-w-[105px] opacity-55"
+            style={{ ...emboss, transform: "scaleX(-1)" }}
+          >
+            <CornerOrnament className="w-full" />
+          </div>
+          <div
+            className="absolute left-1/2 top-[6.5%] -translate-x-1/2 opacity-25"
+            style={emboss}
+          >
+            <Rosette size="min(24vmin, 150px)" />
+          </div>
+          <div
+            className="absolute left-1/2 top-[21%] -translate-x-1/2 opacity-65"
+            style={emboss}
+          >
+            <CardFlourish className="h-[3.6vmin] w-[20vmin] max-w-[150px]" />
+          </div>
         </div>
 
         {/* الختم الذهبي على طرف الغطاء — بلا هالة ولا ظل */}
