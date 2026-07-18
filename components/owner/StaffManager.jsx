@@ -23,7 +23,7 @@ const PERMS = [
 
 const emptyForm = {
   id: null,
-  username: "",
+  email: "",
   displayName: "",
   password: "",
   active: true,
@@ -72,7 +72,7 @@ export default function StaffManager() {
         body: JSON.stringify(
           isNew
             ? {
-                username: form.username,
+                email: form.email,
                 displayName: form.displayName,
                 password: form.password,
                 permissions: form.permissions,
@@ -89,10 +89,10 @@ export default function StaffManager() {
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(
-          body.error === "username already exists"
-            ? "Cet identifiant existe déjà."
-            : body.error === "invalid username"
-              ? "Identifiant invalide (3-30 caractères : lettres, chiffres, . _ -)."
+          body.error === "email already exists"
+            ? "Cet email existe déjà."
+            : body.error === "invalid email"
+              ? "Email invalide (ex : ahmed@gmail.com)."
               : body.error === "invalid password"
                 ? "Mot de passe invalide (6 caractères minimum)."
                 : body.error || "Erreur serveur."
@@ -117,7 +117,7 @@ export default function StaffManager() {
   }
 
   async function removeStaff(u) {
-    if (!window.confirm(`Supprimer le compte « ${u.username} » définitivement ?`)) return;
+    if (!window.confirm(`Supprimer le compte « ${u.email} » définitivement ?`)) return;
     await fetch("/api/owner/staff", {
       method: "DELETE",
       headers: { "Content-Type": "application/json", ...ownerHeaders() },
@@ -170,11 +170,11 @@ export default function StaffManager() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900 text-lg font-bold text-gold">
-                    {(u.display_name || u.username).charAt(0).toUpperCase()}
+                    {(u.display_name || u.email).charAt(0).toUpperCase()}
                   </span>
                   <div>
-                    <p className="font-bold text-stone-900">{u.display_name || u.username}</p>
-                    <p dir="ltr" className="text-xs text-stone-500">@{u.username}</p>
+                    <p className="font-bold text-stone-900">{u.display_name || u.email}</p>
+                    <p dir="ltr" className="text-xs text-stone-500">{u.email}</p>
                   </div>
                 </div>
                 <span
@@ -207,7 +207,7 @@ export default function StaffManager() {
                   onClick={() =>
                     setForm({
                       id: u.id,
-                      username: u.username,
+                      email: u.email,
                       displayName: u.display_name || "",
                       password: "",
                       active: u.active,
@@ -250,7 +250,7 @@ export default function StaffManager() {
           >
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-bold text-stone-900">
-                {form.id ? `Modifier — @${form.username}` : "Nouvel employé"}
+                {form.id ? `Modifier — ${form.email}` : "Nouvel employé"}
               </h2>
               <button
                 type="button"
@@ -266,13 +266,14 @@ export default function StaffManager() {
               {!form.id && (
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-500">
-                    Identifiant (login)
+                    Email (login)
                   </label>
                   <input
                     dir="ltr"
-                    value={form.username}
-                    onChange={(e) => setForm({ ...form, username: e.target.value })}
-                    placeholder="ex : ahmed"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="ex : ahmed@gmail.com"
                     className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-stone-900"
                   />
                 </div>

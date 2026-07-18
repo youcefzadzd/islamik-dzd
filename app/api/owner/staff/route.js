@@ -6,7 +6,7 @@ import { authOwnerOrStaff, ALL_PERMISSIONS } from "@/lib/staff-auth";
 /**
  * إدارة حسابات العمال — للمالك فقط (server only).
  * GET    → قائمة العمال
- * POST   → إنشاء { username, displayName, password, permissions }
+ * POST   → إنشاء { email, displayName, password, permissions }
  * PATCH  → تعديل { id, displayName?, password?, permissions?, active? }
  * DELETE → حذف { id }
  */
@@ -26,7 +26,7 @@ function cleanPermissions(input) {
   return out;
 }
 
-const SELECT = "id, created_at, username, display_name, permissions, active";
+const SELECT = "id, created_at, email, display_name, permissions, active";
 
 export async function GET(request) {
   const { denied } = await ownerOnly(request);
@@ -63,10 +63,10 @@ export async function POST(request) {
     return NextResponse.json({ error: "invalid json" }, { status: 400 });
   }
 
-  const username = String(body.username || "").trim().toLowerCase();
+  const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
-  if (!/^[a-z0-9._-]{3,30}$/.test(username)) {
-    return NextResponse.json({ error: "invalid username" }, { status: 400 });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 80) {
+    return NextResponse.json({ error: "invalid email" }, { status: 400 });
   }
   if (password.length < 6 || password.length > 60) {
     return NextResponse.json({ error: "invalid password" }, { status: 400 });
@@ -75,7 +75,7 @@ export async function POST(request) {
   const { data, error } = await supabase
     .from("staff_users")
     .insert({
-      username,
+      email,
       display_name: String(body.displayName || "").trim() || null,
       password_hash: hashPassword(password),
       permissions: cleanPermissions(body.permissions),
@@ -85,7 +85,7 @@ export async function POST(request) {
   if (error) {
     const duplicate = /duplicate|unique/i.test(error.message);
     return NextResponse.json(
-      { error: duplicate ? "username already exists" : error.message },
+      { error: duplicate ? "email already exists" : error.message },
       { status: duplicate ? 409 : 500 }
     );
   }

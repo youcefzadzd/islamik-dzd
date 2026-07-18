@@ -178,10 +178,10 @@ export function OwnerGate({ onGranted }) {
           </h1>
         </div>
         <input
-          type="text"
+          type="email"
           autoFocus
-          autoComplete="username"
-          placeholder="Identifiant employé (vide = propriétaire)"
+          autoComplete="email"
+          placeholder="Email employé (vide = propriétaire)"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           dir="ltr"
