@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  AccessDenied,
   OwnerGate,
   OwnerLayout,
   ownerHeaders,
   statusOf,
   CopyButton,
   glass,
-  OWNER_PASS_KEY,
+  hasStoredCredentials,
 } from "./shared";
 
 const PAGE_SIZE = 8;
@@ -29,15 +30,21 @@ export default function WeddingsTable() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(0);
 
+  const [denied, setDenied] = useState(false);
+
   async function load() {
     const res = await fetch("/api/owner/weddings", { headers: ownerHeaders() });
+    if (res.status === 403) {
+      setGranted(true);
+      return setDenied(true);
+    }
     if (!res.ok) return setGranted(false);
     setGranted(true);
     setRows((await res.json()).rows);
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem(OWNER_PASS_KEY)) load();
+    if (hasStoredCredentials()) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -91,16 +98,8 @@ export default function WeddingsTable() {
     );
   }
 
-  if (!granted) {
-    return (
-      <OwnerGate
-        onGranted={(json) => {
-          setGranted(true);
-          setRows(json.rows);
-        }}
-      />
-    );
-  }
+  if (!granted) return <OwnerGate onGranted={() => load()} />;
+  if (denied) return <AccessDenied />;
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 

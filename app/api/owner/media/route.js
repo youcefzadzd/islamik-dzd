@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/wedding-service";
-import { safeEqual } from "@/lib/passwords";
+import { authOwnerOrStaff } from "@/lib/staff-auth";
 
 /**
  * Owner uploads on Supabase Storage — server only (service key).
@@ -21,13 +21,10 @@ function bucketFor(fileName, mimeType) {
     : IMAGE_BUCKET;
 }
 
-function denied(request) {
-  if (!process.env.OWNER_PASSWORD) {
-    return NextResponse.json({ error: "OWNER_PASSWORD is not set on the server" }, { status: 503 });
-  }
-  if (!safeEqual(request.headers.get("x-owner-password") || "", process.env.OWNER_PASSWORD)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+/* مالك، أو عامل يملك صلاحية «media» */
+async function denied(request) {
+  const auth = await authOwnerOrStaff(request, "media");
+  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
   return null;
 }
 
@@ -39,7 +36,7 @@ async function ensureBucket(supabase, bucket) {
 }
 
 export async function GET(request) {
-  const d = denied(request);
+  const d = await denied(request);
   if (d) return d;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
@@ -67,7 +64,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const d = denied(request);
+  const d = await denied(request);
   if (d) return d;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
@@ -97,7 +94,7 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
-  const d = denied(request);
+  const d = await denied(request);
   if (d) return d;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });

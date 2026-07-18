@@ -1,24 +1,18 @@
 import { NextResponse } from "next/server";
 import { getAdminClient, sanitizeWedding, normalizeRsvpSettings } from "@/lib/wedding-service";
-import { hashPassword, safeEqual } from "@/lib/passwords";
+import { hashPassword } from "@/lib/passwords";
+import { authOwnerOrStaff } from "@/lib/staff-auth";
 
-function guard(request) {
-  if (!process.env.OWNER_PASSWORD) {
-    return NextResponse.json(
-      { error: "OWNER_PASSWORD is not set on the server" },
-      { status: 503 }
-    );
-  }
-  const given = request.headers.get("x-owner-password") || "";
-  if (!safeEqual(given, process.env.OWNER_PASSWORD)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+/* مالك، أو عامل يملك صلاحية «weddings» */
+async function guard(request) {
+  const auth = await authOwnerOrStaff(request, "weddings");
+  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
   return null;
 }
 
 /* GET one wedding (without the password hash) */
 export async function GET(request, { params }) {
-  const denied = guard(request);
+  const denied = await guard(request);
   if (denied) return denied;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
@@ -35,7 +29,7 @@ export async function GET(request, { params }) {
 
 /* PUT — update a wedding; dashboardPassword (if given) is re-hashed */
 export async function PUT(request, { params }) {
-  const denied = guard(request);
+  const denied = await guard(request);
   if (denied) return denied;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
@@ -82,7 +76,7 @@ export async function PUT(request, { params }) {
 
 /* PATCH — toggle archive (stored in texts jsonb: no schema change) */
 export async function PATCH(request, { params }) {
-  const denied = guard(request);
+  const denied = await guard(request);
   if (denied) return denied;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
@@ -105,7 +99,7 @@ export async function PATCH(request, { params }) {
 
 /* DELETE — remove the wedding and all of its RSVP responses */
 export async function DELETE(request, { params }) {
-  const denied = guard(request);
+  const denied = await guard(request);
   if (denied) return denied;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });

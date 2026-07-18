@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { OwnerGate, OwnerLayout, ownerHeaders, glass, OWNER_PASS_KEY } from "./shared";
+import {
+  AccessDenied,
+  OwnerGate,
+  OwnerLayout,
+  ownerHeaders,
+  glass,
+  hasStoredCredentials,
+} from "./shared";
 
 /* last N months as ["2026-02", ...] with fr labels */
 function lastMonths(n) {
@@ -93,17 +100,22 @@ function Donut({ yes, no }) {
 
 export default function Analytics() {
   const [granted, setGranted] = useState(false);
+  const [denied, setDenied] = useState(false);
   const [stats, setStats] = useState(null);
 
   async function load() {
     const res = await fetch("/api/owner/stats", { headers: ownerHeaders() });
+    if (res.status === 403) {
+      setGranted(true);
+      return setDenied(true);
+    }
     if (!res.ok) return setGranted(false);
     setGranted(true);
     setStats(await res.json());
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem(OWNER_PASS_KEY)) load();
+    if (hasStoredCredentials()) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -137,6 +149,7 @@ export default function Analytics() {
   }, [stats]);
 
   if (!granted) return <OwnerGate onGranted={() => load()} />;
+  if (denied) return <AccessDenied />;
 
   return (
     <OwnerLayout active="/owner/analytics" title="Statistiques">

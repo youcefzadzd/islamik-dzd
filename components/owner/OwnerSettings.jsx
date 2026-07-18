@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { OwnerGate, OwnerLayout, ownerHeaders, glass, OWNER_PASS_KEY } from "./shared";
+import {
+  AccessDenied,
+  OwnerGate,
+  OwnerLayout,
+  ownerHeaders,
+  glass,
+  hasStoredCredentials,
+} from "./shared";
 
 /**
  * Platform settings. Environment + links are live; company branding is
@@ -14,8 +21,14 @@ export default function OwnerSettings() {
   const [waState, setWaState] = useState("idle"); // idle | saving | saved | error
   const [waError, setWaError] = useState("");
 
+  const [denied, setDenied] = useState(false);
+
+  /* الفحص والتحميل عبر site-settings نفسها — صلاحية «settings» */
   async function loadSettings() {
     const res = await fetch("/api/owner/site-settings", { headers: ownerHeaders() });
+    if (res.status === 401) return setGranted(false);
+    setGranted(true);
+    if (res.status === 403) return setDenied(true);
     if (res.ok) {
       const j = await res.json();
       setWhatsapp(j.whatsappNumber || "");
@@ -24,12 +37,8 @@ export default function OwnerSettings() {
 
   useEffect(() => {
     setCompany(localStorage.getItem("platform-company") || "Invitations Royales");
-    if (sessionStorage.getItem(OWNER_PASS_KEY)) {
-      fetch("/api/owner/weddings", { headers: ownerHeaders() }).then((r) => {
-        setGranted(r.ok);
-        if (r.ok) loadSettings();
-      });
-    }
+    if (hasStoredCredentials()) loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function saveWhatsapp() {
@@ -55,16 +64,8 @@ export default function OwnerSettings() {
     setTimeout(() => setWaState("idle"), 2000);
   }
 
-  if (!granted) {
-    return (
-      <OwnerGate
-        onGranted={() => {
-          setGranted(true);
-          loadSettings();
-        }}
-      />
-    );
-  }
+  if (!granted) return <OwnerGate onGranted={() => loadSettings()} />;
+  if (denied) return <AccessDenied />;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseRef = supabaseUrl.replace("https://", "").split(".")[0];

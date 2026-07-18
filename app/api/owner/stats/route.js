@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/wedding-service";
-import { safeEqual } from "@/lib/passwords";
+import { authOwnerOrStaff } from "@/lib/staff-auth";
 
 /** aggregate data for the owner dashboard + analytics (server only) */
 export async function GET(request) {
-  if (!process.env.OWNER_PASSWORD) {
-    return NextResponse.json({ error: "OWNER_PASSWORD is not set on the server" }, { status: 503 });
-  }
-  if (!safeEqual(request.headers.get("x-owner-password") || "", process.env.OWNER_PASSWORD)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+  const auth = await authOwnerOrStaff(request, "analytics");
+  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
 

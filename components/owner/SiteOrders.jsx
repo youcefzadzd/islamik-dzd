@@ -2,7 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CATALOG, PRICING, formatDZD } from "@/components/site/site-config";
-import { CopyButton, OwnerGate, OwnerLayout, ownerHeaders, glass, OWNER_PASS_KEY } from "./shared";
+import {
+  AccessDenied,
+  CopyButton,
+  OwnerGate,
+  OwnerLayout,
+  ownerHeaders,
+  glass,
+  hasStoredCredentials,
+} from "./shared";
 
 /* حالات الطلب — نفس قيم عمود status في site_orders.
    الطلب الجديد يصل بحالة new (= En confirmation) ثم يتدرج في السلسلة. */
@@ -41,6 +49,7 @@ function customerWhatsApp(phone) {
 
 export default function SiteOrders() {
   const [granted, setGranted] = useState(false);
+  const [denied, setDenied] = useState(false);
   const [orders, setOrders] = useState(null);
   const [loadError, setLoadError] = useState("");
   const [filter, setFilter] = useState("all");
@@ -55,6 +64,10 @@ export default function SiteOrders() {
     setLoadError("");
     const res = await fetch("/api/owner/site-orders", { headers: ownerHeaders() });
     if (res.status === 401) return setGranted(false);
+    if (res.status === 403) {
+      setGranted(true);
+      return setDenied(true);
+    }
     setGranted(true);
     const body = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -69,7 +82,7 @@ export default function SiteOrders() {
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem(OWNER_PASS_KEY)) load();
+    if (hasStoredCredentials()) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -235,6 +248,7 @@ export default function SiteOrders() {
   }, [orders]);
 
   if (!granted) return <OwnerGate onGranted={() => load()} />;
+  if (denied) return <AccessDenied />;
 
   return (
     <OwnerLayout active="/owner/orders" title="Commandes du site">

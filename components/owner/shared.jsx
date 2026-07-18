@@ -4,9 +4,44 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export const OWNER_PASS_KEY = "owner-pass";
+export const STAFF_USER_KEY = "staff-user";
+export const STAFF_PASS_KEY = "staff-pass";
+export const SESSION_KEY = "owner-session"; // JSON: { role, displayName, permissions }
 
 export function ownerHeaders() {
-  return { "x-owner-password": sessionStorage.getItem(OWNER_PASS_KEY) || "" };
+  const h = {};
+  const ownerPass = sessionStorage.getItem(OWNER_PASS_KEY);
+  if (ownerPass) h["x-owner-password"] = ownerPass;
+  const staffUser = sessionStorage.getItem(STAFF_USER_KEY);
+  const staffPass = sessionStorage.getItem(STAFF_PASS_KEY);
+  if (staffUser && staffPass) {
+    h["x-staff-user"] = staffUser;
+    h["x-staff-password"] = staffPass;
+  }
+  return h;
+}
+
+export function hasStoredCredentials() {
+  return Boolean(
+    sessionStorage.getItem(OWNER_PASS_KEY) ||
+      (sessionStorage.getItem(STAFF_USER_KEY) && sessionStorage.getItem(STAFF_PASS_KEY))
+  );
+}
+
+/** جلسة الدخول الحالية { role, displayName, permissions } أو null */
+export function getSession() {
+  try {
+    return JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function clearCredentials() {
+  sessionStorage.removeItem(OWNER_PASS_KEY);
+  sessionStorage.removeItem(STAFF_USER_KEY);
+  sessionStorage.removeItem(STAFF_PASS_KEY);
+  sessionStorage.removeItem(SESSION_KEY);
 }
 
 /* بطاقة موحّدة لكل صفحات الإدارة — نمط SaaS نظيف على خلفية رمادية فاتحة */
@@ -48,19 +83,23 @@ export function CopyButton({ text, label = "copier" }) {
    عند وجود جلسة محفوظة: شاشة تحقق هادئة بلون المحتوى بدل وميض
    صفحة الدخول عند كل تنقل بين الأقسام. */
 export function OwnerGate({ onGranted }) {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(OWNER_PASS_KEY);
-    if (!stored) return setChecking(false);
+    if (!hasStoredCredentials()) return setChecking(false);
     let alive = true;
-    fetch("/api/owner/weddings", { headers: { "x-owner-password": stored } })
+    fetch("/api/owner/login", { headers: ownerHeaders() })
       .then(async (res) => {
         if (!alive) return;
-        if (res.ok) return onGranted(await res.json());
-        sessionStorage.removeItem(OWNER_PASS_KEY);
+        if (res.ok) {
+          const session = await res.json();
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+          return onGranted(session);
+        }
+        clearCredentials();
         setChecking(false);
       })
       .catch(() => alive && setChecking(false));
@@ -88,10 +127,13 @@ export function OwnerGate({ onGranted }) {
   async function tryLogin(e) {
     e.preventDefault();
     setError("");
-    const res = await fetch("/api/owner/weddings", {
-      headers: { "x-owner-password": password },
-    });
-    if (res.status === 401) return setError("Mot de passe incorrect.");
+    /* اسم مستخدم فارغ = دخول المالك؛ وإلا دخول عامل */
+    const user = username.trim().toLowerCase();
+    const headers = user
+      ? { "x-staff-user": user, "x-staff-password": password }
+      : { "x-owner-password": password };
+    const res = await fetch("/api/owner/login", { headers });
+    if (res.status === 401) return setError("Identifiants incorrects.");
     if (res.status === 503) {
       const body = await res.json().catch(() => ({}));
       return setError(
@@ -101,8 +143,16 @@ export function OwnerGate({ onGranted }) {
       );
     }
     if (!res.ok) return setError("Erreur serveur.");
-    sessionStorage.setItem(OWNER_PASS_KEY, password);
-    onGranted(await res.json());
+    const session = await res.json();
+    clearCredentials();
+    if (user) {
+      sessionStorage.setItem(STAFF_USER_KEY, user);
+      sessionStorage.setItem(STAFF_PASS_KEY, password);
+    } else {
+      sessionStorage.setItem(OWNER_PASS_KEY, password);
+    }
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    onGranted(session);
   }
 
   return (
@@ -124,13 +174,23 @@ export function OwnerGate({ onGranted }) {
           </span>
           <p className="mt-4 font-monogram text-3xl text-gold">Dawati</p>
           <h1 className="mt-1 text-xs font-semibold uppercase tracking-[0.3em] text-stone-500">
-            Espace propriétaire
+            Espace équipe
           </h1>
         </div>
         <input
+          type="text"
+          autoFocus
+          autoComplete="username"
+          placeholder="Identifiant employé (vide = propriétaire)"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          dir="ltr"
+          className="w-full rounded-xl border border-stone-700 bg-stone-950 px-4 py-3 text-sm text-stone-100 outline-none transition-colors placeholder:text-stone-600 focus:border-gold"
+        />
+        <input
           type="password"
           required
-          autoFocus
+          autoComplete="current-password"
           placeholder="Mot de passe"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -148,25 +208,65 @@ export function OwnerGate({ onGranted }) {
   );
 }
 
+/* perm: صلاحية القسم في staff_users.permissions — null = يظهر للجميع،
+   ownerOnly: للمالك فقط */
 const NAV = [
-  { href: "/owner", label: "Dashboard", icon: "🏠" },
-  { href: "/owner/weddings", label: "Mariages", icon: "💍" },
-  { href: "/owner/weddings/new", label: "Créer un mariage", icon: "➕" },
-  { href: "/owner/orders", label: "Commandes", icon: "🛒" },
-  { href: "/owner/templates", label: "Modèles", icon: "🖼" },
-  { href: "/owner/media", label: "Médiathèque", icon: "📁" },
-  { href: "/owner/music", label: "Musiques", icon: "🎵" },
-  { href: "/owner/analytics", label: "Statistiques", icon: "📊" },
-  { href: "/owner/settings", label: "Paramètres", icon: "⚙️" },
+  { href: "/owner", label: "Dashboard", icon: "🏠", perm: "analytics" },
+  { href: "/owner/weddings", label: "Mariages", icon: "💍", perm: "weddings" },
+  { href: "/owner/weddings/new", label: "Créer un mariage", icon: "➕", perm: "weddings" },
+  { href: "/owner/orders", label: "Commandes", icon: "🛒", perm: "orders" },
+  { href: "/owner/templates", label: "Modèles", icon: "🖼", perm: "templates" },
+  { href: "/owner/media", label: "Médiathèque", icon: "📁", perm: "media" },
+  { href: "/owner/music", label: "Musiques", icon: "🎵", perm: "music" },
+  { href: "/owner/analytics", label: "Statistiques", icon: "📊", perm: "analytics" },
+  { href: "/owner/staff", label: "Équipe", icon: "👥", ownerOnly: true },
+  { href: "/owner/settings", label: "Paramètres", icon: "⚙️", perm: "settings" },
 ];
+
+/* شاشة «لا صلاحية» — تعرضها الصفحات عند ردّ 403 لعامل بلا صلاحية القسم */
+export function AccessDenied() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-stone-100 px-4 font-sans">
+      <div className="max-w-sm rounded-xl border border-stone-200 bg-white p-8 text-center shadow-sm">
+        <span className="text-4xl">🔒</span>
+        <h1 className="mt-3 text-lg font-bold text-stone-900">Accès non autorisé</h1>
+        <p className="mt-2 text-sm text-stone-500">
+          Votre compte n'a pas la permission d'accéder à cette section. Contactez le
+          propriétaire pour ajuster vos droits.
+        </p>
+        <Link
+          href="/owner/orders"
+          className="mt-5 inline-block rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white hover:bg-stone-700"
+        >
+          ← Retour
+        </Link>
+      </div>
+    </main>
+  );
+}
 
 /* SaaS admin shell — قائمة داكنة + محتوى فاتح نظيف */
 export function OwnerLayout({ children, active, title, actions }) {
   const [open, setOpen] = useState(false);
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    setSession(getSession());
+  }, []);
+
+  /* المالك (أو قبل تحميل الجلسة) يرى كل شيء — العامل يرى أقسامه فقط */
+  const visibleNav = NAV.filter((item) => {
+    if (!session) return true;
+    if (session.role === "owner") return true;
+    if (item.ownerOnly) return false;
+    return !item.perm || session.permissions?.[item.perm];
+  });
+
+  const canCreate = !session || session.role === "owner" || session.permissions?.weddings;
 
   const nav = (
     <nav className="space-y-0.5">
-      {NAV.map((item) => {
+      {visibleNav.map((item) => {
         const isActive = active === item.href;
         return (
           <Link
@@ -211,9 +311,36 @@ export function OwnerLayout({ children, active, title, actions }) {
           </span>
         </Link>
         <div className="flex-1 overflow-y-auto">{nav}</div>
-        <p className="mt-4 border-t border-stone-800 px-2 pt-3 text-[0.65rem] text-stone-600">
-          © {new Date().getFullYear()} Dawati — plateforme privée
-        </p>
+        {/* المستخدم الحالي + تسجيل الخروج */}
+        <div className="mt-4 border-t border-stone-800 px-2 pt-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="min-w-0">
+              <span className="block truncate text-xs font-semibold text-stone-300">
+                {session?.displayName || "…"}
+              </span>
+              <span className="block text-[0.6rem] uppercase tracking-wider text-stone-600">
+                {session?.role === "staff" ? "employé" : "propriétaire"}
+              </span>
+            </span>
+            <button
+              type="button"
+              title="Déconnexion"
+              onClick={() => {
+                sessionStorage.removeItem(OWNER_PASS_KEY);
+                sessionStorage.removeItem(STAFF_USER_KEY);
+                sessionStorage.removeItem(STAFF_PASS_KEY);
+                sessionStorage.removeItem(SESSION_KEY);
+                window.location.href = "/owner";
+              }}
+              className="rounded-lg border border-stone-700 px-2 py-1 text-xs text-stone-400 transition-colors hover:border-rose-500 hover:text-rose-400"
+            >
+              ⎋
+            </button>
+          </div>
+          <p className="mt-2 text-[0.65rem] text-stone-600">
+            © {new Date().getFullYear()} Dawati
+          </p>
+        </div>
       </aside>
       {open && (
         <button
@@ -239,13 +366,15 @@ export function OwnerLayout({ children, active, title, actions }) {
           </div>
           <div className="flex items-center gap-2">
             {actions}
-            <Link
-              href="/owner/weddings/new"
-              prefetch
-              className="rounded-lg bg-stone-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-stone-700 hover:shadow"
-            >
-              + Créer
-            </Link>
+            {canCreate && (
+              <Link
+                href="/owner/weddings/new"
+                prefetch
+                className="rounded-lg bg-stone-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-stone-700 hover:shadow"
+              >
+                + Créer
+              </Link>
+            )}
           </div>
         </div>
       </header>

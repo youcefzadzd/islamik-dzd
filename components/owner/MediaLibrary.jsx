@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { OwnerGate, OwnerLayout, ownerHeaders, glass, CopyButton, OWNER_PASS_KEY } from "./shared";
+import {
+  AccessDenied,
+  OwnerGate,
+  OwnerLayout,
+  ownerHeaders,
+  glass,
+  CopyButton,
+  hasStoredCredentials,
+} from "./shared";
 
 const AUDIO_EXT = /\.(mp3|wav|ogg|m4a)$/i;
 const IMAGE_EXT = /\.(png|jpe?g|webp|gif|avif|svg)$/i;
@@ -26,11 +34,14 @@ export default function MediaLibrary({ kind }) {
   const isAudio = kind === "audio";
   const accept = isAudio ? "audio/*" : "image/*";
 
+  const [denied, setDenied] = useState(false);
+
   async function load() {
     const res = await fetch("/api/owner/media", { headers: ownerHeaders() });
     if (!res.ok) {
       if (res.status === 401) return setGranted(false);
       setGranted(true);
+      if (res.status === 403) return setDenied(true);
       setError((await res.json().catch(() => ({}))).error || "erreur");
       setFiles([]);
       return;
@@ -41,7 +52,7 @@ export default function MediaLibrary({ kind }) {
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem(OWNER_PASS_KEY)) load();
+    if (hasStoredCredentials()) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
@@ -81,6 +92,7 @@ export default function MediaLibrary({ kind }) {
   }
 
   if (!granted) return <OwnerGate onGranted={() => load()} />;
+  if (denied) return <AccessDenied />;
 
   return (
     <OwnerLayout

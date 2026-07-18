@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import {
+  AccessDenied,
   OwnerGate,
   OwnerLayout,
   ownerHeaders,
   statusOf,
   daysUntil,
   glass,
-  OWNER_PASS_KEY,
+  hasStoredCredentials,
 } from "./shared";
 
 function StatCard({ label, value, hint }) {
@@ -23,21 +24,27 @@ function StatCard({ label, value, hint }) {
 
 export default function OwnerHome() {
   const [granted, setGranted] = useState(false);
+  const [denied, setDenied] = useState(false);
   const [stats, setStats] = useState(null);
 
   async function load() {
     const res = await fetch("/api/owner/stats", { headers: ownerHeaders() });
+    if (res.status === 403) {
+      setGranted(true);
+      return setDenied(true);
+    }
     if (!res.ok) return setGranted(false);
     setGranted(true);
     setStats(await res.json());
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem(OWNER_PASS_KEY)) load();
+    if (hasStoredCredentials()) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!granted) return <OwnerGate onGranted={() => load()} />;
+  if (denied) return <AccessDenied />;
 
   const weddings = stats?.weddings || [];
   const rsvps = stats?.rsvps || [];

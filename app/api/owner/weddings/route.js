@@ -5,31 +5,19 @@ import {
   sanitizeWedding,
   normalizeRsvpSettings,
 } from "@/lib/wedding-service";
-import { hashPassword, safeEqual } from "@/lib/passwords";
+import { hashPassword } from "@/lib/passwords";
+import { authOwnerOrStaff } from "@/lib/staff-auth";
 
-/** owner-only: gated by OWNER_PASSWORD from the environment */
-function ownerOk(request) {
-  const expected = process.env.OWNER_PASSWORD || "";
-  const given = request.headers.get("x-owner-password") || "";
-  return expected && safeEqual(given, expected);
-}
-
-function guard(request) {
-  if (!process.env.OWNER_PASSWORD) {
-    return NextResponse.json(
-      { error: "OWNER_PASSWORD is not set on the server" },
-      { status: 503 }
-    );
-  }
-  if (!ownerOk(request)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+/* مالك، أو عامل يملك صلاحية «weddings» */
+async function guard(request) {
+  const auth = await authOwnerOrStaff(request, "weddings");
+  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
   return null;
 }
 
 /* GET /api/owner/weddings — list all weddings */
 export async function GET(request) {
-  const denied = guard(request);
+  const denied = await guard(request);
   if (denied) return denied;
   const supabase = getAdminClient();
   if (!supabase) {
@@ -53,7 +41,7 @@ export async function GET(request) {
 
 /* POST /api/owner/weddings — create a wedding */
 export async function POST(request) {
-  const denied = guard(request);
+  const denied = await guard(request);
   if (denied) return denied;
   const supabase = getAdminClient();
   if (!supabase) {

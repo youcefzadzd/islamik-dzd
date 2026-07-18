@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { OwnerGate, OwnerLayout, ownerHeaders, OWNER_PASS_KEY } from "./shared";
+import {
+  AccessDenied,
+  OwnerGate,
+  OwnerLayout,
+  ownerHeaders,
+  hasStoredCredentials,
+} from "./shared";
 import WeddingWizard from "./WeddingWizard";
 import { rowToForm } from "./formModel";
 
@@ -11,6 +17,7 @@ export default function OwnerEdit({ weddingId, embed = false }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [denied, setDenied] = useState(false);
 
   async function load() {
     const res = await fetch(`/api/owner/weddings/${encodeURIComponent(weddingId)}`, {
@@ -18,12 +25,13 @@ export default function OwnerEdit({ weddingId, embed = false }) {
     });
     if (res.status === 401) return setGranted(false);
     setGranted(true);
+    if (res.status === 403) return setDenied(true);
     if (res.ok) setWedding((await res.json()).wedding);
     else setError("Mariage introuvable.");
   }
 
   useEffect(() => {
-    if (sessionStorage.getItem(OWNER_PASS_KEY)) load();
+    if (hasStoredCredentials()) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weddingId]);
 
@@ -62,6 +70,7 @@ export default function OwnerEdit({ weddingId, embed = false }) {
   }
 
   if (!granted) return <OwnerGate onGranted={() => load()} />;
+  if (denied) return <AccessDenied />;
 
   const content = (
     <>

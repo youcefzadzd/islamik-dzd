@@ -1,23 +1,43 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { OwnerGate, OwnerLayout, ownerHeaders, glass, OWNER_PASS_KEY } from "./shared";
+import {
+  AccessDenied,
+  OwnerGate,
+  OwnerLayout,
+  ownerHeaders,
+  glass,
+  getSession,
+  hasStoredCredentials,
+} from "./shared";
 import { TEMPLATES } from "@/lib/templates";
 
 export default function Templates() {
   const [granted, setGranted] = useState(false);
+  const [denied, setDenied] = useState(false);
   const [useCount, setUseCount] = useState(null);
 
-  useEffect(() => {
-    if (!sessionStorage.getItem(OWNER_PASS_KEY)) return;
-    fetch("/api/owner/weddings", { headers: ownerHeaders() }).then(async (r) => {
-      if (!r.ok) return setGranted(false);
+  async function load() {
+    /* صلاحية القسم من الجلسة — عدد الأعراس يحتاج صلاحية weddings،
+       فإن غابت نعرض الصفحة بدون العدّاد فقط */
+    const session = getSession();
+    if (session?.role === "staff" && !session.permissions?.templates) {
       setGranted(true);
-      setUseCount((await r.json()).rows.length);
-    });
+      return setDenied(true);
+    }
+    setGranted(true);
+    const r = await fetch("/api/owner/weddings", { headers: ownerHeaders() });
+    if (r.status === 401) return setGranted(false);
+    if (r.ok) setUseCount((await r.json()).rows.length);
+  }
+
+  useEffect(() => {
+    if (hasStoredCredentials()) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!granted) return <OwnerGate onGranted={(json) => { setGranted(true); setUseCount(json.rows.length); }} />;
+  if (!granted) return <OwnerGate onGranted={() => load()} />;
+  if (denied) return <AccessDenied />;
 
   return (
     <OwnerLayout active="/owner/templates" title="Modèles">

@@ -1,24 +1,21 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/wedding-service";
-import { safeEqual } from "@/lib/passwords";
+import { authOwnerOrStaff } from "@/lib/staff-auth";
 
 /**
  * إعدادات الموقع من لوحة المالك (server only).
  * GET → القيم الحالية · PUT → تحديث { whatsappNumber }
  */
 
-function authError(request) {
-  if (!process.env.OWNER_PASSWORD) {
-    return NextResponse.json({ error: "OWNER_PASSWORD is not set on the server" }, { status: 503 });
-  }
-  if (!safeEqual(request.headers.get("x-owner-password") || "", process.env.OWNER_PASSWORD)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+/* مالك، أو عامل يملك صلاحية «settings» */
+async function authError(request) {
+  const auth = await authOwnerOrStaff(request, "settings");
+  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
   return null;
 }
 
 export async function GET(request) {
-  const denied = authError(request);
+  const denied = await authError(request);
   if (denied) return denied;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
@@ -34,7 +31,7 @@ export async function GET(request) {
 }
 
 export async function PUT(request) {
-  const denied = authError(request);
+  const denied = await authError(request);
   if (denied) return denied;
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });

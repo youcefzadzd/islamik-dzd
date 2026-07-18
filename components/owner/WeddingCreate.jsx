@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { OwnerGate, OwnerLayout, ownerHeaders, CopyButton, OWNER_PASS_KEY } from "./shared";
+import {
+  AccessDenied,
+  OwnerGate,
+  OwnerLayout,
+  ownerHeaders,
+  CopyButton,
+  hasStoredCredentials,
+} from "./shared";
 import WeddingWizard from "./WeddingWizard";
 import { rowToForm } from "./formModel";
 
@@ -10,10 +17,17 @@ export default function WeddingCreate() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [created, setCreated] = useState(null);
+  const [denied, setDenied] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(OWNER_PASS_KEY)) {
-      fetch("/api/owner/weddings", { headers: ownerHeaders() }).then((r) => setGranted(r.ok));
+    if (hasStoredCredentials()) {
+      fetch("/api/owner/weddings", { headers: ownerHeaders() }).then((r) => {
+        if (r.status === 403) {
+          setGranted(true);
+          return setDenied(true);
+        }
+        setGranted(r.ok);
+      });
     }
   }, []);
 
@@ -37,6 +51,7 @@ export default function WeddingCreate() {
   }
 
   if (!granted) return <OwnerGate onGranted={() => setGranted(true)} />;
+  if (denied) return <AccessDenied />;
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
