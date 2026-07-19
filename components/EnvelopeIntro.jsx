@@ -59,12 +59,12 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     if (stage !== "closed") return;
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
     setStage("press");
-    // الغطاء يصعد ببطء (ثانيتان) والختم راكب عليه.
+    // الغطاء يصعد بتمهّل (1.5 ثانية) والختم راكب عليه.
     // الصفحة تُركَّب وتكتمل مبكرًا خلف الظرف المعتم، فعند ~90% من
     // الانطواء يذوب الظرف بهدوء عن صفحة جاهزة — انتقال غير محسوس.
-    setTimeout(onMountMain, 350 * SLOW);
-    setTimeout(() => setStage("fade"), 1900 * SLOW);
-    setTimeout(onDone, 2900 * SLOW);
+    setTimeout(onMountMain, 250 * SLOW);
+    setTimeout(() => setStage("fade"), 1450 * SLOW);
+    setTimeout(onDone, 2250 * SLOW);
   }
 
   const sealState = stage === "closed" ? "idle" : "press";
@@ -75,7 +75,7 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     <motion.div
       animate={
         stage === "fade"
-          ? { opacity: 0, transition: { duration: 0.9 * SLOW, ease: "easeOut" } }
+          ? { opacity: 0, transition: { duration: 0.75 * SLOW, ease: "easeOut" } }
           : { opacity: 1 }
       }
       exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeOut" } }}
@@ -99,8 +99,8 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
                 opacity: [0, 0.42, 0.18, 0],
                 scaleY: [1, 0.62, 0.28, 0.06],
                 transition: {
-                  delay: 0.25 * SLOW,
-                  duration: 2.0 * SLOW,
+                  delay: 0.2 * SLOW,
+                  duration: 1.5 * SLOW,
                   times: [0, 0.35, 0.7, 1],
                   ease: "easeInOut",
                 },
@@ -129,10 +129,10 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
                   "drop-shadow(0px 48px 60px rgba(58, 44, 30, 0.10))",
                 ],
                 transition: {
-                  rotateX: { delay: 0.25 * SLOW, duration: 2.0 * SLOW, ease: "easeInOut" },
+                  rotateX: { delay: 0.2 * SLOW, duration: 1.5 * SLOW, ease: "easeInOut" },
                   filter: {
-                    delay: 0.25 * SLOW,
-                    duration: 2.0 * SLOW,
+                    delay: 0.2 * SLOW,
+                    duration: 1.5 * SLOW,
                     times: [0, 0.45, 1],
                     ease: "easeInOut",
                   },
