@@ -19,7 +19,6 @@ import WaxSeal from "./WaxSeal";
  * node — vmax offsets keep the cut lines exactly on the printed
  * creases at every viewport ratio.
  */
-const EASE = [0.22, 1, 0.36, 1];
 // dev-only: slow the whole sequence down to inspect it (keep 1 in production)
 const SLOW = 1;
 
@@ -61,11 +60,11 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
     setStage("press");
     // الغطاء يصعد ببطء (ثانيتان) والختم راكب عليه.
-    // عند ~90% من الانطواء يُرفع الظرف كله للأعلى خارج الشاشة
-    // كاشفًا الدعوة تحته — كأن يدًا ترفعه بعد فتحه.
-    setTimeout(() => setStage("lift"), 1900 * SLOW);
+    // عند ~90% من الانطواء يتلاشى الظرف كله بهدوء
+    // كاشفًا الدعوة تحته — بلا أي حركة إضافية.
+    setTimeout(() => setStage("fade"), 1900 * SLOW);
     setTimeout(onMountMain, 1100 * SLOW);
-    setTimeout(onDone, 2650 * SLOW);
+    setTimeout(onDone, 2900 * SLOW);
   }
 
   const sealState = stage === "closed" ? "idle" : "press";
@@ -75,12 +74,12 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
   return (
     <motion.div
       animate={
-        stage === "lift"
-          ? { y: "-103%", transition: { duration: 0.85 * SLOW, ease: EASE } }
-          : { y: "0%" }
+        stage === "fade"
+          ? { opacity: 0, transition: { duration: 0.9 * SLOW, ease: "easeOut" } }
+          : { opacity: 1 }
       }
       exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeOut" } }}
-      className="fixed inset-0 z-50 overflow-hidden bg-ivory"
+      className={`fixed inset-0 z-50 overflow-hidden bg-ivory ${stage === "fade" ? "pointer-events-none" : ""}`}
       style={{ perspective: 1200 }}
     >
       {/* الجناحان المزخرفان + الجيب السفلي — ثابتة */}
