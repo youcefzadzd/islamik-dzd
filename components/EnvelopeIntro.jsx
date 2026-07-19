@@ -59,11 +59,12 @@ export default function EnvelopeIntro({ data, onMountMain, onFade, onDone }) {
     if (stage !== "closed") return;
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
     setStage("press");
-    // كل شيء يبدأ لحظة الفتح، حركة واحدة متصلة بلا انتظار:
-    // الغطاء ينطوي والكاميرا تندفع للأمام معه — الظرف يكبر ثم يذوب
-    // كأننا نعبر من خلاله، والصفحة الجاهزة تحته تقترب حتى تستقر.
-    setTimeout(onMountMain, 150 * SLOW);
-    if (onFade) setTimeout(onFade, 250 * SLOW);
+    // حركة واحدة متصلة من اللحظة الأولى، بلا أي توقف أو مراحل:
+    // الغطاء ينطوي والظرف يتضخم ويذوب معًا باستمرار (الذوبان easeIn
+    // فيبقى شبه معتم أول 600ms — تكفي الصفحة لتكتمل خلفه فورًا)،
+    // والصفحة تقترب طوال الوقت حتى تستقر مع نهاية العبور.
+    setTimeout(onMountMain, 50 * SLOW);
+    if (onFade) setTimeout(onFade, 100 * SLOW);
     setTimeout(onDone, 1750 * SLOW);
   }
 
@@ -76,15 +77,11 @@ export default function EnvelopeIntro({ data, onMountMain, onFade, onDone }) {
       animate={
         opening
           ? {
-              // يظل معتمًا في النصف الأول (الصفحة تكتمل خلفه) ثم يذوب
-              // بينما يتضخم باستمرار — عبور كاميرا واحد متصل
-              opacity: [1, 1, 0],
-              scale: [1, 1.07, 1.4],
+              opacity: 0,
+              scale: 1.4,
               transition: {
-                delay: 0.2 * SLOW,
-                duration: 1.5 * SLOW,
-                times: [0, 0.4, 1],
-                ease: "easeInOut",
+                opacity: { delay: 0.2 * SLOW, duration: 1.5 * SLOW, ease: "easeIn" },
+                scale: { delay: 0.2 * SLOW, duration: 1.5 * SLOW, ease: [0.45, 0, 0.55, 1] },
               },
             }
           : { opacity: 1, scale: 1 }
