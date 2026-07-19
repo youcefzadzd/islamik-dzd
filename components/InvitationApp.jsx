@@ -10,6 +10,7 @@ import SectionDivider from "./SectionDivider";
 import { Rosette } from "./ornaments";
 import HeroSection from "./HeroSection";
 import IntroSection from "./IntroSection";
+import FamilyInvitationSection from "./FamilyInvitationSection";
 import CountdownSection from "./CountdownSection";
 import ScheduleSection from "./ScheduleSection";
 import LocationSection from "./LocationSection";
@@ -136,6 +137,12 @@ export default function InvitationApp({ weddingIdOverride, initialData }) {
           <div className="relative pb-8 pt-4">
             <SectionDivider />
             <IntroSection data={data} />
+            {data.invitation && (
+              <>
+                <SectionDivider />
+                <FamilyInvitationSection data={data} />
+              </>
+            )}
             <SectionDivider />
             <CountdownSection data={data} />
             <SectionDivider />
