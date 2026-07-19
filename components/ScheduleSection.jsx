@@ -1,10 +1,34 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import Reveal from "./Reveal";
 import SectionPanel from "./SectionPanel";
 import { StarNode, CardFlourish } from "./ornaments";
+
+/* محطة واحدة: عند وصول النجمة إليها يرتفع الوقت والعنوان معًا
+   قليلًا ويتقدّمان، ثم يعودان بهدوء بعد مرورها */
+function ScheduleRow({ step, progress, center, span }) {
+  const lift = useTransform(progress, [center - span, center, center + span], [0, -7, 0]);
+  const scale = useTransform(progress, [center - span, center, center + span], [1, 1.07, 1]);
+  return (
+    <motion.div
+      style={{ y: lift, scale }}
+      className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-5 sm:gap-4"
+    >
+      <p className="min-w-0 text-end font-serif text-xl text-ink/85 sm:text-2xl">{step.time}</p>
+      <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full border border-gold/50 bg-ivory-light shadow-card">
+        <StarNode className="h-3.5 w-3.5" />
+      </span>
+      <div className="min-w-0 text-start">
+        <p className="font-serif text-lg text-burgundy sm:text-xl">{step.title}</p>
+        {step.description ? (
+          <p className="mt-1 font-body text-sm text-ink/70">{step.description}</p>
+        ) : null}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function ScheduleSection({ data }) {
   const schedule = data.schedule;
@@ -19,6 +43,37 @@ export default function ScheduleSection({ data }) {
   });
   const progress = useSpring(scrollYProgress, { stiffness: 70, damping: 22, mass: 0.4 });
   const starTop = useTransform(progress, (v) => `${2 + v * 94}%`);
+
+  /* مواضع مراكز المحطات على العمود (كنسبة من مسار النجمة) —
+     تُقاس من التخطيط الفعلي فتبقى دقيقة مهما اختلفت أطوال الأوصاف */
+  const rowRefs = useRef([]);
+  const [centers, setCenters] = useState(null);
+  useEffect(() => {
+    const measure = () => {
+      const c = spineRef.current;
+      if (!c) return;
+      const cr = c.getBoundingClientRect();
+      if (!cr.height) return;
+      setCenters(
+        rowRefs.current.slice(0, items.length).map((el, i) => {
+          if (!el) return (i + 0.5) / items.length;
+          const r = el.getBoundingClientRect();
+          const frac = (r.top + r.height / 2 - cr.top) / cr.height;
+          return (frac * 100 - 2) / 94; // نفس معادلة موضع النجمة
+        })
+      );
+    };
+    measure();
+    // إعادة قياس بعد اكتمال حركات الدخول (Reveal) ليضبط الدقة
+    const t = setTimeout(measure, 1800);
+    window.addEventListener("resize", measure);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", measure);
+    };
+  }, [items.length]);
+
+  const span = 0.55 / Math.max(items.length, 1);
 
   return (
     <SectionPanel>
@@ -74,17 +129,13 @@ export default function ScheduleSection({ data }) {
 
         {items.map((step, index) => (
           <Reveal key={`${step.time}-${step.title}`} delay={index * 0.12}>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-5 sm:gap-4">
-              <p className="min-w-0 text-end font-serif text-xl text-ink/85 sm:text-2xl">{step.time}</p>
-              <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full border border-gold/50 bg-ivory-light shadow-card">
-                <StarNode className="h-3.5 w-3.5" />
-              </span>
-              <div className="min-w-0 text-start">
-                <p className="font-serif text-lg text-burgundy sm:text-xl">{step.title}</p>
-                {step.description ? (
-                  <p className="mt-1 font-body text-sm text-ink/70">{step.description}</p>
-                ) : null}
-              </div>
+            <div ref={(el) => (rowRefs.current[index] = el)}>
+              <ScheduleRow
+                step={step}
+                progress={progress}
+                center={centers ? centers[index] : (index + 0.5) / items.length}
+                span={span}
+              />
             </div>
             {index < items.length - 1 ? (
               <div aria-hidden className="flex justify-center">
