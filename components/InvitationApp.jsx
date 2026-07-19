@@ -111,7 +111,7 @@ export default function InvitationApp({ weddingIdOverride, initialData }) {
         <motion.main
           initial={{ scale: 0.96 }}
           animate={{ scale: zoomed ? 1 : 0.96 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
           className="page-paper relative"
           style={{ transformOrigin: "50% 0%" }}
         >

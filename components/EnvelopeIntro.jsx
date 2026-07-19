@@ -59,16 +59,12 @@ export default function EnvelopeIntro({ data, onMountMain, onFade, onDone }) {
     if (stage !== "closed") return;
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
     setStage("press");
-    // الغطاء يصعد بتمهّل (1.5 ثانية) والختم راكب عليه.
-    // الصفحة تُركَّب وتكتمل مبكرًا خلف الظرف المعتم، فعند ~90% من
-    // الانطواء تندفع الكاميرا للأمام: الظرف يكبر ويذوب كأننا نعبر
-    // من خلاله، والصفحة الجاهزة تحته تقترب حتى تستقر.
-    setTimeout(onMountMain, 250 * SLOW);
-    setTimeout(() => {
-      setStage("fade");
-      if (onFade) onFade();
-    }, 1450 * SLOW);
-    setTimeout(onDone, 2250 * SLOW);
+    // كل شيء يبدأ لحظة الفتح، حركة واحدة متصلة بلا انتظار:
+    // الغطاء ينطوي والكاميرا تندفع للأمام معه — الظرف يكبر ثم يذوب
+    // كأننا نعبر من خلاله، والصفحة الجاهزة تحته تقترب حتى تستقر.
+    setTimeout(onMountMain, 150 * SLOW);
+    if (onFade) setTimeout(onFade, 250 * SLOW);
+    setTimeout(onDone, 1750 * SLOW);
   }
 
   const sealState = stage === "closed" ? "idle" : "press";
@@ -78,19 +74,23 @@ export default function EnvelopeIntro({ data, onMountMain, onFade, onDone }) {
   return (
     <motion.div
       animate={
-        stage === "fade"
+        opening
           ? {
-              opacity: 0,
-              scale: 1.35,
+              // يظل معتمًا في النصف الأول (الصفحة تكتمل خلفه) ثم يذوب
+              // بينما يتضخم باستمرار — عبور كاميرا واحد متصل
+              opacity: [1, 1, 0],
+              scale: [1, 1.07, 1.4],
               transition: {
-                opacity: { duration: 0.75 * SLOW, ease: "easeOut" },
-                scale: { duration: 0.8 * SLOW, ease: [0.3, 0, 0.55, 1] },
+                delay: 0.2 * SLOW,
+                duration: 1.5 * SLOW,
+                times: [0, 0.4, 1],
+                ease: "easeInOut",
               },
             }
           : { opacity: 1, scale: 1 }
       }
       exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeOut" } }}
-      className={`fixed inset-0 z-50 overflow-hidden bg-ivory ${stage === "fade" ? "pointer-events-none" : ""}`}
+      className={`fixed inset-0 z-50 overflow-hidden bg-ivory ${opening ? "pointer-events-none" : ""}`}
       style={{ perspective: 1200 }}
     >
       {/* الجناحان المزخرفان + الجيب السفلي — ثابتة */}

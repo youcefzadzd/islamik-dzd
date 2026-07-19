@@ -15,7 +15,7 @@ const GLIDE_EASE = [0.45, 0.05, 0.25, 1]; // slow, smooth ease-in-out for the sw
 
 const item = {
   hidden: { opacity: 0, y: 28 },
-  show: (delay) => ({ opacity: 1, y: 0, transition: { duration: 0.8, delay, ease: EASE } }),
+  show: (delay) => ({ opacity: 1, y: 0, transition: { duration: 0.55, delay, ease: EASE } }),
 };
 
 /* deterministic PRNG so the petal field renders identically on server + client */
@@ -88,8 +88,8 @@ function Swan({ side, src, revealed, reduce, style }) {
       initial={{ opacity: 0, x: reduce ? "0%" : startX }}
       animate={{ opacity: revealed ? 1 : 0, ...glide }}
       transition={{
-        opacity: { duration: 0.7, delay: 0.4, ease: EASE },
-        x: { duration: 4.6, delay: 0.6, ease: GLIDE_EASE },
+        opacity: { duration: 0.5, delay: 0.2, ease: EASE },
+        x: { duration: 4.6, delay: 0.4, ease: GLIDE_EASE },
       }}
       className="absolute"
       style={{ ...style, willChange: "transform" }}
@@ -305,7 +305,7 @@ export default function HeroSection({ data, revealed }) {
           variants={item}
           initial="hidden"
           animate={state}
-          custom={0.05}
+          custom={0}
           className="rtl font-arabicText text-lg text-burgundy-dark drop-shadow-sm sm:text-xl"
         >
           {data.hero.bismillah}
@@ -315,7 +315,7 @@ export default function HeroSection({ data, revealed }) {
           variants={item}
           initial="hidden"
           animate={state}
-          custom={0.15}
+          custom={0.08}
           className="mt-8 font-monogram text-[clamp(2.2rem,12vw,3rem)] text-gold-dark sm:text-6xl"
         >
           {data.hero.eyebrow}
@@ -325,13 +325,13 @@ export default function HeroSection({ data, revealed }) {
           variants={item}
           initial="hidden"
           animate={state}
-          custom={0.25}
+          custom={0.16}
           className="mt-3 font-serif text-xl tracking-[0.25em] text-ink/80"
         >
           {data.event.displayDateShort}
         </motion.p>
 
-        <motion.div variants={item} initial="hidden" animate={state} custom={0.35} className="mt-12">
+        <motion.div variants={item} initial="hidden" animate={state} custom={0.24} className="mt-12">
           <p className="font-monogram text-[clamp(2.6rem,14vw,3.75rem)] leading-tight text-gold-dark sm:text-7xl">
             {data.couple.groomName}
           </p>
@@ -345,7 +345,7 @@ export default function HeroSection({ data, revealed }) {
           variants={item}
           initial="hidden"
           animate={state}
-          custom={0.45}
+          custom={0.3}
           className="rtl mt-6 font-arabicText text-2xl text-burgundy/80"
         >
           {data.couple.groomNameAr} ♥ {data.couple.brideNameAr}
@@ -357,7 +357,7 @@ export default function HeroSection({ data, revealed }) {
         variants={item}
         initial="hidden"
         animate={state}
-        custom={0.6}
+        custom={0.36}
         className="absolute bottom-8 z-10 flex flex-col items-center gap-1 text-gold-dark"
       >
         <span className="font-monogram text-2xl">{data.hero.scrollHintText}</span>
