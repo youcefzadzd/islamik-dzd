@@ -18,9 +18,10 @@ import RsvpSection from "./RsvpSection";
 import ThankYouSection from "./ThankYouSection";
 
 export default function InvitationApp({ weddingIdOverride, initialData }) {
-  // mountMain: the page is rendered AND revealed early under the opaque
-  // envelope, so its entrance finishes unseen and the envelope's fade
-  // lands on an already-settled hero — no second "page builds itself" beat.
+  // mountMain: the page is rendered (hidden) under the envelope so the
+  // camera push lands on painted paper; the hero's visible entrance
+  // (background, then texts rising one by one) starts at `opened`,
+  // the moment the envelope is gone.
   const [mountMain, setMountMain] = useState(false);
   // zoomed: flips when the envelope starts dissolving — the page glides
   // forward (scale 0.96 -> 1) so the reveal reads as a camera push-in.
@@ -131,7 +132,7 @@ export default function InvitationApp({ weddingIdOverride, initialData }) {
             ))}
           </div>
 
-          <HeroSection data={data} revealed={mountMain} />
+          <HeroSection data={data} revealed={opened} />
           <div className="relative pb-8 pt-4">
             <SectionDivider />
             <IntroSection data={data} />
