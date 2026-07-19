@@ -61,11 +61,11 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
     setStage("press");
     // الغطاء يصعد ببطء (ثانيتان) والختم راكب عليه.
-    // عند ~90% من الانطواء يفيض نور ذهبي من قلب الظرف يغمر الشاشة،
-    // ثم ينقشع مع خروج الغلاف كاشفًا الدعوة بقوسها المشمس — انتقال
-    // من روح القالب (الذهب والنور).
+    // عند ~90% من الانطواء يُرفع الظرف كله للأعلى خارج الشاشة
+    // كاشفًا الدعوة تحته — كأن يدًا ترفعه بعد فتحه.
+    setTimeout(() => setStage("lift"), 1900 * SLOW);
     setTimeout(onMountMain, 1100 * SLOW);
-    setTimeout(onDone, 2300 * SLOW);
+    setTimeout(onDone, 2650 * SLOW);
   }
 
   const sealState = stage === "closed" ? "idle" : "press";
@@ -74,10 +74,12 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
 
   return (
     <motion.div
-      exit={{
-        opacity: 0,
-        transition: { duration: 0.8, ease: "easeOut" },
-      }}
+      animate={
+        stage === "lift"
+          ? { y: "-103%", transition: { duration: 0.85 * SLOW, ease: EASE } }
+          : { y: "0%" }
+      }
+      exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeOut" } }}
       className="fixed inset-0 z-50 overflow-hidden bg-ivory"
       style={{ perspective: 1200 }}
     >
@@ -191,33 +193,6 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
         </div>
       </motion.div>
 
-      {/* فيض النور الذهبي — يتوهج من قلب الظرف عند ~90% من الانطواء
-          فيغمر الشاشة بدفء ذهبي، ثم ينقشع مع خروج الغلاف كاشفًا
-          الدعوة بقوسها المشمس */}
-      <motion.div
-        aria-hidden
-        initial={false}
-        animate={
-          opening
-            ? {
-                opacity: [0, 0.55, 1],
-                scale: [0.35, 1.05, 1.5],
-                transition: {
-                  delay: 1.8 * SLOW,
-                  duration: 0.55 * SLOW,
-                  times: [0, 0.45, 1],
-                  ease: "easeIn",
-                },
-              }
-            : { opacity: 0, scale: 0.35 }
-        }
-        className="pointer-events-none absolute inset-0 z-40"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 47%, rgb(255 250 235 / 0.98) 12%, rgb(var(--color-gold-light) / 0.95) 34%, rgb(var(--color-gold) / 0.65) 55%, rgb(var(--color-gold) / 0.2) 75%, transparent 92%)",
-          mixBlendMode: "normal",
-        }}
-      />
     </motion.div>
   );
 }
