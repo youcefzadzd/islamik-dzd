@@ -41,7 +41,18 @@ export default function ScheduleSection({ data }) {
     target: spineRef,
     offset: ["start 78%", "end 40%"],
   });
-  const progress = useSpring(scrollYProgress, { stiffness: 70, damping: 22, mass: 0.4 });
+  /* النجمة لا تسكن بين المحطات: يُقرَّب تقدم التمرير إلى أقرب
+     محطة (خانة الوقت والعنوان) فتقفز إليها مباشرة، والزنبرك
+     يجعل القفزة نفسها انسيابية */
+  const centersRef = useRef(null);
+  const snapped = useTransform(scrollYProgress, (v) => {
+    const cs = centersRef.current;
+    if (!cs || !cs.length) return v;
+    let best = cs[0];
+    for (const c of cs) if (Math.abs(c - v) < Math.abs(best - v)) best = c;
+    return best;
+  });
+  const progress = useSpring(snapped, { stiffness: 90, damping: 20, mass: 0.4 });
   const starTop = useTransform(progress, (v) => `${2 + v * 94}%`);
 
   /* مواضع مراكز المحطات على العمود (كنسبة من مسار النجمة) —
@@ -51,26 +62,26 @@ export default function ScheduleSection({ data }) {
   useEffect(() => {
     const measure = () => {
       const c = spineRef.current;
-      if (!c) return;
-      const cr = c.getBoundingClientRect();
-      if (!cr.height) return;
-      setCenters(
-        rowRefs.current.slice(0, items.length).map((el, i) => {
-          if (!el) return (i + 0.5) / items.length;
-          const r = el.getBoundingClientRect();
-          const frac = (r.top + r.height / 2 - cr.top) / cr.height;
-          return (frac * 100 - 2) / 94; // نفس معادلة موضع النجمة
-        })
-      );
+      if (!c || !c.offsetHeight) return;
+      const next = rowRefs.current.slice(0, items.length).map((el, i) => {
+        if (!el) return (i + 0.5) / items.length;
+        // جمع offsetTop عبر السلسلة حتى العمود: قياس تخطيطي محض
+        // لا تشوّشه تحويلات Reveal المؤقتة أثناء الدخول
+        let top = 0;
+        let n = el;
+        while (n && n !== c) {
+          top += n.offsetTop;
+          n = n.offsetParent;
+        }
+        const frac = (top + el.offsetHeight / 2) / c.offsetHeight;
+        return (frac * 100 - 2) / 94; // نفس معادلة موضع النجمة
+      });
+      centersRef.current = next;
+      setCenters(next);
     };
     measure();
-    // إعادة قياس بعد اكتمال حركات الدخول (Reveal) ليضبط الدقة
-    const t = setTimeout(measure, 1800);
     window.addEventListener("resize", measure);
-    return () => {
-      clearTimeout(t);
-      window.removeEventListener("resize", measure);
-    };
+    return () => window.removeEventListener("resize", measure);
   }, [items.length]);
 
   const span = 0.55 / Math.max(items.length, 1);
