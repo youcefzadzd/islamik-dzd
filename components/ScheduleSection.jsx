@@ -118,9 +118,11 @@ export default function ScheduleSection({ data }) {
           }}
         />
         {/* النجمة المتوهجة المسافرة على العمود */}
+        {/* z-20 فوق عقد المحطات (z-10): النجمة تحطّ فوق نجمة المحطة
+            وتغطّيها بدل الاختفاء خلف دائرتها */}
         <motion.span
           aria-hidden
-          className="pointer-events-none absolute left-1/2 z-[5] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+          className="pointer-events-none absolute left-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
           style={{ top: starTop }}
         >
           <span
