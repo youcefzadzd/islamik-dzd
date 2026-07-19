@@ -41,7 +41,7 @@ const pieceBase = {
   backgroundPosition: "center",
 };
 
-export default function EnvelopeIntro({ data, onMountMain, onDone }) {
+export default function EnvelopeIntro({ data, onMountMain, onFade, onDone }) {
   const [stage, setStage] = useState("closed");
   const [lang, setLang] = useState("fr");
 
@@ -61,9 +61,13 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     setStage("press");
     // الغطاء يصعد بتمهّل (1.5 ثانية) والختم راكب عليه.
     // الصفحة تُركَّب وتكتمل مبكرًا خلف الظرف المعتم، فعند ~90% من
-    // الانطواء يذوب الظرف بهدوء عن صفحة جاهزة — انتقال غير محسوس.
+    // الانطواء تندفع الكاميرا للأمام: الظرف يكبر ويذوب كأننا نعبر
+    // من خلاله، والصفحة الجاهزة تحته تقترب حتى تستقر.
     setTimeout(onMountMain, 250 * SLOW);
-    setTimeout(() => setStage("fade"), 1450 * SLOW);
+    setTimeout(() => {
+      setStage("fade");
+      if (onFade) onFade();
+    }, 1450 * SLOW);
     setTimeout(onDone, 2250 * SLOW);
   }
 
@@ -75,8 +79,15 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     <motion.div
       animate={
         stage === "fade"
-          ? { opacity: 0, transition: { duration: 0.75 * SLOW, ease: "easeOut" } }
-          : { opacity: 1 }
+          ? {
+              opacity: 0,
+              scale: 1.35,
+              transition: {
+                opacity: { duration: 0.75 * SLOW, ease: "easeOut" },
+                scale: { duration: 0.8 * SLOW, ease: [0.3, 0, 0.55, 1] },
+              },
+            }
+          : { opacity: 1, scale: 1 }
       }
       exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeOut" } }}
       className={`fixed inset-0 z-50 overflow-hidden bg-ivory ${stage === "fade" ? "pointer-events-none" : ""}`}

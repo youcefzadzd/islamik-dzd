@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { getData } from "@/lib/i18n";
 import { buildThemeCssVariables } from "@/lib/theme";
 import EnvelopeIntro from "./EnvelopeIntro";
@@ -22,6 +22,9 @@ export default function InvitationApp({ weddingIdOverride, initialData }) {
   // envelope, so its entrance finishes unseen and the envelope's fade
   // lands on an already-settled hero — no second "page builds itself" beat.
   const [mountMain, setMountMain] = useState(false);
+  // zoomed: flips when the envelope starts dissolving — the page glides
+  // forward (scale 0.96 -> 1) so the reveal reads as a camera push-in.
+  const [zoomed, setZoomed] = useState(false);
   const [opened, setOpened] = useState(false);
 
   // language: the wedding's default, guest choice remembered across visits
@@ -98,13 +101,20 @@ export default function InvitationApp({ weddingIdOverride, initialData }) {
           <EnvelopeIntro
             data={data}
             onMountMain={() => setMountMain(true)}
+            onFade={() => setZoomed(true)}
             onDone={() => setOpened(true)}
           />
         )}
       </AnimatePresence>
 
       {mountMain && (
-        <main className="page-paper relative">
+        <motion.main
+          initial={{ scale: 0.96 }}
+          animate={{ scale: zoomed ? 1 : 0.96 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="page-paper relative"
+          style={{ transformOrigin: "50% 0%" }}
+        >
           {/* one continuous sheet of handmade paper behind every page */}
           <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="paper-tile" />
@@ -142,7 +152,7 @@ export default function InvitationApp({ weddingIdOverride, initialData }) {
             )}
           </div>
           <ThankYouSection data={data} />
-        </main>
+        </motion.main>
       )}
 
       {/* background music, only when a track is set in the config */}
