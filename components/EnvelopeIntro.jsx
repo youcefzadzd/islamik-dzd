@@ -82,22 +82,61 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
         </div>
       ))}
 
+      {/* الظل الذي يلقيه الغطاء على جسد الظرف أثناء ارتفاعه —
+          يتقلص نحو المفصل (أعلى الشاشة) ويخف كلما ارتفع الغطاء */}
+      <motion.div
+        aria-hidden
+        animate={
+          opening
+            ? {
+                opacity: [0, 0.42, 0.18, 0],
+                scaleY: [1, 0.62, 0.28, 0.06],
+                transition: {
+                  delay: 0.25 * SLOW,
+                  duration: 2.0 * SLOW,
+                  times: [0, 0.35, 0.7, 1],
+                  ease: "easeInOut",
+                },
+              }
+            : { opacity: 0, scaleY: 1 }
+        }
+        className="absolute inset-0 z-[5] origin-top"
+        style={{
+          clipPath: WEDGES.top,
+          background:
+            "linear-gradient(to bottom, transparent 20%, rgb(var(--color-ink) / 0.28) 70%, rgb(var(--color-ink) / 0.5) 97%)",
+          filter: "blur(5px)",
+        }}
+      />
+
       {/* الغطاء العلوي — ينطوي للأعلى ببطء حول حافة الشاشة، والختم راكب
-          على طرفه يصعد معه (الختم خارج قصاصة الورق فلا يُقتطع) */}
+          على طرفه يصعد معه؛ ظله الخاص يتعمق أثناء الارتفاع ثم يتلاشى */}
       <motion.div
         animate={
           opening
             ? {
                 rotateX: 150,
-                transition: { delay: 0.25 * SLOW, duration: 2.0 * SLOW, ease: "easeInOut" },
+                filter: [
+                  "drop-shadow(0px 5px 14px rgba(58, 44, 30, 0.16))",
+                  "drop-shadow(0px 30px 38px rgba(58, 44, 30, 0.30))",
+                  "drop-shadow(0px 48px 60px rgba(58, 44, 30, 0.10))",
+                ],
+                transition: {
+                  rotateX: { delay: 0.25 * SLOW, duration: 2.0 * SLOW, ease: "easeInOut" },
+                  filter: {
+                    delay: 0.25 * SLOW,
+                    duration: 2.0 * SLOW,
+                    times: [0, 0.45, 1],
+                    ease: "easeInOut",
+                  },
+                },
               }
-            : { rotateX: 0 }
+            : { rotateX: 0, filter: "drop-shadow(0px 5px 14px rgba(58, 44, 30, 0.16))" }
         }
         className="absolute inset-0 z-10"
         style={{
           transformOrigin: "50% 0%",
           transformStyle: "preserve-3d",
-          filter: flapShadow,
         }}
       >
         <div
