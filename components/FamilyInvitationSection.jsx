@@ -1,16 +1,16 @@
 "use client";
 
 import Reveal from "./Reveal";
-import SectionPanel from "./SectionPanel";
 import { getDisplayText, toFormalName } from "./heritage/digitalInviteLuxuryDefaults";
 
 /**
- * Family Invitation — "تتشرف عائلة … بدعوتكم لحضور حفل زواج ابننا/ابنتنا …"
- * Every line comes from the owner's dashboard fields
- * (texts.invitation.{ar,fr}, step 5 of the wizard). Empty personal
- * fields hide; date/time/venue fall back to the values already saved in
- * the standard dashboard fields. The whole section hides when the owner
- * filled nothing. Display-time defaults only — nothing is persisted.
+ * Family Invitation block — "تتشرف عائلة … بدعوتكم لحضور حفل زواج
+ * ابننا/ابنتنا …". Rendered INSIDE the intro panel (روحان ومصير واحد
+ * كتبه الله), replacing the generic couple message when the owner
+ * filled the invitation fields (wizard step 5, texts.invitation.{ar,fr}).
+ * Empty personal fields hide; date/time/venue fall back to the values
+ * already saved in the standard dashboard fields. Display-time defaults
+ * only — nothing is persisted.
  */
 const ROYAL_INV_UI = {
   fr: {
@@ -37,7 +37,7 @@ const ROYAL_INV_UI = {
   },
 };
 
-export default function FamilyInvitationSection({ data }) {
+export default function FamilyInvitationBlock({ data }) {
   const saved = data.invitation;
   if (!saved) return null;
 
@@ -73,99 +73,91 @@ export default function FamilyInvitationSection({ data }) {
         ? (bothFamilies && ui.daughterPlural) || ui.daughter
         : "";
 
-  // بلا اسم عائلة ولا نص مخصص لا معنى للقسم — يبقى مخفيًا
+  // بلا اسم عائلة ولا نص مخصص لا معنى للكتلة — تبقى مخفية
   if (!inv.fatherName && !inv.motherName && !inv.honoreeName && !inv.mainTitle) return null;
 
   return (
-    <SectionPanel>
-      <div dir={lang === "ar" ? "rtl" : "ltr"} className="text-center">
-        {(inv.fatherName || inv.motherName) && (
-          <Reveal>
-            {/* القالب يؤطّر الاسم الخام: "تتشرف عائلة X" — المالك يكتب الاسم فقط */}
-            {inv.fatherName && (
-              <p className={`text-2xl leading-relaxed text-burgundy-dark ${font}`}>
-                {ui.familyPrefix} {inv.fatherName}
-              </p>
-            )}
-            {inv.motherName && (
-              <p className={`mt-1 text-2xl leading-relaxed text-burgundy-dark ${font}`}>
-                {ui.secondFamilyPrefix} {inv.motherName}
-              </p>
-            )}
-          </Reveal>
-        )}
+    <div dir={lang === "ar" ? "rtl" : "ltr"} className="text-center">
+      {(inv.fatherName || inv.motherName) && (
+        <Reveal>
+          {/* القالب يؤطّر الاسم الخام: "تتشرف عائلة X" — المالك يكتب الاسم فقط */}
+          {inv.fatherName && (
+            <p className={`text-2xl leading-relaxed text-burgundy-dark ${font}`}>
+              {ui.familyPrefix} {inv.fatherName}
+            </p>
+          )}
+          {inv.motherName && (
+            <p className={`mt-1 text-2xl leading-relaxed text-burgundy-dark ${font}`}>
+              {ui.secondFamilyPrefix} {inv.motherName}
+            </p>
+          )}
+        </Reveal>
+      )}
 
-        <Reveal delay={0.12}>
-          <p className={`mt-5 text-lg leading-relaxed text-ink/80 ${font} ${italic}`}>
-            {inv.invitationText}
-            {gendered && ` ${gendered}`}
+      <Reveal delay={0.12}>
+        <p className={`mt-5 text-lg leading-relaxed text-ink/80 ${font} ${italic}`}>
+          {inv.invitationText}
+          {gendered && ` ${gendered}`}
+        </p>
+      </Reveal>
+
+      {inv.mainTitle && (
+        <Reveal delay={0.18}>
+          <p
+            className={`mt-6 text-gold-dark ${
+              lang === "ar" ? "font-arabicText text-4xl sm:text-5xl" : "font-monogram text-5xl sm:text-6xl"
+            }`}
+          >
+            {inv.mainTitle}
           </p>
         </Reveal>
+      )}
 
-        {inv.mainTitle && (
-          <Reveal delay={0.18}>
-            <p
-              className={`mt-6 text-gold-dark ${
-                lang === "ar" ? "font-arabicText text-4xl sm:text-5xl" : "font-monogram text-5xl sm:text-6xl"
-              }`}
-            >
-              {inv.mainTitle}
-            </p>
-          </Reveal>
-        )}
-
-        {inv.honoreeName && (
-          <Reveal delay={0.22}>
-            <p
-              className={`mt-5 leading-tight text-gold-dark ${
-                lang === "ar"
-                  ? "font-arabicText text-[2.6rem] sm:text-[3.2rem]"
-                  : "font-monogram text-[3rem] sm:text-[3.6rem]"
-              }`}
-            >
-              {inv.honoreeName}
-            </p>
-          </Reveal>
-        )}
-
-        <Reveal delay={0.28}>
-          <div className="divider mt-9">
-            <span className="text-gold">✦</span>
-          </div>
+      {inv.honoreeName && (
+        <Reveal delay={0.22}>
+          <p
+            className={`mt-5 leading-tight text-gold-dark ${
+              lang === "ar"
+                ? "font-arabicText text-[2.6rem] sm:text-[3.2rem]"
+                : "font-monogram text-[3rem] sm:text-[3.6rem]"
+            }`}
+          >
+            {inv.honoreeName}
+          </p>
         </Reveal>
+      )}
 
-        {(inv.dateIntro || inv.weddingDate || inv.time) && (
-          <Reveal delay={0.32}>
-            {inv.dateIntro && (
-              <p className={`mt-8 text-base text-ink/60 ${font} ${italic}`}>{inv.dateIntro}</p>
-            )}
-            {inv.weddingDate && (
-              <p className={`mt-2 text-2xl font-medium text-ink ${font}`}>{inv.weddingDate}</p>
-            )}
-            {inv.time && <p className={`mt-1 text-lg text-ink/80 ${font}`}>{inv.time}</p>}
-          </Reveal>
-        )}
+      {(inv.dateIntro || inv.weddingDate || inv.time) && (
+        <Reveal delay={0.28}>
+          {inv.dateIntro && (
+            <p className={`mt-8 text-base text-ink/60 ${font} ${italic}`}>{inv.dateIntro}</p>
+          )}
+          {inv.weddingDate && (
+            <p className={`mt-2 text-2xl font-medium text-ink ${font}`}>{inv.weddingDate}</p>
+          )}
+          {inv.time && <p className={`mt-1 text-lg text-ink/80 ${font}`}>{inv.time}</p>}
+        </Reveal>
+      )}
 
-        {(inv.hallIntro || inv.hallName) && inv.hallName && (
-          <Reveal delay={0.38}>
-            <p className={`mt-7 text-base text-ink/60 ${font}`}>{inv.hallIntro}</p>
-            <p
-              dir="auto"
-              className="mt-1 font-serif text-2xl font-medium tracking-[0.05em] text-gold-dark sm:text-3xl"
-            >
-              {inv.hallName}
-            </p>
-          </Reveal>
-        )}
+      {(inv.hallIntro || inv.hallName) && inv.hallName && (
+        <Reveal delay={0.34}>
+          <p className={`mt-7 text-base text-ink/60 ${font}`}>{inv.hallIntro}</p>
+          <p
+            dir="auto"
+            className="mt-1 font-serif text-2xl font-medium tracking-[0.05em] text-gold-dark sm:text-3xl"
+          >
+            {inv.hallName}
+          </p>
+        </Reveal>
+      )}
 
-        {inv.footerMessage && (
-          <Reveal delay={0.42}>
-            <p className={`mt-8 text-base leading-relaxed text-ink/70 ${font} ${italic}`}>
-              {inv.footerMessage}
-            </p>
-          </Reveal>
-        )}
-      </div>
-    </SectionPanel>
+      {inv.footerMessage && (
+        <Reveal delay={0.4}>
+          <p className={`mt-8 text-base leading-relaxed text-ink/70 ${font} ${italic}`}>
+            {inv.footerMessage}
+          </p>
+        </Reveal>
+      )}
+    </div>
   );
 }

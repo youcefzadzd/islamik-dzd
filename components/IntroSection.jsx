@@ -2,9 +2,13 @@
 
 import Reveal from "./Reveal";
 import SectionPanel from "./SectionPanel";
+import FamilyInvitationBlock from "./FamilyInvitationSection";
 
 export default function IntroSection({ data }) {
   const intro = data.intro;
+  // عند تعبئة خانة الدعوة العائلية تحل الكتلة الرسمية
+  // ("تتشرف عائلة …") محل رسالة العروسين العامة داخل نفس اللوحة
+  const hasFamilyInvite = !!data.invitation;
 
   return (
     <SectionPanel>
@@ -23,15 +27,21 @@ export default function IntroSection({ data }) {
           </div>
         </Reveal>
 
-        <Reveal delay={0.3}>
-          <div className="mt-8 space-y-2">
-            {intro.messageLines.map((line) => (
-              <p key={line} className="font-body text-lg leading-relaxed text-ink/85">
-                {line}
-              </p>
-            ))}
+        {hasFamilyInvite ? (
+          <div className="mt-9">
+            <FamilyInvitationBlock data={data} />
           </div>
-        </Reveal>
+        ) : (
+          <Reveal delay={0.3}>
+            <div className="mt-8 space-y-2">
+              {intro.messageLines.map((line) => (
+                <p key={line} className="font-body text-lg leading-relaxed text-ink/85">
+                  {line}
+                </p>
+              ))}
+            </div>
+          </Reveal>
+        )}
 
         <Reveal delay={0.4}>
           <div className="divider mt-10">
