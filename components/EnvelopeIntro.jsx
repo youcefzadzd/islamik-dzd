@@ -60,9 +60,11 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     if (stage !== "closed") return;
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
     setStage("press");
-    // الغطاء يصعد ببطء (ثانيتان) والختم راكب عليه — ثم الصفحة مباشرة
-    setTimeout(onMountMain, 1200 * SLOW);
-    setTimeout(onDone, 2400 * SLOW);
+    // الغطاء يصعد ببطء (ثانيتان) والختم راكب عليه.
+    // عند ~90% من الانطواء (2.05s) ندخل الصفحة مباشرة بتأثير
+    // «اندفاع الكاميرا»: الظرف يتقدم نحو المشاهد ويذوب (exit أدناه).
+    setTimeout(onMountMain, 1100 * SLOW);
+    setTimeout(onDone, 2050 * SLOW);
   }
 
   const sealState = stage === "closed" ? "idle" : "press";
@@ -71,7 +73,11 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
 
   return (
     <motion.div
-      exit={{ opacity: 0, transition: { duration: 0.5, ease: "easeOut" } }}
+      exit={{
+        opacity: 0,
+        scale: 1.09,
+        transition: { duration: 0.7, ease: EASE },
+      }}
       className="fixed inset-0 z-50 overflow-hidden bg-ivory"
       style={{ perspective: 1200 }}
     >
