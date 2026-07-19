@@ -18,8 +18,9 @@ import RsvpSection from "./RsvpSection";
 import ThankYouSection from "./ThankYouSection";
 
 export default function InvitationApp({ weddingIdOverride, initialData }) {
-  // mountMain: the page is rendered under the overlay just before the paper expands,
-  // so the crossfade lands on an already-painted hero.
+  // mountMain: the page is rendered AND revealed early under the opaque
+  // envelope, so its entrance finishes unseen and the envelope's fade
+  // lands on an already-settled hero — no second "page builds itself" beat.
   const [mountMain, setMountMain] = useState(false);
   const [opened, setOpened] = useState(false);
 
@@ -120,7 +121,7 @@ export default function InvitationApp({ weddingIdOverride, initialData }) {
             ))}
           </div>
 
-          <HeroSection data={data} revealed={opened} />
+          <HeroSection data={data} revealed={mountMain} />
           <div className="relative pb-8 pt-4">
             <SectionDivider />
             <IntroSection data={data} />

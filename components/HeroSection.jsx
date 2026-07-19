@@ -305,7 +305,7 @@ export default function HeroSection({ data, revealed }) {
           variants={item}
           initial="hidden"
           animate={state}
-          custom={1.3}
+          custom={0.1}
           className="rtl font-arabicText text-lg text-burgundy-dark drop-shadow-sm sm:text-xl"
         >
           {data.hero.bismillah}
@@ -315,7 +315,7 @@ export default function HeroSection({ data, revealed }) {
           variants={item}
           initial="hidden"
           animate={state}
-          custom={1.55}
+          custom={0.25}
           className="mt-8 font-monogram text-[clamp(2.2rem,12vw,3rem)] text-gold-dark sm:text-6xl"
         >
           {data.hero.eyebrow}
@@ -325,13 +325,13 @@ export default function HeroSection({ data, revealed }) {
           variants={item}
           initial="hidden"
           animate={state}
-          custom={1.75}
+          custom={0.4}
           className="mt-3 font-serif text-xl tracking-[0.25em] text-ink/80"
         >
           {data.event.displayDateShort}
         </motion.p>
 
-        <motion.div variants={item} initial="hidden" animate={state} custom={2.0} className="mt-12">
+        <motion.div variants={item} initial="hidden" animate={state} custom={0.55} className="mt-12">
           <p className="font-monogram text-[clamp(2.6rem,14vw,3.75rem)] leading-tight text-gold-dark sm:text-7xl">
             {data.couple.groomName}
           </p>
@@ -345,7 +345,7 @@ export default function HeroSection({ data, revealed }) {
           variants={item}
           initial="hidden"
           animate={state}
-          custom={2.2}
+          custom={0.7}
           className="rtl mt-6 font-arabicText text-2xl text-burgundy/80"
         >
           {data.couple.groomNameAr} ♥ {data.couple.brideNameAr}
@@ -357,7 +357,7 @@ export default function HeroSection({ data, revealed }) {
         variants={item}
         initial="hidden"
         animate={state}
-        custom={2.55}
+        custom={0.85}
         className="absolute bottom-8 z-10 flex flex-col items-center gap-1 text-gold-dark"
       >
         <span className="font-monogram text-2xl">{data.hero.scrollHintText}</span>

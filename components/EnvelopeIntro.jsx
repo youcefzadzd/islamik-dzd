@@ -60,10 +60,10 @@ export default function EnvelopeIntro({ data, onMountMain, onDone }) {
     if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(12);
     setStage("press");
     // الغطاء يصعد ببطء (ثانيتان) والختم راكب عليه.
-    // عند ~90% من الانطواء يتلاشى الظرف كله بهدوء
-    // كاشفًا الدعوة تحته — بلا أي حركة إضافية.
+    // الصفحة تُركَّب وتكتمل مبكرًا خلف الظرف المعتم، فعند ~90% من
+    // الانطواء يذوب الظرف بهدوء عن صفحة جاهزة — انتقال غير محسوس.
+    setTimeout(onMountMain, 350 * SLOW);
     setTimeout(() => setStage("fade"), 1900 * SLOW);
-    setTimeout(onMountMain, 1100 * SLOW);
     setTimeout(onDone, 2900 * SLOW);
   }
 
