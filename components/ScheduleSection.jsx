@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef } from "react";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import Reveal from "./Reveal";
 import SectionPanel from "./SectionPanel";
 import { StarNode, CardFlourish } from "./ornaments";
@@ -7,6 +9,16 @@ import { StarNode, CardFlourish } from "./ornaments";
 export default function ScheduleSection({ data }) {
   const schedule = data.schedule;
   const items = schedule.items;
+
+  /* النجمة المسافرة: تنزلق على العمود الذهبي مع التمرير —
+     تهبط بنزوله وتصعد بطلوعه، بنعومة زنبركية */
+  const spineRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: spineRef,
+    offset: ["start 78%", "end 40%"],
+  });
+  const progress = useSpring(scrollYProgress, { stiffness: 70, damping: 22, mass: 0.4 });
+  const starTop = useTransform(progress, (v) => `${2 + v * 94}%`);
 
   return (
     <SectionPanel>
@@ -21,7 +33,7 @@ export default function ScheduleSection({ data }) {
         </Reveal>
       </div>
 
-      <div className="relative mt-10">
+      <div ref={spineRef} className="relative mt-10">
         {/* the gold spine of the day */}
         <div
           aria-hidden
@@ -31,6 +43,27 @@ export default function ScheduleSection({ data }) {
               "linear-gradient(to bottom, transparent, rgb(var(--color-gold) / 0.65) 7%, rgb(var(--color-gold) / 0.65) 93%, transparent)",
           }}
         />
+        {/* النجمة المتوهجة المسافرة على العمود */}
+        <motion.span
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 z-[5] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+          style={{ top: starTop }}
+        >
+          <span
+            className="absolute h-9 w-9 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgb(var(--color-gold) / 0.5), rgb(var(--color-gold) / 0.15) 55%, transparent 72%)",
+              filter: "blur(2px)",
+            }}
+          />
+          <span
+            className="relative text-lg text-gold"
+            style={{ textShadow: "0 0 8px rgb(var(--color-gold) / 0.8)" }}
+          >
+            ✦
+          </span>
+        </motion.span>
         {/* small ornaments closing the spine */}
         <span aria-hidden className="absolute -top-1 left-1/2 -translate-x-1/2 text-[10px] text-gold">
           ◆
