@@ -407,9 +407,9 @@ const IMG_W = 960;
 const IMG_H = 1280; // intrinsic size of both artwork pieces
 const EASE = [0.22, 1, 0.36, 1];
 const OPEN_DELAY = 0.15; // the press "lands" before the flap starts moving
-/* نفس إيقاع Islamic Royal: الغطاء ينطوي في ثانيتين والظرف يختفي
-   عند ~1.75 ثانية من النقرة */
-const OPEN_DURATION = 2.0;
+/* أبطأ قليلًا من إيقاع Islamic Royal: الغطاء ينطوي في 2.6 ثانية
+   والظرف يختفي عند ~2.15 ثانية من النقرة */
+const OPEN_DURATION = 2.6;
 
 /* where the artwork lands in the viewport (bg-cover bg-center): the flap's
    real fold line is the artwork's top edge — hingeY is that line in px.
@@ -507,12 +507,13 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
      right under the seal); opening pulls back to reveal the whole
      envelope. Same MotionValue → perfectly synchronous. */
   const zoom = useTransform(progress, [0, 1], [1.2, 1]);
-  /* soft inner shadow, centered in the opening only — it never reaches
-     the slanted side edges */
-  const castOpacity = useTransform(progress, [0, 0.4, 1], [0, 0.3, 0.45]);
+  /* ظل الغطاء الحي فوق الجيب: يغطي الفم في بداية الرفع ثم يتقلص
+     صاعدًا نحو المفصل ويخف كلما ارتفع الغطاء — كظل ورقة حقيقية */
+  const castOpacity = useTransform(progress, [0, 0.22, 0.7, 1], [0, 0.5, 0.24, 0.06]);
+  const castScaleY = useTransform(progress, [0, 1], [1, 0.22]);
   /* the big soft shadow at the top of the mouth — grows with the lift
-     and settles at 0.75, staying after the flap is open */
-  const foldOpacity = useTransform(progress, [0, 0.25, 0.6], [0, 0.45, 0.75]);
+     and settles, staying after the flap is open */
+  const foldOpacity = useTransform(progress, [0, 0.25, 0.6], [0, 0.4, 0.65]);
   /* flap tone: matched to the pocket paper — settles on
      brightness(0.96) saturate(0.88) contrast(1.02), no jump while closed */
   const brightness = useTransform(progress, [0, 0.5, 1], [1, 0.9, 0.96]);
@@ -534,13 +535,13 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
       }}
       initial={false}
       /* pure crossfade on a FIXED clock from the tap: the envelope fades
-         out between t=1000ms and t=1750ms — NO zoom, NO scale, NO camera
+         out between t=1300ms and t=2150ms — NO zoom, NO scale, NO camera
          push, NO blur, the envelope never moves. With
          prefers-reduced-motion: a short immediate fade instead. */
       animate={opened ? { opacity: 0 } : { opacity: 1 }}
       transition={{
-        duration: reduceMotion ? 0.4 : 0.75,
-        delay: opened ? (reduceMotion ? 0 : 1.0) : 0,
+        duration: reduceMotion ? 0.4 : 0.85,
+        delay: opened ? (reduceMotion ? 0 : 1.3) : 0,
         ease: "easeInOut",
       }}
       onAnimationComplete={() => {
@@ -598,45 +599,44 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
           />
         )}
 
-        {/* envelope-flap-shadow — the flap's cast shadow, BETWEEN the
-            interior and the pocket: the pocket's opaque paper masks it, so
-            it shows only inside the opening. */}
-        <motion.div
-          aria-hidden
-          className="envelope-flap-shadow pointer-events-none absolute"
-          style={{
-            left: "18%",
-            right: "18%",
-            top: "29%",
-            height: "12%",
-            opacity: castOpacity,
-            filter: "blur(22px)",
-            willChange: "opacity",
-            background:
-              "radial-gradient(ellipse at 50% 0%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.32) 35%, rgba(0,0,0,0.12) 65%, rgba(0,0,0,0) 100%)",
-          }}
-        />
-
-        {/* .envelope-fold-shadow — a LARGE soft shadow at the top of the
-            opening; sits under the pocket so it lives inside the mouth */}
-        <motion.div
-          aria-hidden
-          className="envelope-fold-shadow pointer-events-none absolute"
-          style={{
-            left: 0,
-            right: 0,
-            top: "28%",
-            height: "18%",
-            opacity: foldOpacity,
-            filter: "blur(24px)",
-            background:
-              "radial-gradient(ellipse at 50% 0%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.32) 40%, rgba(0,0,0,0) 75%)",
-          }}
-        />
-
-        {/* front-envelope-pocket — static forever, its real notch reveals
-            the interior + flap shadow behind it */}
+        {/* front-envelope-pocket — static forever (fully opaque artwork:
+            the AI open-envelope render, mouth interior painted in) */}
         <div aria-hidden className="absolute inset-0" style={layerImg(ENVELOPE_BOTTOM)} />
+
+        {/* envelope-flap-shadow — الظل الذي يلقيه الغطاء على الجيب،
+            فوق الجيب ومقصوص على شكل الفم: يغطيه عند بدء الرفع ثم
+            يتقلص نحو المفصل ويخف مع ارتفاع الغطاء */}
+        {scene && (
+          <motion.div
+            aria-hidden
+            className="envelope-flap-shadow pointer-events-none absolute inset-0"
+            style={{
+              clipPath: scene.cavityClip,
+              opacity: castOpacity,
+              scaleY: castScaleY,
+              transformOrigin: "50% 0%",
+              filter: "blur(14px)",
+              willChange: "transform, opacity",
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.3) 55%, rgba(0,0,0,0) 95%)",
+            }}
+          />
+        )}
+
+        {/* envelope-fold-shadow — عتمة مستقرة أعلى الفم بعد الانفتاح */}
+        {scene && (
+          <motion.div
+            aria-hidden
+            className="envelope-fold-shadow pointer-events-none absolute inset-0"
+            style={{
+              clipPath: scene.cavityClip,
+              opacity: foldOpacity,
+              filter: "blur(20px)",
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.22) 30%, rgba(0,0,0,0) 60%)",
+            }}
+          />
+        )}
 
         {/* top-envelope-layer — flap + seal as ONE element, hinged on the
             artwork's real fold line; opens toward the viewer, then up */}
@@ -1209,8 +1209,8 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
               initial={false}
               animate={opened ? { opacity: [0, 0.12, 0] } : { opacity: 0 }}
               transition={{
-                duration: reduceMotion ? 0.4 : 0.75,
-                delay: opened ? (reduceMotion ? 0 : 1.0) : 0,
+                duration: reduceMotion ? 0.4 : 0.85,
+                delay: opened ? (reduceMotion ? 0 : 1.3) : 0,
                 times: [0, 0.5, 1],
                 ease: "easeInOut",
               }}
@@ -1225,7 +1225,7 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
           <section className="relative flex min-h-[92vh] flex-col items-center justify-center overflow-hidden px-4 py-24 text-center">
             {/* crossfade entrance: the page is mounted behind the envelope
                 from the start and simply fades in (opacity only — no zoom,
-                no scale) between t=1000ms and t=1750ms, exactly while the
+                no scale) between t=1300ms and t=2150ms, exactly while the
                 envelope fades out */}
             <motion.div
               aria-hidden
@@ -1233,8 +1233,8 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
               initial={false}
               animate={opened ? { opacity: 1 } : { opacity: 0 }}
               transition={{
-                duration: reduceMotion ? 0.5 : 0.75,
-                delay: opened ? (reduceMotion ? 0.15 : 1.0) : 0,
+                duration: reduceMotion ? 0.5 : 0.85,
+                delay: opened ? (reduceMotion ? 0.15 : 1.3) : 0,
                 ease: "easeInOut",
               }}
               style={{
@@ -1327,8 +1327,8 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   transition={{
                     duration: 0.6,
                     /* texts begin once the page opacity crosses ~0.75
-                       (≈t=1560ms): subtitle → names → date → … */
-                    delay: (reduceMotion ? 0.3 : 1.56) + i * (reduceMotion ? 0.05 : 0.12),
+                       (≈t=1900ms): subtitle → names → date → … */
+                    delay: (reduceMotion ? 0.3 : 1.9) + i * (reduceMotion ? 0.05 : 0.13),
                     ease: EASE,
                   }}
                 >
@@ -1352,7 +1352,7 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   transition={{
                     duration: 0.8,
                     /* enters last: after the names, date and countdown */
-                    delay: reduceMotion ? 0.65 : 2.4,
+                    delay: reduceMotion ? 0.65 : 2.9,
                     ease: EASE,
                   }}
                   aria-label={ui.rsvpCta}
