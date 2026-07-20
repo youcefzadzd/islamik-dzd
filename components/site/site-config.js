@@ -47,7 +47,7 @@ export const CATALOG = [
   },
   {
     id: "heritage",
-    name: "Heritage",
+    name: "Sage Garden",
     badge: { ar: "كلاسيكي", fr: "Classique" },
     demoUrl: "/w/WED-KXZGMF",
     preview: "/assets/site/heritage-envelope.webp",
