@@ -168,7 +168,7 @@ const UI = {
     gallerySub: "Quelques instants précieux que nous souhaitons partager avec vous",
     joinUs: "Rejoignez-nous",
     beOurGuest: "Soyez notre invité",
-    calendar: "Calendrier",
+    calendar: "Ajouter à votre calendrier",
     questions: "Questions ?",
     madeWith: "Fait avec",
     forOurDay: "pour notre jour spécial",
@@ -188,7 +188,7 @@ const UI = {
     gallerySub: "ذكريات نحب أن نشاركها معكم",
     joinUs: "انضموا إلينا",
     beOurGuest: "كونوا ضيوفنا",
-    calendar: "التقويم",
+    calendar: "أضف الموعد إلى تقويمك",
     questions: "أسئلة؟",
     madeWith: "صُنع بـ",
     forOurDay: "من أجل يومنا المميز",
@@ -200,6 +200,18 @@ const scriptClass = (lang) =>
   lang === "ar" ? "font-arabicText" : "[font-family:var(--font-heritage-script)]";
 /* section titles are serif (Cormorant via --font-body); AR titles use Amiri */
 const serifClass = (lang) => (lang === "ar" ? "font-arabicText" : "font-body");
+
+/* آيفون: ملف ICS يفتح في تقويم Apple — العنوان والموقع نفسهما */
+function icsCalendarUrl(data) {
+  const iso = data.event.dateTimeISO;
+  if (!iso) return "";
+  const p = new URLSearchParams({
+    title: `${data.couple.groomName} & ${data.couple.brideName}`,
+    start: iso,
+    location: [data.location.venueName, data.location.address].filter(Boolean).join(", "),
+  });
+  return `/api/ics?${p.toString()}`;
+}
 
 function googleCalendarUrl(data) {
   const iso = data.event.dateTimeISO;
@@ -1234,6 +1246,12 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
   /* template display defaults for the current language (never persisted) */
   const DEF = HERITAGE_DEFAULTS[lang] || HERITAGE_DEFAULTS.fr;
   const calendarUrl = useMemo(() => googleCalendarUrl(data), [data]);
+  const icsUrl = useMemo(() => icsCalendarUrl(data), [data]);
+  // آيفون/آيباد → ICS في تقويم Apple؛ أندرويد وسواه → Google Calendar
+  const [isIos, setIsIos] = useState(false);
+  useEffect(() => {
+    setIsIos(/iPad|iPhone|iPod/.test(navigator.userAgent));
+  }, []);
   const hashtag = useMemo(() => hashtagOf(data), [data]);
   /* wax-seal monogram: first letter of each name. Latin names preferred
      (stable across FR/AR views — buildData swaps the couple fields in AR,
@@ -1794,7 +1812,7 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   )}
                   {calendarUrl && (
                     <a
-                      href={calendarUrl}
+                      href={isIos ? icsUrl : calendarUrl}
                       target="_blank"
                       rel="noreferrer"
                       className={`h-btn flex items-center gap-2 rounded-xl border border-gold/60 bg-white/40 px-4 py-2.5 text-xs text-gold-dark hover:bg-gold-light/40 ${sansClass}`}

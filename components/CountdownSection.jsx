@@ -93,29 +93,42 @@ function CountCard({ value, label, index, reduce }) {
   );
 }
 
-/* حفظ التاريخ: رابط يضيف الموعد إلى تقويم الضيف (Google Calendar)
-   بعنوان العروسين ومكان الحفل — أربع ساعات افتراضيًا */
-function calendarUrl(data) {
+/* إضافة الموعد إلى تقويم الهاتف — يعمل على آيفون وأندرويد معًا:
+   آيفون يفتح ملف ICS في تقويم Apple، والبقية رابط Google Calendar */
+function calendarUrls(data) {
   const iso = data.event.dateTimeISO;
-  if (!iso) return "";
+  if (!iso) return null;
   const start = new Date(iso);
-  if (Number.isNaN(start.getTime())) return "";
+  if (Number.isNaN(start.getTime())) return null;
   const end = new Date(start.getTime() + 4 * 3600 * 1000);
   const fmt = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-  const p = new URLSearchParams({
+  const title = `${data.couple.groomName} & ${data.couple.brideName}`;
+  const location = [data.location.venueName, data.location.address].filter(Boolean).join(", ");
+  const g = new URLSearchParams({
     action: "TEMPLATE",
-    text: `${data.couple.groomName} & ${data.couple.brideName}`,
+    text: title,
     dates: `${fmt(start)}/${fmt(end)}`,
-    location: [data.location.venueName, data.location.address].filter(Boolean).join(", "),
+    location,
   });
-  return `https://calendar.google.com/calendar/render?${p.toString()}`;
+  const i = new URLSearchParams({ title, start: iso, location });
+  return {
+    google: `https://calendar.google.com/calendar/render?${g.toString()}`,
+    ics: `/api/ics?${i.toString()}`,
+  };
 }
 
 export default function CountdownSection({ data }) {
   const countdown = data.countdown;
   const reduce = useReducedMotion();
-  const saveUrl = calendarUrl(data);
-  const saveLabel = data.lang === "ar" ? "احفظ التاريخ" : "Enregistrer la date";
+  const urls = calendarUrls(data);
+  // آيفون/آيباد → ملف ICS يفتح في تقويم Apple مباشرة
+  const [isIos, setIsIos] = useState(false);
+  useEffect(() => {
+    setIsIos(/iPad|iPhone|iPod/.test(navigator.userAgent));
+  }, []);
+  const saveUrl = urls ? (isIos ? urls.ics : urls.google) : "";
+  const saveLabel =
+    data.lang === "ar" ? "أضف الموعد إلى تقويم هاتفك" : "Ajouter la date à votre calendrier";
   // undefined until mounted so the server render never mismatches the client clock
   const [time, setTime] = useState(undefined);
 
