@@ -68,8 +68,8 @@
     "maxGuests": 6,
     "allowCompanions": true,
     "maxAdultCompanions": 3,
-    "childrenAllowed": true,
-    "maxChildren": 2,
+    "childrenAllowed": false,
+    "maxChildren": 0,
     "sendToEmail": ""
   },
 

@@ -279,8 +279,12 @@ export default function RsvpSection({ data }) {
                         )}
                       </div>
                     )}
-                    {!companionsCfg.childrenAllowed && (
-                      <p className="mt-2 font-body text-sm italic text-ink/60">{ct.noChildrenNote}</p>
+                    {/* رسالة الحد المسموح — تتبع الرقم المضبوط في لوحة
+                        التحكم (شخصان أو ثلاثة أو ما اختاره المالك) */}
+                    {!companionsCfg.childrenAllowed && ct.limitNote && (
+                      <p className="mt-2 font-body text-sm italic text-ink/60">
+                        {ct.limitNote.replace("{n}", String(companionsCfg.maxAdults))}
+                      </p>
                     )}
                   </div>
                 )}
