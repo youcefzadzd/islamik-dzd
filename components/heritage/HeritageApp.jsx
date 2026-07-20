@@ -398,13 +398,12 @@ function DovesOrnament({ className = "" }) {
    under the flap. transform/opacity only → 60fps on phones. */
 /* الظرف الأصلي (اختيار المستخدم النهائي): قطعتا الرسم الأولي
    بنقش الدانتيل والزخارف الذهبية — نفس الفتح والمدة والظلال الحالية */
-const ENVELOPE_TOP = "/assets/templates/heritage1-olive-top.png";
-/* front-envelope-pocket: the notched bottom piece (real transparent
-   opening + the artwork's own collar shadow). Behind its hole sits the
-   CSS envelope-inner-background — so nothing baked can ghost through
-   when the flap lifts. نسختا olive = الرسم الأصلي نفسه بعد مواءمة
-   الأخضر مع زيتوني القالب (تدفئة -6°، تشبيع ×1.45، تعميق ×0.9) */
-const ENVELOPE_BOTTOM = "/assets/templates/heritage1-olive-bottom.png";
+/* اختيار المستخدم (new-2): الأقحوان الكبير المريمي — درزا الغطاء
+   من (0,59) و(960,59) إلى الرأس (480,732) المخفي خلف الشمع
+   (477,638) نق~118؛ الجيب مركّب: جسد المغلقة + فم Higgsfield
+   المفتوح (ببطاقة داخلية) داخل المثلث */
+const ENVELOPE_TOP = "/assets/templates/heritage2-top.png";
+const ENVELOPE_BOTTOM = "/assets/templates/heritage2-bottom.png";
 const IMG_W = 960;
 const IMG_H = 1280; // intrinsic size of both artwork pieces
 const EASE = [0.22, 1, 0.36, 1];
@@ -440,21 +439,11 @@ function useEnvelopeScene() {
          diagonal. MEASURED from the pocket PNG's alpha channel (column
          scan), so it hugs the real artwork edge exactly */
       const EDGE = [
-        [0, 0.333],
-        [0.15, 0.44],
-        [0.3, 0.545],
-        [0.333, 0.603],
-        [0.367, 0.645],
-        [0.4, 0.666],
-        [0.44, 0.685],
-        [0.5, 0.694],
-        [0.56, 0.685],
-        [0.6, 0.675],
-        [0.633, 0.653],
-        [0.667, 0.617],
-        [0.7, 0.55],
-        [0.85, 0.44],
-        [1, 0.334],
+        [0, 0.0461],
+        [0.25, 0.309],
+        [0.5, 0.5719],
+        [0.75, 0.309],
+        [1, 0.0461],
       ];
       /* opening mouth: follows the edge path (+3px overlap) */
       const cavityClip = `polygon(${[
@@ -467,18 +456,18 @@ function useEnvelopeScene() {
         cavityClip,
         /* bottom of the pocket's notch — anchors the cavity's contact
            shadow (strongest at center, lighter at the sides) */
-        notchY: oy + 0.675 * h,
+        notchY: oy + 0.5719 * h,
         /* camera close-up anchor — tuned so the sealed frame shows the
            FULL Arabic welcome (with its ornaments) at the top, the seal
            large at mid-frame and the Welcome script complete below */
-        closeupY: oy + 0.57 * h,
+        closeupY: oy + 0.5 * h,
         /* wax seal: a standalone overlay (heritage2-seal.png, the disc on
            a sub-pixel-centered square canvas) inside a flex-centered
            positioner, drawn exactly over the baked disc — centering
            never depends on the artwork file. Row and radius are the
            PNG measurements (canvas 270px, disc center 480,640). */
-        sealY: oy + 0.5512 * h, // fitted disc center row (705.5/1280)
-        sealD: ((0.1734 * w * 2) * 172) / 166, // overlay canvas = disc + margin
+        sealY: oy + 0.4984 * h, // disc center row (638/1280)
+        sealD: (250 / 960) * w, // overlay canvas at artwork scale
       });
     }
     compute();
@@ -708,7 +697,7 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                     }}
                   >
                     <img
-                      src="/assets/templates/heritage-seal.png"
+                      src="/assets/templates/heritage2-seal.png"
                       alt=""
                       draggable={false}
                       className="absolute inset-0 h-full w-full"
