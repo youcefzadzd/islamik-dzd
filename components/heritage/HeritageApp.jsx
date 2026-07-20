@@ -711,18 +711,16 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                       >
                   <svg viewBox="0 0 200 200" width="100%" height="100%" style={{ display: "block" }}>
                     {(() => {
-                      /* reference-stamp cipher: a fine raised ring, the
-                         first letter LARGE at the upper left, a small &
-                         tucked mid-left, the second letter large at the
-                         lower right weaving over the first's leg — all
-                         EMBOSSED (raised, pressed-wax relief): the faces
-                         a shade lighter than the wax, a warm light on
-                         the top edges, deep occlusion right under the
-                         strokes. Tone on tone — no gold, no glow. */
-                      const FACE = "rgb(156, 80, 56)"; // wax, one breath lighter
-                      const LIGHT = "rgba(255, 206, 176, 0.42)";
-                      const SHADOW = "rgba(33, 8, 3, 0.5)";
-                      const AMBIENT = "rgba(33, 8, 3, 0.28)";
+                      /* reference-stamp cipher, GILDED: the relief stays
+                         pressed into the wax (deep occlusion below, warm
+                         light on the top edges) but the raised faces are
+                         brushed with polished gold — like a seal rubbed
+                         with gilding powder after stamping. The gradient
+                         echoes the envelope's gold foil. */
+                      const FACE = "url(#h-mono-gold)";
+                      const LIGHT = "rgba(255, 214, 165, 0.5)";
+                      const SHADOW = "rgba(33, 8, 3, 0.55)";
+                      const AMBIENT = "rgba(33, 8, 3, 0.3)";
                       const cipher = (fill) => (
                         <g fill={fill}>
                           <text x="88" y="121" textAnchor="middle" fontSize="86">{initials.a}</text>
@@ -739,6 +737,14 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                             <filter id="h-mono-soft" x="-20%" y="-20%" width="140%" height="140%">
                               <feGaussianBlur stdDeviation="1.4" />
                             </filter>
+                            {/* ذهب مصقول بميل إضاءة علوي — نفس عائلة ذهب الظرف */}
+                            <linearGradient id="h-mono-gold" x1="40" y1="40" x2="160" y2="170" gradientUnits="userSpaceOnUse">
+                              <stop offset="0" stopColor="#F6ECCB" />
+                              <stop offset="0.32" stopColor="#E7D29A" />
+                              <stop offset="0.58" stopColor="#C9A45E" />
+                              <stop offset="0.8" stopColor="#A8823F" />
+                              <stop offset="1" stopColor="#E4CF9C" />
+                            </linearGradient>
                           </defs>
                           {/* grounding blur so the relief sits IN the wax */}
                           <g transform="translate(0 3.2)" filter="url(#h-mono-soft)">
