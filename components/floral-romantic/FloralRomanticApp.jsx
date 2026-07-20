@@ -404,9 +404,10 @@ function hashtagOf(data) {
   const latin = (main, alt) => (/[A-Za-z]/.test(main || "") ? main : alt || main || "");
   const a = latin(data.couple.groomName, data.couple.groomNameAr).trim().split(/\s+/)[0];
   const b = latin(data.couple.brideName, data.couple.brideNameAr).trim().split(/\s+/)[0];
-  if (!a || !b || !/[A-Za-z]/.test(a + b)) return "";
+  if (!a || !b || !/[A-Za-z]/.test(a + b)) return null;
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-  return `#${cap(a)}And${cap(b)}`;
+  // {a, b} للعرض المزخرف — النص المنسوخ يبقى #AAndB هاشتاغًا واحدًا
+  return { a: cap(a), b: cap(b) };
 }
 
 /* ---------- small ornaments ---------- */
@@ -1225,7 +1226,14 @@ export default function FloralRomanticApp({ weddingIdOverride, initialData }) {
               </p>
             )}
             {hashtag && (
-              <p className={`mt-5 text-sm uppercase tracking-[0.3em] text-gold-light ${sansClass}`}>{hashtag}</p>
+              /* «And» بخط سكريبتي ذهبي متمايز بين الاسمين */
+              <p className={`mt-5 text-sm uppercase tracking-[0.3em] text-gold-light ${sansClass}`} dir="ltr">
+                #{hashtag.a}
+                <span className="mx-0.5 normal-case tracking-normal text-[1.5em] leading-none text-ivory-light/90 [font-family:var(--font-floral-script)]">
+                  And
+                </span>
+                {hashtag.b}
+              </p>
             )}
             <p className={`mt-7 text-[0.7rem] uppercase tracking-[0.25em] text-ivory-light/50 ${sansClass}`}>
               {ui.madeWith} <span className="text-gold-light">♥</span> {ui.forOurDay}

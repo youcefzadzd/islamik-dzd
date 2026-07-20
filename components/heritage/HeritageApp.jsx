@@ -237,8 +237,9 @@ function hashtagOf(data) {
   const latin = (main, alt) => (/[A-Za-z]/.test(main || "") ? main : alt || main);
   const a = clean(latin(data.couple.groomName, data.couple.groomNameAr));
   const b = clean(latin(data.couple.brideName, data.couple.brideNameAr));
-  if (!a || !b) return "";
-  return `#${a}And${b}${year}`;
+  if (!a || !b) return null;
+  // أجزاء للعرض المزخرف — النص المنسوخ يبقى #AAndBYYYY هاشتاغًا واحدًا
+  return { a, b, year };
 }
 
 /* ── ♡ ── rose heart divider under the section titles */
@@ -1944,8 +1945,14 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
             {hashtag && (
               <>
                 <div className="mx-auto mt-8 h-px max-w-sm bg-[#DBD2B6]/20" aria-hidden />
-                <p className={`mt-6 text-sm tracking-widest text-[#DBD2B6]/55 ${sansClass}`}>
-                  {hashtag}
+                {/* «And» بخط سكريبتي متمايز بين الاسمين */}
+                <p className={`mt-6 text-sm tracking-widest text-[#DBD2B6]/55 ${sansClass}`} dir="ltr">
+                  #{hashtag.a}
+                  <span className="mx-0.5 text-[1.5em] leading-none tracking-normal text-[#EFD9B8]/85 [font-family:var(--font-heritage-script)]">
+                    And
+                  </span>
+                  {hashtag.b}
+                  {hashtag.year}
                 </p>
               </>
             )}
