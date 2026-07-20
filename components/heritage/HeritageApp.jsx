@@ -711,27 +711,19 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                       >
                   <svg viewBox="0 0 200 200" width="100%" height="100%" style={{ display: "block" }}>
                     {(() => {
-                      /* reference-stamp cipher, GILDED: the relief stays
-                         pressed into the wax (deep occlusion below, warm
-                         light on the top edges) but the raised faces are
-                         brushed with polished gold — like a seal rubbed
-                         with gilding powder after stamping. The gradient
-                         echoes the envelope's gold foil. */
-                      const FACE = "url(#h-mono-gold)";
-                      const LIGHT = "rgba(255, 214, 165, 0.5)";
-                      const SHADOW = "rgba(33, 8, 3, 0.55)";
-                      const AMBIENT = "rgba(33, 8, 3, 0.3)";
-                      /* تشابك ملكي: الحرف الثاني تحت، الأول فوقه، ثم يُعاد
-                         رسم الثاني مقصوصًا بنافذة التقاطع العلوية فيمر
-                         فوق ساق الأول هناك — نسج فوق/تحت حقيقي */
+                      /* الفكرة 3 وحدها: نقش شمع بعمق قالب حقيقي — لا ذهب
+                         ولا تشابك. الوجه بلون الشمع الفاتح قليلًا، احتكاك
+                         غائر حاد تحت الضربات، ضوء علوي دافئ أوضح، وأخدود
+                         هضبة دائري محفور حول الحروف كأثر قالب نحاسي */
+                      const FACE = "rgb(156, 80, 56)"; // wax, one breath lighter
+                      const LIGHT = "rgba(255, 208, 176, 0.5)";
+                      const SHADOW = "rgba(26, 6, 2, 0.62)";
+                      const AMBIENT = "rgba(30, 7, 3, 0.35)";
                       const cipher = (fill) => (
                         <g fill={fill}>
-                          <text x="121" y="150" textAnchor="middle" fontSize="84">{initials.b}</text>
-                          <text x="86" y="123" textAnchor="middle" fontSize="90">{initials.a}</text>
-                          <g clipPath="url(#h-mono-weave)">
-                            <text x="121" y="150" textAnchor="middle" fontSize="84">{initials.b}</text>
-                          </g>
-                          <text x="63" y="136" textAnchor="middle" fontSize="28">&amp;</text>
+                          <text x="88" y="121" textAnchor="middle" fontSize="86">{initials.a}</text>
+                          <text x="66" y="134" textAnchor="middle" fontSize="30">&amp;</text>
+                          <text x="119" y="149" textAnchor="middle" fontSize="80">{initials.b}</text>
                         </g>
                       );
                       const ring = (stroke) => (
@@ -741,29 +733,25 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                         <g fontFamily="var(--font-body), 'Cormorant Garamond', 'Amiri', serif" fontWeight="600">
                           <defs>
                             <filter id="h-mono-soft" x="-20%" y="-20%" width="140%" height="140%">
-                              <feGaussianBlur stdDeviation="1.4" />
+                              <feGaussianBlur stdDeviation="2" />
                             </filter>
-                            {/* ذهب مصقول بميل إضاءة علوي — نفس عائلة ذهب الظرف */}
-                            <linearGradient id="h-mono-gold" x1="40" y1="40" x2="160" y2="170" gradientUnits="userSpaceOnUse">
-                              <stop offset="0" stopColor="#F6ECCB" />
-                              <stop offset="0.32" stopColor="#E7D29A" />
-                              <stop offset="0.58" stopColor="#C9A45E" />
-                              <stop offset="0.8" stopColor="#A8823F" />
-                              <stop offset="1" stopColor="#E4CF9C" />
-                            </linearGradient>
-                            {/* نافذة النسج: حيث يعود الحرف الثاني فوق الأول */}
-                            <clipPath id="h-mono-weave">
-                              <circle cx="107" cy="113" r="13" />
-                            </clipPath>
                           </defs>
-                          {/* grounding blur so the relief sits IN the wax */}
-                          <g transform="translate(0 3.2)" filter="url(#h-mono-soft)">
+                          {/* أخدود الهضبة المحفور (عكس البروز: ظل أعلى، ضوء
+                              أسفل، قاع أغمق) — أثر حافة القالب النحاسي */}
+                          <g fill="none">
+                            <circle cx="100" cy="99.4" r="70" stroke="rgba(26, 6, 2, 0.5)" strokeWidth="2" />
+                            <circle cx="100" cy="102" r="70" stroke="rgba(255, 208, 176, 0.4)" strokeWidth="1.3" />
+                            <circle cx="100" cy="100.6" r="70" stroke="rgba(118, 52, 34, 0.85)" strokeWidth="1.1" />
+                          </g>
+                          {/* grounding blur so the relief sits DEEP in the wax */}
+                          <g transform="translate(0 4)" filter="url(#h-mono-soft)">
                             {ring(AMBIENT)}
                             {cipher(AMBIENT)}
                           </g>
-                          {/* raised relief: occlusion below, light above, face */}
-                          <g transform="translate(0 2)">{ring(SHADOW)}{cipher(SHADOW)}</g>
-                          <g transform="translate(0 -1.5)">{ring(LIGHT)}{cipher(LIGHT)}</g>
+                          {/* raised relief: deeper occlusion below, crisper
+                              warm light above, face */}
+                          <g transform="translate(0 2.6)">{ring(SHADOW)}{cipher(SHADOW)}</g>
+                          <g transform="translate(0 -1.8)">{ring(LIGHT)}{cipher(LIGHT)}</g>
                           {ring(FACE)}
                           {cipher(FACE)}
                         </g>
