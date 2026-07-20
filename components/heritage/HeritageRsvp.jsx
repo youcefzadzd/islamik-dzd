@@ -335,11 +335,8 @@ export default function HeritageRsvp({ data, sansClass = "" }) {
                 </svg>
                 {status === "submitting" ? rsvp.submittingText : rsvp.sealButtonText}
               </motion.button>
-              <p
-                className={`mt-3 text-center text-[12.5px] font-normal not-italic leading-[1.5] text-[rgba(52,55,47,0.65)] ${formFont}`}
-              >
-                {rsvp.sealButtonHint}
-              </p>
+              {/* لا تلميح «المسوا الختم» هنا — زر Heritage حبة خضراء
+                  صريحة وليس ختم شمع؛ النص كان موروثًا من Islamic Royal */}
             </div>
 
             {formError && <p className="text-center text-sm text-[#A6452E]">{formError}</p>}
