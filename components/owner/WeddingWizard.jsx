@@ -541,7 +541,7 @@ function StepProgram({ f, setF }) {
 }
 
 /* كلمة السر الافتراضية للعميل: اسم العريس (حروف لاتينية منظّفة)
-   + تاريخ العرس يوم-شهر-سنة — مثال: amine14082026 */
+   + يوم وشهر العرس فقط — مثال: amine1408 */
 function suggestedPassword(f) {
   const name = (f.groomName || "")
     .toLowerCase()
@@ -550,7 +550,7 @@ function suggestedPassword(f) {
     .replace(/[^a-z0-9]/g, "");
   const d = f.weddingDate || ""; // YYYY-MM-DD
   if (!name || d.length !== 10) return "";
-  return `${name}${d.slice(8, 10)}${d.slice(5, 7)}${d.slice(0, 4)}`;
+  return `${name}${d.slice(8, 10)}${d.slice(5, 7)}`;
 }
 
 function StepDesign({ f, setF, set, requirePassword }) {
@@ -647,7 +647,7 @@ function StepDesign({ f, setF, set, requirePassword }) {
             </button>
           </div>
           <p className="mt-1 text-xs text-ink/50">
-            Générée automatiquement : prénom du marié + date du mariage
+            Générée automatiquement : prénom du marié + jour et mois du mariage
             {defaultPassword ? ` (${defaultPassword})` : " — renseignez le prénom et la date d'abord"}
           </p>
         </Field>
