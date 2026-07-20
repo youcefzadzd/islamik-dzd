@@ -93,9 +93,29 @@ function CountCard({ value, label, index, reduce }) {
   );
 }
 
+/* حفظ التاريخ: رابط يضيف الموعد إلى تقويم الضيف (Google Calendar)
+   بعنوان العروسين ومكان الحفل — أربع ساعات افتراضيًا */
+function calendarUrl(data) {
+  const iso = data.event.dateTimeISO;
+  if (!iso) return "";
+  const start = new Date(iso);
+  if (Number.isNaN(start.getTime())) return "";
+  const end = new Date(start.getTime() + 4 * 3600 * 1000);
+  const fmt = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const p = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `${data.couple.groomName} & ${data.couple.brideName}`,
+    dates: `${fmt(start)}/${fmt(end)}`,
+    location: [data.location.venueName, data.location.address].filter(Boolean).join(", "),
+  });
+  return `https://calendar.google.com/calendar/render?${p.toString()}`;
+}
+
 export default function CountdownSection({ data }) {
   const countdown = data.countdown;
   const reduce = useReducedMotion();
+  const saveUrl = calendarUrl(data);
+  const saveLabel = data.lang === "ar" ? "احفظ التاريخ" : "Enregistrer la date";
   // undefined until mounted so the server render never mismatches the client clock
   const [time, setTime] = useState(undefined);
 
@@ -148,6 +168,22 @@ export default function CountdownSection({ data }) {
             <span className="text-gold">✦</span>
             <span>{data.event.displayTime}</span>
           </div>
+          {saveUrl && (
+            <a
+              href={saveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`mt-7 inline-flex items-center justify-center gap-2 rounded-full bg-burgundy px-6 py-3 text-center text-xs uppercase tracking-[0.18em] text-ivory-light shadow-card transition-colors hover:bg-burgundy-dark sm:px-8 sm:text-sm ${
+                data.lang === "ar" ? "font-arabicText normal-case tracking-normal text-base" : ""
+              }`}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
+                <rect x="3" y="5" width="18" height="16" rx="2" />
+                <path d="M8 3v4m8-4v4M3 10h18M12 14v4m-2-2h4" />
+              </svg>
+              {saveLabel}
+            </a>
+          )}
         </Reveal>
       </div>
     </SectionPanel>
