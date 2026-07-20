@@ -407,7 +407,9 @@ const IMG_W = 960;
 const IMG_H = 1280; // intrinsic size of both artwork pieces
 const EASE = [0.22, 1, 0.36, 1];
 const OPEN_DELAY = 0.15; // the press "lands" before the flap starts moving
-const OPEN_DURATION = 3.5;
+/* نفس إيقاع Islamic Royal: الغطاء ينطوي في ثانيتين والظرف يختفي
+   عند ~1.75 ثانية من النقرة */
+const OPEN_DURATION = 2.0;
 
 /* where the artwork lands in the viewport (bg-cover bg-center): the flap's
    real fold line is the artwork's top edge — hingeY is that line in px.
@@ -532,13 +534,13 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
       }}
       initial={false}
       /* pure crossfade on a FIXED clock from the tap: the envelope fades
-         out between t=1920ms and t=3020ms — NO zoom, NO scale, NO camera
+         out between t=1000ms and t=1750ms — NO zoom, NO scale, NO camera
          push, NO blur, the envelope never moves. With
          prefers-reduced-motion: a short immediate fade instead. */
       animate={opened ? { opacity: 0 } : { opacity: 1 }}
       transition={{
-        duration: reduceMotion ? 0.4 : 1.1,
-        delay: opened ? (reduceMotion ? 0 : 1.92) : 0,
+        duration: reduceMotion ? 0.4 : 0.75,
+        delay: opened ? (reduceMotion ? 0 : 1.0) : 0,
         ease: "easeInOut",
       }}
       onAnimationComplete={() => {
@@ -1207,8 +1209,8 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
               initial={false}
               animate={opened ? { opacity: [0, 0.12, 0] } : { opacity: 0 }}
               transition={{
-                duration: reduceMotion ? 0.4 : 1.1,
-                delay: opened ? (reduceMotion ? 0 : 1.92) : 0,
+                duration: reduceMotion ? 0.4 : 0.75,
+                delay: opened ? (reduceMotion ? 0 : 1.0) : 0,
                 times: [0, 0.5, 1],
                 ease: "easeInOut",
               }}
@@ -1223,7 +1225,7 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
           <section className="relative flex min-h-[92vh] flex-col items-center justify-center overflow-hidden px-4 py-24 text-center">
             {/* crossfade entrance: the page is mounted behind the envelope
                 from the start and simply fades in (opacity only — no zoom,
-                no scale) between t=1920ms and t=3020ms, exactly while the
+                no scale) between t=1000ms and t=1750ms, exactly while the
                 envelope fades out */}
             <motion.div
               aria-hidden
@@ -1231,8 +1233,8 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
               initial={false}
               animate={opened ? { opacity: 1 } : { opacity: 0 }}
               transition={{
-                duration: reduceMotion ? 0.5 : 1.1,
-                delay: opened ? (reduceMotion ? 0.15 : 1.92) : 0,
+                duration: reduceMotion ? 0.5 : 0.75,
+                delay: opened ? (reduceMotion ? 0.15 : 1.0) : 0,
                 ease: "easeInOut",
               }}
               style={{
@@ -1323,10 +1325,10 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   initial={{ opacity: 0, y: 26 }}
                   animate={opened ? { opacity: 1, y: 0 } : { opacity: 0, y: 26 }}
                   transition={{
-                    duration: 0.7,
+                    duration: 0.6,
                     /* texts begin once the page opacity crosses ~0.75
-                       (≈t=2670ms): subtitle → names → date → … */
-                    delay: (reduceMotion ? 0.3 : 2.67) + i * (reduceMotion ? 0.05 : 0.15),
+                       (≈t=1560ms): subtitle → names → date → … */
+                    delay: (reduceMotion ? 0.3 : 1.56) + i * (reduceMotion ? 0.05 : 0.12),
                     ease: EASE,
                   }}
                 >
@@ -1350,7 +1352,7 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   transition={{
                     duration: 0.8,
                     /* enters last: after the names, date and countdown */
-                    delay: reduceMotion ? 0.65 : 3.6,
+                    delay: reduceMotion ? 0.65 : 2.4,
                     ease: EASE,
                   }}
                   aria-label={ui.rsvpCta}
