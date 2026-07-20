@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { EMPTY_PROGRAM_STEP, INVITATION_FIELDS, formToBody } from "./formModel";
+import { EMPTY_PROGRAM_STEP, PROGRAM_PRESETS, INVITATION_FIELDS, formToBody } from "./formModel";
 import { ownerHeaders } from "./shared";
 import { TEMPLATES, getTemplate, DEFAULT_TEMPLATE_ID } from "@/lib/templates";
 
@@ -529,13 +529,29 @@ function StepProgram({ f, setF }) {
           </div>
         </div>
       ))}
-      <button
-        type="button"
-        onClick={() => setF((prev) => ({ ...prev, program: [...prev.program, { ...EMPTY_PROGRAM_STEP }] }))}
-        className="rounded-lg border border-gold/50 px-3 py-1.5 text-sm text-gold-dark hover:bg-ivory-dark"
-      >
-        + Ajouter un événement
-      </button>
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setF((prev) => ({ ...prev, program: [...prev.program, { ...EMPTY_PROGRAM_STEP }] }))}
+          className="rounded-lg border border-gold/50 px-3 py-1.5 text-sm text-gold-dark hover:bg-ivory-dark"
+        >
+          + Ajouter un événement
+        </button>
+        {/* محطات جاهزة بنقرة — يبقى ضبط التوقيت للمالك */}
+        <span className="text-xs uppercase tracking-wider text-ink/45">Suggestions :</span>
+        {PROGRAM_PRESETS.filter(
+          (p) => !f.program.some((s) => s.title_fr === p.title_fr)
+        ).map((p) => (
+          <button
+            type="button"
+            key={p.title_fr}
+            onClick={() => setF((prev) => ({ ...prev, program: [...prev.program, { ...p }] }))}
+            className="rounded-full border border-dashed border-gold/50 px-3 py-1 text-xs text-ink/70 hover:bg-ivory-dark"
+          >
+            + {p.title_fr} · {p.title_ar}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

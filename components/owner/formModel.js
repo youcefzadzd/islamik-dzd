@@ -12,6 +12,25 @@ export const EMPTY_PROGRAM_STEP = {
   description_ar: "",
 };
 
+/* البرنامج الافتراضي: يبدأ به كل عرس جديد (قابل للتعديل والحذف) —
+   نفس محطات القالب الأساسي */
+export const DEFAULT_PROGRAM = [
+  { time: "16:00", title_fr: "Accueil des invités", title_ar: "استقبال الضيوف", description_fr: "", description_ar: "" },
+  { time: "17:00", title_fr: "Cérémonie & Fatiha", title_ar: "العقد والفاتحة", description_fr: "", description_ar: "" },
+  { time: "19:00", title_fr: "Dîner", title_ar: "العشاء", description_fr: "", description_ar: "" },
+  { time: "21:00", title_fr: "Gâteau & Célébration", title_ar: "الكعكة والاحتفال", description_fr: "", description_ar: "" },
+  { time: "23:00", title_fr: "Clôture de la soirée", title_ar: "ختام السهرة", description_fr: "", description_ar: "" },
+];
+
+/* محطات شائعة تُضاف بنقرة من خطوة البرنامج */
+export const PROGRAM_PRESETS = [
+  { time: "", title_fr: "Cérémonie du henné", title_ar: "حفل الحناء", description_fr: "", description_ar: "" },
+  { time: "", title_fr: "Entrée des mariés", title_ar: "دخلة العروسين", description_fr: "", description_ar: "" },
+  { time: "", title_fr: "Séance photo", title_ar: "جلسة التصوير", description_fr: "", description_ar: "" },
+  { time: "", title_fr: "Soirée musicale", title_ar: "السهرة الموسيقية", description_fr: "", description_ar: "" },
+  { time: "", title_fr: "Desserts & thé", title_ar: "الحلويات والشاي", description_fr: "", description_ar: "" },
+];
+
 /* Wedding Invitation section (Heritage template): one group of fully
    owner-edited lines per language, stored in texts.invitation.{ar,fr} */
 export const INVITATION_FIELDS = [
@@ -85,11 +104,11 @@ export function rowToForm(w = {}) {
     galleryText: Array.isArray(media.gallery) ? media.gallery.join("\n") : "",
     music: media.music || "",
     openingSound: media.openingSound || "",
-    // step 4 — program
+    // step 4 — program (عرس بلا برنامج محفوظ = الافتراضي الكلاسيكي معبأ)
     program:
       Array.isArray(w.program) && w.program.length
         ? w.program
-        : [{ ...EMPTY_PROGRAM_STEP }],
+        : DEFAULT_PROGRAM.map((s) => ({ ...s })),
     // step 5 — settings
     template: normalizeTemplateId(theme.template),
     defaultLanguage: w.default_language || "fr",
