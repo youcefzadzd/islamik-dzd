@@ -1949,14 +1949,23 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                 </p>
               </>
             )}
-            {/* بصمة المنصة */}
+            {/* بصمة المنصة — توقيع أنيق */}
             <a
               href="https://www.dawati-dz.com"
               target="_blank"
               rel="noopener noreferrer"
-              className={`mt-8 inline-block text-[11px] tracking-[0.18em] text-[#DBD2B6]/45 transition-colors hover:text-[#EFD9B8] ${sansClass}`}
+              className="group mt-8 inline-flex flex-col items-center gap-1"
             >
-              Dawati · www.dawati-dz.com
+              <span className="flex items-center gap-3 text-[#EFD9B8]/70 transition-colors group-hover:text-[#EFD9B8]">
+                <span aria-hidden className="h-px w-9 bg-[#DBD2B6]/30" />
+                <span className="text-[1.6rem] leading-none [font-family:var(--font-heritage-script)]">
+                  Dawati
+                </span>
+                <span aria-hidden className="h-px w-9 bg-[#DBD2B6]/30" />
+              </span>
+              <span className={`text-[9px] uppercase tracking-[0.32em] text-[#DBD2B6]/40 transition-colors group-hover:text-[#DBD2B6]/80 ${sansClass}`}>
+                www.dawati-dz.com
+              </span>
             </a>
           </footer>
         </main>

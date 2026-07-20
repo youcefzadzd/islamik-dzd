@@ -72,15 +72,22 @@ export default function ThankYouSection({ data }) {
           </Reveal>
         )}
 
-        {/* بصمة المنصة */}
+        {/* بصمة المنصة — توقيع أنيق */}
         <Reveal delay={0.6}>
           <a
             href="https://www.dawati-dz.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-10 inline-block font-body text-[11px] tracking-[0.18em] text-gold-dark/60 transition-colors hover:text-gold-dark"
+            className="group mt-10 inline-flex flex-col items-center gap-1"
           >
-            Dawati · www.dawati-dz.com
+            <span className="flex items-center gap-3 text-gold-dark/70 transition-colors group-hover:text-gold-dark">
+              <span aria-hidden className="h-px w-9 bg-gold/40" />
+              <span className="font-monogram text-[1.7rem] leading-none">Dawati</span>
+              <span aria-hidden className="h-px w-9 bg-gold/40" />
+            </span>
+            <span className="font-body text-[9px] uppercase tracking-[0.32em] text-ink/40 transition-colors group-hover:text-ink/70">
+              www.dawati-dz.com
+            </span>
           </a>
         </Reveal>
       </div>
