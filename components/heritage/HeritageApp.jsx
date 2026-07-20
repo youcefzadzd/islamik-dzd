@@ -21,6 +21,8 @@ import {
   animate,
   AnimatePresence,
   useMotionValue,
+  useScroll,
+  useSpring,
   useTransform,
   useMotionTemplate,
   useReducedMotion,
@@ -1066,6 +1068,152 @@ const PROGRAM_ICONS = [
   <path key="m" d="M9 18V6l10-2v11.5M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm10-2.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />,
 ];
 
+/* محطة برنامج حية: تشتعل عند وصول تقدم التمرير إليها — الأيقونة
+   تمتلئ ذهبًا وتتوهج، والنص يرتفع قليلًا ويكتمل وضوحه */
+function ProgramStation({ item, icon, last, progress, center, lang, iconRef }) {
+  const t = useTransform(progress, [center - 0.09, center + 0.02], [0, 1]);
+  const iconBg = useTransform(t, [0, 1], ["rgba(230, 213, 166, 0)", "rgba(230, 213, 166, 1)"]);
+  const iconColor = useTransform(t, [0, 1], ["#E8D9B2", "#3F4C2F"]);
+  const iconShadow = useTransform(
+    t,
+    [0, 1],
+    ["0 0 0px rgba(230, 213, 166, 0)", "0 0 20px rgba(230, 213, 166, 0.55)"]
+  );
+  const lift = useTransform(t, [0, 1], [0, -3]);
+  const rowOpacity = useTransform(t, [0, 1], [0.72, 1]);
+  return (
+    <li className="relative flex gap-5 pb-9 last:pb-0">
+      <div className="flex flex-col items-center">
+        <motion.span
+          ref={iconRef}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D9CBA4]/60"
+          style={{ backgroundColor: iconBg, color: iconColor, boxShadow: iconShadow }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            {icon}
+          </svg>
+        </motion.span>
+        {!last && <span className="mt-2 w-px flex-1 bg-[#D9CBA4]/35" />}
+      </div>
+      <motion.div className="pt-1" style={{ y: lift, opacity: rowOpacity }}>
+        <div className="flex flex-wrap items-center gap-3">
+          <span
+            className={`rounded-md bg-gold-light px-2.5 py-1 text-xs font-semibold text-[#3F4C2F] ${sansClass}`}
+          >
+            {item.time}
+          </span>
+          <span className={`text-xl text-[#F5EBD5] ${serifClass(lang)}`}>{item.title}</span>
+        </div>
+        {item.description && (
+          <p className={`mt-2 text-sm leading-relaxed text-[#E2D8BE]/85 ${sansClass}`}>
+            {item.description}
+          </p>
+        )}
+      </motion.div>
+    </li>
+  );
+}
+
+/* مسار البرنامج المتحرك: خط ذهبي يمتلئ مع التمرير ونقطة متوهجة
+   تسافر بين المحطات نزولًا وصعودًا (تقدم زنبركي ناعم) */
+function ProgramTimeline({ program, lang }) {
+  const listRef = useRef(null);
+  const iconRefs = useRef([]);
+  const [geo, setGeo] = useState(null); // {x, top, height, fracs[]}
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ["start 72%", "end 42%"],
+  });
+  const progress = useSpring(scrollYProgress, { stiffness: 70, damping: 22, mass: 0.4 });
+  const dotTop = useTransform(progress, (v) => (geo ? geo.top + v * geo.height : 0));
+
+  useEffect(() => {
+    const measure = () => {
+      const c = listRef.current;
+      if (!c || !c.offsetHeight) return;
+      const centers = iconRefs.current.slice(0, program.length).map((el) => {
+        if (!el) return null;
+        let top = 0;
+        let left = 0;
+        let n = el;
+        while (n && n !== c) {
+          top += n.offsetTop;
+          left += n.offsetLeft;
+          n = n.offsetParent;
+        }
+        return { y: top + el.offsetHeight / 2, x: left + el.offsetWidth / 2 };
+      });
+      if (centers.some((p) => !p) || centers.length < 2) return;
+      const top = centers[0].y;
+      const bottom = centers[centers.length - 1].y;
+      setGeo({
+        x: centers[0].x,
+        top,
+        height: bottom - top,
+        fracs: centers.map((p) => (p.y - top) / (bottom - top)),
+      });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [program.length]);
+
+  return (
+    <ol ref={listRef} className="relative mx-auto max-w-md">
+      {geo && (
+        <>
+          {/* الخط الذهبي الممتلئ فوق المسار الباهت */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute"
+            style={{
+              left: geo.x - 1,
+              top: geo.top,
+              height: geo.height,
+              width: 2,
+              transformOrigin: "top",
+              scaleY: progress,
+              background:
+                "linear-gradient(180deg, rgba(230, 213, 166, 0.95), rgba(230, 213, 166, 0.5))",
+            }}
+          />
+          {/* النقطة المتوهجة المسافرة */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute z-10"
+            style={{ left: geo.x, top: dotTop, x: "-50%", y: "-50%" }}
+          >
+            <span
+              style={{
+                display: "block",
+                width: 10,
+                height: 10,
+                borderRadius: 999,
+                background: "#F2E7CE",
+                boxShadow:
+                  "0 0 12px rgba(242, 231, 206, 0.9), 0 0 28px rgba(230, 213, 166, 0.5)",
+              }}
+            />
+          </motion.div>
+        </>
+      )}
+      {program.map((item, i) => (
+        <Reveal key={`${item.time}-${item.title}`} delay={i * 0.08}>
+          <ProgramStation
+            item={item}
+            icon={PROGRAM_ICONS[i % PROGRAM_ICONS.length]}
+            last={i === program.length - 1}
+            progress={progress}
+            center={geo ? geo.fracs[i] : (i + 0.5) / program.length}
+            lang={lang}
+            iconRef={(el) => (iconRefs.current[i] = el)}
+          />
+        </Reveal>
+      ))}
+    </ol>
+  );
+}
+
 /* ---------- the page ---------- */
 export default function HeritageApp({ weddingIdOverride, initialData }) {
   const [opened, setOpened] = useState(false);
@@ -1560,41 +1708,8 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                   </span>
                 </div>
               </Reveal>
-              <ol className="mx-auto max-w-md">
-                {program.map((item, i) => (
-                  <Reveal key={`${item.time}-${item.title}`} delay={i * 0.08}>
-                    <li className="relative flex gap-5 pb-9 last:pb-0">
-                      <div className="flex flex-col items-center">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D9CBA4]/60 text-[#E8D9B2]">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                            {PROGRAM_ICONS[i % PROGRAM_ICONS.length]}
-                          </svg>
-                        </span>
-                        {i < program.length - 1 && (
-                          <span className="mt-2 w-px flex-1 bg-[#D9CBA4]/35" />
-                        )}
-                      </div>
-                      <div className="pt-1">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <span
-                            className={`rounded-md bg-gold-light px-2.5 py-1 text-xs font-semibold text-[#3F4C2F] ${sansClass}`}
-                          >
-                            {item.time}
-                          </span>
-                          <span className={`text-xl text-[#F5EBD5] ${serifClass(lang)}`}>
-                            {item.title}
-                          </span>
-                        </div>
-                        {item.description && (
-                          <p className={`mt-2 text-sm leading-relaxed text-[#E2D8BE]/85 ${sansClass}`}>
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                    </li>
-                  </Reveal>
-                ))}
-              </ol>
+              {/* مسار متحرك: خط يمتلئ، نقطة تسافر، ومحطات تشتعل تباعًا */}
+              <ProgramTimeline program={program} lang={lang} />
             </section>
           )}
 
