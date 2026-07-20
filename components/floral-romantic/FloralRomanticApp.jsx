@@ -716,12 +716,24 @@ export default function FloralRomanticApp({ weddingIdOverride, initialData }) {
             />
             <div className="relative flex w-full flex-col items-center">
               {[
-                <p
-                  key="eyebrow"
-                  className={`text-[0.72rem] uppercase tracking-[0.4em] text-[#8A6A55] ${sansClass}`}
-                >
-                  {getDisplayText(data.hero.eyebrow, DEF.heroEyebrow)}
-                </p>,
+                lang === "ar" ? (
+                  /* «يوم الزفاف» بخط عربي أنيق: أميري كبير برونزي
+                     تحفّه شعيرتان — لا تباعد أحرف لاتيني */
+                  <div key="eyebrow" className="flex items-center justify-center gap-3 text-[#8A6A55]">
+                    <span aria-hidden className="h-px w-12 bg-[#8A6A55]/40" />
+                    <p className="font-arabicText text-[1.7rem] leading-snug drop-shadow-sm">
+                      {getDisplayText(data.hero.eyebrow, DEF.heroEyebrow)}
+                    </p>
+                    <span aria-hidden className="h-px w-12 bg-[#8A6A55]/40" />
+                  </div>
+                ) : (
+                  <p
+                    key="eyebrow"
+                    className={`text-[0.72rem] uppercase tracking-[0.4em] text-[#8A6A55] ${sansClass}`}
+                  >
+                    {getDisplayText(data.hero.eyebrow, DEF.heroEyebrow)}
+                  </p>
+                ),
                 <h1
                   key="names"
                   className={`mt-6 text-5xl leading-tight text-[#6B2737] sm:text-7xl ${scriptClass(lang)}`}
