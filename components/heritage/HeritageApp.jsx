@@ -440,11 +440,11 @@ function useEnvelopeScene() {
          diagonal. MEASURED from the pocket PNG's alpha channel (column
          scan), so it hugs the real artwork edge exactly */
       const EDGE = [
-        [0, 0.0398],
-        [0.25, 0.3062],
-        [0.5, 0.5727],
-        [0.75, 0.3055],
-        [1, 0.0383],
+        [0, 0.0461],
+        [0.25, 0.3074],
+        [0.5, 0.5688],
+        [0.75, 0.3074],
+        [1, 0.0461],
       ];
       /* opening mouth: follows the edge path (+3px overlap) */
       const cavityClip = `polygon(${[
@@ -457,7 +457,7 @@ function useEnvelopeScene() {
         cavityClip,
         /* bottom of the pocket's notch — anchors the cavity's contact
            shadow (strongest at center, lighter at the sides) */
-        notchY: oy + 0.5727 * h,
+        notchY: oy + 0.5688 * h,
         /* camera close-up anchor — tuned so the sealed frame shows the
            FULL Arabic welcome (with its ornaments) at the top, the seal
            large at mid-frame and the Welcome script complete below */
@@ -467,8 +467,8 @@ function useEnvelopeScene() {
            positioner, drawn exactly over the baked disc — centering
            never depends on the artwork file. Row and radius are the
            PNG measurements (canvas 270px, disc center 480,640). */
-        sealY: oy + 0.5 * h, // disc center row (640/1280)
-        sealD: (270 / 960) * w, // overlay canvas at artwork scale
+        sealY: oy + 0.4984 * h, // disc center row (638/1280)
+        sealD: (250 / 960) * w, // overlay canvas at artwork scale
       });
     }
     compute();
