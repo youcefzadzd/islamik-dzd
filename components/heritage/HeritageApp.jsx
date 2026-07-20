@@ -1949,6 +1949,15 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                 </p>
               </>
             )}
+            {/* بصمة المنصة */}
+            <a
+              href="https://www.dawati-dz.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`mt-8 inline-block text-[11px] tracking-[0.18em] text-[#DBD2B6]/45 transition-colors hover:text-[#EFD9B8] ${sansClass}`}
+            >
+              Dawati · www.dawati-dz.com
+            </a>
           </footer>
         </main>
 

@@ -1230,6 +1230,15 @@ export default function FloralRomanticApp({ weddingIdOverride, initialData }) {
             <p className={`mt-7 text-[0.7rem] uppercase tracking-[0.25em] text-ivory-light/50 ${sansClass}`}>
               {ui.madeWith} <span className="text-gold-light">♥</span> {ui.forOurDay}
             </p>
+            {/* بصمة المنصة */}
+            <a
+              href="https://www.dawati-dz.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`mt-5 inline-block text-[11px] tracking-[0.18em] text-ivory-light/40 transition-colors hover:text-gold-light ${sansClass}`}
+            >
+              Dawati · www.dawati-dz.com
+            </a>
           </footer>
           </div>
         </main>

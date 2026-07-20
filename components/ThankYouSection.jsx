@@ -71,6 +71,18 @@ export default function ThankYouSection({ data }) {
             </div>
           </Reveal>
         )}
+
+        {/* بصمة المنصة */}
+        <Reveal delay={0.6}>
+          <a
+            href="https://www.dawati-dz.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-10 inline-block font-body text-[11px] tracking-[0.18em] text-gold-dark/60 transition-colors hover:text-gold-dark"
+          >
+            Dawati · www.dawati-dz.com
+          </a>
+        </Reveal>
       </div>
     </section>
   );
