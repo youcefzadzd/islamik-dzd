@@ -721,11 +721,17 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                       const LIGHT = "rgba(255, 214, 165, 0.5)";
                       const SHADOW = "rgba(33, 8, 3, 0.55)";
                       const AMBIENT = "rgba(33, 8, 3, 0.3)";
+                      /* تشابك ملكي: الحرف الثاني تحت، الأول فوقه، ثم يُعاد
+                         رسم الثاني مقصوصًا بنافذة التقاطع العلوية فيمر
+                         فوق ساق الأول هناك — نسج فوق/تحت حقيقي */
                       const cipher = (fill) => (
                         <g fill={fill}>
-                          <text x="88" y="121" textAnchor="middle" fontSize="86">{initials.a}</text>
-                          <text x="66" y="134" textAnchor="middle" fontSize="30">&amp;</text>
-                          <text x="119" y="149" textAnchor="middle" fontSize="80">{initials.b}</text>
+                          <text x="121" y="150" textAnchor="middle" fontSize="84">{initials.b}</text>
+                          <text x="86" y="123" textAnchor="middle" fontSize="90">{initials.a}</text>
+                          <g clipPath="url(#h-mono-weave)">
+                            <text x="121" y="150" textAnchor="middle" fontSize="84">{initials.b}</text>
+                          </g>
+                          <text x="63" y="136" textAnchor="middle" fontSize="28">&amp;</text>
                         </g>
                       );
                       const ring = (stroke) => (
@@ -745,6 +751,10 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                               <stop offset="0.8" stopColor="#A8823F" />
                               <stop offset="1" stopColor="#E4CF9C" />
                             </linearGradient>
+                            {/* نافذة النسج: حيث يعود الحرف الثاني فوق الأول */}
+                            <clipPath id="h-mono-weave">
+                              <circle cx="107" cy="113" r="13" />
+                            </clipPath>
                           </defs>
                           {/* grounding blur so the relief sits IN the wax */}
                           <g transform="translate(0 3.2)" filter="url(#h-mono-soft)">
