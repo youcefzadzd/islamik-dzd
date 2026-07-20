@@ -341,11 +341,8 @@ export default function FloralRomanticRsvp({ data, sansClass = "" }) {
                 </svg>
                 {status === "submitting" ? rsvp.submittingText : rsvp.sealButtonText}
               </motion.button>
-              <p
-                className={`mt-3 text-center text-[12.5px] font-normal not-italic leading-[1.5] text-[rgba(67,51,58,0.65)] ${formFont}`}
-              >
-                {rsvp.sealButtonHint}
-              </p>
+              {/* لا تلميح «المسوا الختم» — زر الإرسال هنا حبة عنابية
+                  صريحة وليس ختم شمع؛ النص كان موروثًا من Islamic Royal */}
             </div>
 
             {formError && <p className="text-center text-sm text-[#A6452E]">{formError}</p>}
