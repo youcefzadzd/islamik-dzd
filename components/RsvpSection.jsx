@@ -6,8 +6,29 @@ import Reveal from "./Reveal";
 import SectionPanel from "./SectionPanel";
 import { getSupabase } from "@/lib/supabase";
 
+/* عنوان حقل واضح: خط أكبر بلون العنابي مع نجمة ذهبية — بدل
+   الأحرف الصغيرة المتباعدة التي كانت بالكاد تُقرأ */
+function FieldLabel({ children, lang }) {
+  return (
+    <label
+      className={`mb-2.5 flex items-center gap-2 text-lg text-burgundy-dark ${
+        lang === "ar" ? "font-arabicText" : "font-serif"
+      }`}
+    >
+      <span aria-hidden className="text-xs text-gold">
+        ✦
+      </span>
+      {children}
+    </label>
+  );
+}
+
+const inputClass =
+  "w-full rounded-xl border border-gold/40 bg-white/50 px-4 py-3 font-body text-lg text-ink shadow-[inset_0_1px_3px_rgb(90_70_40_/_0.06)] outline-none transition-colors placeholder:text-ink/35 focus:border-burgundy focus:bg-white/70";
+
 export default function RsvpSection({ data }) {
   const rsvp = data.rsvp;
+  const lang = data.lang;
   const companionsCfg =
     rsvp.companions || { enabled: false, maxAdults: 0, childrenAllowed: false, maxChildren: 0, t: {} };
   const ct = companionsCfg.t || {};
@@ -159,45 +180,61 @@ export default function RsvpSection({ data }) {
                 className="space-y-7"
               >
                 <div>
-                  <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
-                    {rsvp.nameLabel}
-                  </label>
+                  <FieldLabel lang={lang}>{rsvp.nameLabel}</FieldLabel>
                   <input
                     required
                     value={form.name}
                     onChange={(e) => update("name", e.target.value)}
-                    className="w-full border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
+                    className={inputClass}
                     placeholder={rsvp.namePlaceholder}
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
-                    {rsvp.attendingLabel}
-                  </label>
+                  <FieldLabel lang={lang}>{rsvp.attendingLabel}</FieldLabel>
+                  {/* بطاقتا اختيار واضحتان بعلامتي ✓ / ✕ — المختارة
+                      عنابية ممتلئة بإطار ذهبي */}
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    {["yes", "no"].map((val) => (
-                      <button
-                        type="button"
-                        key={val}
-                        onClick={() => update("attending", val)}
-                        className={`flex-1 rounded-full border px-4 py-3 font-body text-base transition-colors ${
-                          form.attending === val
-                            ? "border-burgundy bg-burgundy text-ivory-light"
-                            : "border-ink/20 text-ink/70"
-                        }`}
-                      >
-                        {val === "yes" ? rsvp.attendingYes : rsvp.attendingNo}
-                      </button>
-                    ))}
+                    {["yes", "no"].map((val) => {
+                      const selected = form.attending === val;
+                      return (
+                        <button
+                          type="button"
+                          key={val}
+                          onClick={() => update("attending", val)}
+                          className={`flex flex-1 items-center justify-center gap-2.5 rounded-xl border px-4 py-4 text-lg transition-all ${
+                            lang === "ar" ? "font-arabicText" : "font-serif"
+                          } ${
+                            selected
+                              ? "border-gold/70 bg-burgundy text-ivory-light shadow-card"
+                              : "border-gold/40 bg-white/40 text-ink/75 hover:border-gold hover:bg-white/60"
+                          }`}
+                        >
+                          <span
+                            aria-hidden
+                            className={`flex h-6 w-6 items-center justify-center rounded-full border text-sm ${
+                              selected
+                                ? "border-gold-light/70 text-gold-light"
+                                : "border-ink/25 text-ink/40"
+                            }`}
+                          >
+                            {val === "yes" ? "✓" : "✕"}
+                          </span>
+                          {/* بعض النصوص المحفوظة تبدأ بعلامة ✓/✗ — تُحذف
+                              عرضًا لأن البطاقة تحمل أيقونتها الخاصة */}
+                          {(val === "yes" ? rsvp.attendingYes : rsvp.attendingNo).replace(
+                            /^[✓✔✗✘✕xX×]\s*/,
+                            ""
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {form.attending === "yes" && companionsCfg.enabled && (
                   <div>
-                    <label className="mb-3 block text-xs uppercase tracking-widest text-gold-dark">
-                      {ct.title}
-                    </label>
+                    <FieldLabel lang={lang}>{ct.title}</FieldLabel>
 
                     <AnimatePresence initial={false}>
                       {companions.map((c, i) => (
@@ -206,7 +243,7 @@ export default function RsvpSection({ data }) {
                           initial={{ opacity: 0, y: -8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -8 }}
-                          className="mb-3 rounded-xl border border-gold/40 bg-white/40 px-4 py-3"
+                          className="mb-3 rounded-xl border border-gold/40 bg-white/50 px-4 py-3"
                         >
                           <div className="flex items-center justify-between gap-3">
                             <span className="rounded-full border border-gold/50 px-3 py-0.5 text-xs uppercase tracking-wider text-gold-dark">
@@ -223,7 +260,7 @@ export default function RsvpSection({ data }) {
                           <input
                             value={c.name}
                             onChange={(e) => updateCompanion(i, e.target.value)}
-                            className="mt-2 w-full border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
+                            className="mt-2.5 w-full rounded-lg border border-gold/30 bg-white/60 px-3 py-2 font-body text-lg text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-burgundy"
                             placeholder={ct.nameLabel}
                             aria-label={ct.nameLabel}
                           />
@@ -262,40 +299,35 @@ export default function RsvpSection({ data }) {
                 )}
 
                 <div>
-                  <label className="mb-2 block text-xs uppercase tracking-widest text-gold-dark">
-                    {rsvp.messageLabel}
-                  </label>
+                  <FieldLabel lang={lang}>{rsvp.messageLabel}</FieldLabel>
                   <textarea
                     value={form.message}
                     onChange={(e) => update("message", e.target.value)}
                     rows={3}
-                    className="w-full resize-none border-b border-gold/40 bg-transparent py-2 font-body text-lg outline-none focus:border-burgundy"
+                    className={`${inputClass} resize-none`}
                     placeholder={rsvp.messagePlaceholder}
                   />
                 </div>
 
-                {/* burgundy wax-seal submit button */}
-                <div className="flex flex-col items-center pt-4">
+                {/* زر إرسال صريح بهوية أزرار القالب، يحمل ختمًا مصغرًا */}
+                <div className="flex flex-col items-center pt-2">
                   <motion.button
                     type="submit"
                     disabled={status === "submitting"}
-                    whileHover={{ scale: 1.05, rotate: [0, -2, 2, 0] }}
-                    whileTap={{ scale: 0.9 }}
-                    className="relative w-36 outline-none disabled:opacity-70"
-                    aria-label={rsvp.sealButtonText}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className={`inline-flex w-full items-center justify-center gap-3 rounded-full bg-burgundy px-8 py-4 text-lg text-ivory-light shadow-card transition-colors hover:bg-burgundy-dark disabled:opacity-70 sm:w-auto sm:px-12 ${
+                      lang === "ar" ? "font-arabicText" : "font-serif"
+                    }`}
                   >
-                    <img src={data.assets.waxSeal} alt="" className="w-full select-none" draggable={false} />
-                    <span
-                      className="absolute inset-0 flex items-center justify-center pb-[6%] font-monogram text-3xl text-gold-light"
-                      style={{
-                        textShadow:
-                          "0 1px 1px rgb(var(--color-burgundy-dark)), 0 -1px 1px rgb(var(--color-burgundy-light) / 0.6)",
-                      }}
-                    >
-                      {status === "submitting" ? "…" : rsvp.sealButtonText}
-                    </span>
+                    <img
+                      src={data.assets.waxSeal}
+                      alt=""
+                      className="h-7 w-7 select-none"
+                      draggable={false}
+                    />
+                    {status === "submitting" ? "…" : rsvp.sealButtonText}
                   </motion.button>
-                  <p className="mt-3 font-body text-sm italic text-ink/60">{rsvp.sealButtonHint}</p>
                 </div>
 
                 {formError && <p className="text-center text-sm text-burgundy">{formError}</p>}
