@@ -665,21 +665,14 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
               }}
             />
 
-            {/* no seal here anymore — the wax stays glued to the pocket
-                (physical model: the flap tears away from UNDER the wax);
-                the static overlay lives outside this rotating layer */}
-          </motion.div>
-        )}
-
-        {/* wax seal — STATIC overlay above flap and pocket alike: closed
-            it completes the sealed look over the flap tip; while opening
-            the flap slides out from under it and the pocket's baked disc
-            (same pixels, same spot) grounds it — one seal, always.
-              wax-seal-positioner ← centering ONLY
-                └── wax-seal-animator ← seal-sized surface
-                    ├── heritage2-seal.png (sub-pixel-centered disc)
-                    └── dynamic monogram (flex-centered) */}
-        {scene && (
+            {/* wax seal — rides the flap (baked disc in the flap piece
+                sits directly behind this overlay):
+                  wax-seal-positioner ← centering ONLY
+                    └── wax-seal-animator ← seal-sized surface, carries
+                        the face filter so it dims with the flap
+                        ├── heritage2-seal.png (sub-pixel-centered disc)
+                        └── dynamic monogram (flex-centered) */}
+              {scene && (
                 <div
                   aria-hidden
                   className="wax-seal-positioner pointer-events-none absolute left-0 right-0 flex items-center justify-center"
@@ -689,13 +682,15 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                     backfaceVisibility: "hidden",
                   }}
                 >
-                  <div
+                  <motion.div
                     className="wax-seal-animator relative flex items-center justify-center"
                     style={{
                       width: scene.sealD,
                       height: scene.sealD,
+                      filter: faceFilter,
                       backfaceVisibility: "hidden",
                       transform: "translateZ(0)",
+                      willChange: "filter",
                     }}
                   >
                     <img
@@ -761,8 +756,10 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                   </svg>
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 </div>
+              )}
+          </motion.div>
         )}
       </motion.div>
 
