@@ -1262,7 +1262,12 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
     const latin = (main, alt) => (/[A-Za-z]/.test(main || "") ? main : alt || main || "");
     const a = latin(data.couple.groomName, data.couple.groomNameAr).trim();
     const b = latin(data.couple.brideName, data.couple.brideNameAr).trim();
-    if (!a || !b) return null;
+    // أحرف افتراضية من أسماء العرض القياسية — الطابع لا يظهر فارغًا أبدًا
+    if (!a || !b)
+      return {
+        a: HERITAGE_DEFAULTS.fr.groomName[0].toUpperCase(),
+        b: HERITAGE_DEFAULTS.fr.brideName[0].toUpperCase(),
+      };
     return { a: a[0].toUpperCase(), b: b[0].toUpperCase() };
   }, [data]);
   const reduceMotion = useReducedMotion();
