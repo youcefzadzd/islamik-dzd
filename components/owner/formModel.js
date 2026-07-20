@@ -59,14 +59,24 @@ export function rowToForm(w = {}) {
     weddingTime: w.wedding_time || "",
     rsvpDeadline: w.rsvp_deadline || "",
     // RSVP companion settings (max_companions = legacy combined limit)
-    allowCompanions: rsvpSettings.allow_companions === true,
+    // العرس الذي لم يُضبط قط يبدأ على الافتراضي الجديد: مرافقون مفعّلون (3+2)
+    allowCompanions: (rsvpSettings.allow_companions ?? true) === true,
     maxAdultCompanions: String(
-      rsvpSettings.max_adult_companions ?? rsvpSettings.max_companions ?? 0
+      rsvpSettings.max_adult_companions ??
+        rsvpSettings.max_companions ??
+        (rsvpSettings.allow_companions === undefined ? 3 : 0)
     ),
-    childrenAllowed: rsvpSettings.children_allowed === true,
+    childrenAllowed:
+      rsvpSettings.children_allowed === undefined
+        ? rsvpSettings.allow_companions === undefined
+        : rsvpSettings.children_allowed === true,
     maxChildren: String(
       rsvpSettings.max_children ??
-        (rsvpSettings.children_allowed === true ? rsvpSettings.max_companions ?? 0 : 0)
+        (rsvpSettings.children_allowed === true
+          ? rsvpSettings.max_companions ?? 0
+          : rsvpSettings.allow_companions === undefined
+            ? 2
+            : 0)
     ),
     // step 2 — venue
     locationName: w.location_name || "",

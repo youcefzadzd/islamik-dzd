@@ -66,6 +66,10 @@
   "rsvp": {
     "enabled": true,
     "maxGuests": 6,
+    "allowCompanions": true,
+    "maxAdultCompanions": 3,
+    "childrenAllowed": true,
+    "maxChildren": 2,
     "sendToEmail": ""
   },
 
