@@ -341,8 +341,14 @@ export default function FloralRomanticRsvp({ data, sansClass = "" }) {
                 </svg>
                 {status === "submitting" ? rsvp.submittingText : rsvp.sealButtonText}
               </motion.button>
-              {/* لا تلميح «المسوا الختم» — زر الإرسال هنا حبة عنابية
-                  صريحة وليس ختم شمع؛ النص كان موروثًا من Islamic Royal */}
+              {/* عبارة توضّح طريقة التأكيد — بالعربية والفرنسية */}
+              <p
+                className={`mt-3 text-center text-[12.5px] font-normal leading-[1.5] text-[rgba(67,51,58,0.65)] ${formFont}`}
+              >
+                {data.lang === "ar"
+                  ? "اضغطوا على الزر لإرسال تأكيد حضوركم"
+                  : "Appuyez sur le bouton pour envoyer votre confirmation"}
+              </p>
             </div>
 
             {formError && <p className="text-center text-sm text-[#A6452E]">{formError}</p>}

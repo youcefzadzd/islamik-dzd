@@ -335,8 +335,14 @@ export default function HeritageRsvp({ data, sansClass = "" }) {
                 </svg>
                 {status === "submitting" ? rsvp.submittingText : rsvp.sealButtonText}
               </motion.button>
-              {/* لا تلميح «المسوا الختم» هنا — زر Heritage حبة خضراء
-                  صريحة وليس ختم شمع؛ النص كان موروثًا من Islamic Royal */}
+              {/* عبارة توضّح طريقة التأكيد — بالعربية والفرنسية */}
+              <p
+                className={`mt-3 text-center text-[12.5px] font-normal leading-[1.5] text-[rgba(52,55,47,0.65)] ${formFont}`}
+              >
+                {data.lang === "ar"
+                  ? "اضغطوا على الزر لإرسال تأكيد حضوركم"
+                  : "Appuyez sur le bouton pour envoyer votre confirmation"}
+              </p>
             </div>
 
             {formError && <p className="text-center text-sm text-[#A6452E]">{formError}</p>}
