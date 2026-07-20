@@ -123,8 +123,31 @@ export function PricingSection({ lang, t }) {
         })}
       </div>
 
+      {/* ضمان الاسترجاع — كاسر حاجز الثقة الأول في السوق الجزائري */}
+      <Reveal delay={0.1}>
+        <div className="mx-auto mt-10 flex max-w-2xl items-center gap-4 rounded-2xl border border-gold/40 bg-gold/[0.07] px-6 py-5">
+          <span
+            aria-hidden
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold-dark"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2 4 5.5v5c0 5 3.4 9.3 8 11.5 4.6-2.2 8-6.5 8-11.5v-5L12 2Z" />
+              <path d="m8.5 12 2.3 2.3L15.5 9.6" />
+            </svg>
+          </span>
+          <div className="text-start">
+            <p className={`text-base font-semibold text-burgundy ${arabic ? "font-arabicText" : "font-serif"}`}>
+              {t.pricing.guaranteeTitle}
+            </p>
+            <p className={`mt-1 text-sm leading-relaxed text-ink/70 ${arabic ? "font-arabicText" : "font-body"}`}>
+              {t.pricing.guaranteeText}
+            </p>
+          </div>
+        </div>
+      </Reveal>
+
       <p
-        className={`mt-8 text-center text-xs text-ink/45 ${
+        className={`mt-6 text-center text-xs text-ink/45 ${
           arabic ? "font-arabicText" : "font-body"
         }`}
       >

@@ -543,6 +543,17 @@ export default function OrderForm() {
                       {state === "sending" ? o.sending : o.submit}
                     </button>
                   </div>
+
+                  {/* طمأنة الضمان عند نقطة القرار */}
+                  <p
+                    className={`mx-auto mt-4 flex max-w-xl items-center justify-center gap-1.5 text-center text-xs text-ink/55 ${font}`}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="shrink-0 text-gold-dark">
+                      <path d="M12 2 4 5.5v5c0 5 3.4 9.3 8 11.5 4.6-2.2 8-6.5 8-11.5v-5L12 2Z" />
+                      <path d="m8.5 12 2.3 2.3L15.5 9.6" />
+                    </svg>
+                    {t.pricing.guaranteeTitle} — {t.pricing.guaranteeText}
+                  </p>
                 </motion.section>
               ) : null}
             </AnimatePresence>

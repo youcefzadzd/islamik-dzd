@@ -134,6 +134,9 @@ export const COPY = {
       popular: "الأكثر اختيارًا",
       choose: "اطلب هذه الباقة",
       currencyNote: "الأسعار بالدينار الجزائري",
+      guaranteeTitle: "ضمان الاسترجاع الكامل",
+      guaranteeText:
+        "ما عجبتكش الدعوة قبل مشاركتها مع الضيوف؟ نرجعولك دراهمك كاملة — بلا أسئلة وبلا شروط.",
     },
     testimonials: {
       kicker: "قالوا عنا",
@@ -336,6 +339,9 @@ export const COPY = {
       popular: "Le plus choisi",
       choose: "Commander ce pack",
       currencyNote: "Prix en dinars algériens",
+      guaranteeTitle: "Satisfait ou remboursé",
+      guaranteeText:
+        "L'invitation ne vous plaît pas avant de la partager avec vos invités ? Remboursement intégral — sans questions, sans conditions.",
     },
     testimonials: {
       kicker: "Ils nous ont fait confiance",
