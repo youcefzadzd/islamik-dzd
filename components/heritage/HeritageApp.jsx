@@ -1948,7 +1948,7 @@ export default function HeritageApp({ weddingIdOverride, initialData }) {
                 {/* «And» بخط سكريبتي متمايز بين الاسمين */}
                 <p className={`mt-6 text-sm tracking-widest text-[#DBD2B6]/55 ${sansClass}`} dir="ltr">
                   #{hashtag.a}
-                  <span className="mx-0.5 text-[1.5em] leading-none tracking-normal text-[#EFD9B8]/85 [font-family:var(--font-heritage-script)]">
+                  <span className="mx-2.5 inline-block text-[1.5em] leading-none tracking-normal text-[#EFD9B8]/85 [font-family:var(--font-heritage-script)]">
                     And
                   </span>
                   {hashtag.b}

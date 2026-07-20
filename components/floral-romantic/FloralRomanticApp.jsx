@@ -1229,7 +1229,7 @@ export default function FloralRomanticApp({ weddingIdOverride, initialData }) {
               /* «And» بخط سكريبتي ذهبي متمايز بين الاسمين */
               <p className={`mt-5 text-sm uppercase tracking-[0.3em] text-gold-light ${sansClass}`} dir="ltr">
                 #{hashtag.a}
-                <span className="mx-0.5 normal-case tracking-normal text-[1.5em] leading-none text-ivory-light/90 [font-family:var(--font-floral-script)]">
+                <span className="mx-2.5 inline-block normal-case tracking-normal text-[1.5em] leading-none text-ivory-light/90 [font-family:var(--font-floral-script)]">
                   And
                 </span>
                 {hashtag.b}
