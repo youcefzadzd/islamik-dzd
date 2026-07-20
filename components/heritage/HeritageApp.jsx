@@ -665,26 +665,21 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
               }}
             />
 
-            {/* wax seal — its own SMALL composited layer, sibling of the
-                flap face (rotates with the same ancestor):
+            {/* no seal here anymore — the wax stays glued to the pocket
+                (physical model: the flap tears away from UNDER the wax);
+                the static overlay lives outside this rotating layer */}
+          </motion.div>
+        )}
 
-                  Top Flap (rotates — ancestor transform)
-                    ├── flap face artwork (animated filter, leaf node)
-                    └── wax-seal-positioner ← centering ONLY: absolute
-                        left-0 right-0 + flex justify-center, no transforms
-                        └── wax-seal-animator ← animation layer: carries
-                            the same face filter (dims with the flap) on
-                            a seal-sized surface + translateZ(0), so the
-                            per-frame re-raster is tiny and stable — the
-                            full-viewport version of this caused visible
-                            flicker/shimmer during the opening
-                            ├── heritage-seal.png (sub-pixel-centered disc)
-                            └── dynamic monogram (flex-centered)
-
-                The baked disc in the flap artwork sits directly behind
-                this overlay (≤0.5px apart) and its baked drop shadow
-                still grounds it. */}
-              {scene && (
+        {/* wax seal — STATIC overlay above flap and pocket alike: closed
+            it completes the sealed look over the flap tip; while opening
+            the flap slides out from under it and the pocket's baked disc
+            (same pixels, same spot) grounds it — one seal, always.
+              wax-seal-positioner ← centering ONLY
+                └── wax-seal-animator ← seal-sized surface
+                    ├── heritage2-seal.png (sub-pixel-centered disc)
+                    └── dynamic monogram (flex-centered) */}
+        {scene && (
                 <div
                   aria-hidden
                   className="wax-seal-positioner pointer-events-none absolute left-0 right-0 flex items-center justify-center"
@@ -694,15 +689,13 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                     backfaceVisibility: "hidden",
                   }}
                 >
-                  <motion.div
+                  <div
                     className="wax-seal-animator relative flex items-center justify-center"
                     style={{
                       width: scene.sealD,
                       height: scene.sealD,
-                      filter: faceFilter,
                       backfaceVisibility: "hidden",
                       transform: "translateZ(0)",
-                      willChange: "filter",
                     }}
                   >
                     <img
@@ -768,13 +761,8 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                   </svg>
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 </div>
-              )}
-            {/* no back face: past 90° the flap simply disappears behind the
-                envelope's top edge — nothing translucent ever floats over
-                the envelope */}
-          </motion.div>
         )}
       </motion.div>
 
