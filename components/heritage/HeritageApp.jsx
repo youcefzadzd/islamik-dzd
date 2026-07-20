@@ -711,14 +711,15 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                       >
                   <svg viewBox="0 0 200 200" width="100%" height="100%" style={{ display: "block" }}>
                     {(() => {
-                      /* الفكرة 3 وحدها: نقش شمع بعمق قالب حقيقي — لا ذهب
-                         ولا تشابك. الوجه بلون الشمع الفاتح قليلًا، احتكاك
-                         غائر حاد تحت الضربات، ضوء علوي دافئ أوضح، وأخدود
-                         هضبة دائري محفور حول الحروف كأثر قالب نحاسي */
+                      /* الفكرة 4 وحدها: إطار الختم الرسمي — حلقة مزدوجة
+                         (سميكة + شعرية) بنقاط دقيقة بينهما على القوس
+                         العلوي والجانبين، وغصنا غار يحتضنان الحروف من
+                         الأسفل. النقش نفسه بقيمه الأصلية (لا ذهب، لا
+                         تشابك، لا تعميق) */
                       const FACE = "rgb(156, 80, 56)"; // wax, one breath lighter
-                      const LIGHT = "rgba(255, 208, 176, 0.5)";
-                      const SHADOW = "rgba(26, 6, 2, 0.62)";
-                      const AMBIENT = "rgba(30, 7, 3, 0.35)";
+                      const LIGHT = "rgba(255, 206, 176, 0.42)";
+                      const SHADOW = "rgba(33, 8, 3, 0.5)";
+                      const AMBIENT = "rgba(33, 8, 3, 0.28)";
                       const cipher = (fill) => (
                         <g fill={fill}>
                           <text x="88" y="121" textAnchor="middle" fontSize="86">{initials.a}</text>
@@ -726,32 +727,54 @@ function HeritageIntro({ ui, opened, onOpen, onGone, initials }) {
                           <text x="119" y="149" textAnchor="middle" fontSize="80">{initials.b}</text>
                         </g>
                       );
-                      const ring = (stroke) => (
-                        <circle cx="100" cy="101" r="57" fill="none" stroke={stroke} strokeWidth="1.5" />
+                      /* الإطار الرسمي: حلقتان + نقاط + غصنا غار */
+                      const ring = (color) => (
+                        <g>
+                          <circle cx="100" cy="101" r="64" fill="none" stroke={color} strokeWidth="1.8" />
+                          <circle cx="100" cy="101" r="55" fill="none" stroke={color} strokeWidth="0.8" />
+                          {Array.from({ length: 20 }, (_, k) => {
+                            const ang = ((-160 + k * (320 / 19)) * Math.PI) / 180;
+                            return (
+                              <circle
+                                key={k}
+                                cx={100 + 59.5 * Math.sin(ang)}
+                                cy={101 - 59.5 * Math.cos(ang)}
+                                r="1"
+                                fill={color}
+                              />
+                            );
+                          })}
+                          <g fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round">
+                            <path d="M52 138 Q66 158 97 163" />
+                            <path d="M148 138 Q134 158 103 163" />
+                          </g>
+                          <g fill={color}>
+                            <path d="M56 141 q-7 -3 -9 -9 q8 1 9 9 Z" />
+                            <path d="M66 150 q-8 -2 -11 -8 q9 0 11 8 Z" />
+                            <path d="M78 157 q-8 -1 -12 -7 q9 -1 12 7 Z" />
+                            <path d="M91 161 q-8 0 -13 -5 q9 -2 13 5 Z" />
+                            <path d="M144 141 q7 -3 9 -9 q-8 1 -9 9 Z" />
+                            <path d="M134 150 q8 -2 11 -8 q-9 0 -11 8 Z" />
+                            <path d="M122 157 q8 -1 12 -7 q-9 -1 -12 7 Z" />
+                            <path d="M109 161 q8 0 13 -5 q-9 -2 -13 5 Z" />
+                          </g>
+                        </g>
                       );
                       return (
                         <g fontFamily="var(--font-body), 'Cormorant Garamond', 'Amiri', serif" fontWeight="600">
                           <defs>
                             <filter id="h-mono-soft" x="-20%" y="-20%" width="140%" height="140%">
-                              <feGaussianBlur stdDeviation="2" />
+                              <feGaussianBlur stdDeviation="1.4" />
                             </filter>
                           </defs>
-                          {/* أخدود الهضبة المحفور (عكس البروز: ظل أعلى، ضوء
-                              أسفل، قاع أغمق) — أثر حافة القالب النحاسي */}
-                          <g fill="none">
-                            <circle cx="100" cy="99.4" r="70" stroke="rgba(26, 6, 2, 0.5)" strokeWidth="2" />
-                            <circle cx="100" cy="102" r="70" stroke="rgba(255, 208, 176, 0.4)" strokeWidth="1.3" />
-                            <circle cx="100" cy="100.6" r="70" stroke="rgba(118, 52, 34, 0.85)" strokeWidth="1.1" />
-                          </g>
-                          {/* grounding blur so the relief sits DEEP in the wax */}
-                          <g transform="translate(0 4)" filter="url(#h-mono-soft)">
+                          {/* grounding blur so the relief sits IN the wax */}
+                          <g transform="translate(0 3.2)" filter="url(#h-mono-soft)">
                             {ring(AMBIENT)}
                             {cipher(AMBIENT)}
                           </g>
-                          {/* raised relief: deeper occlusion below, crisper
-                              warm light above, face */}
-                          <g transform="translate(0 2.6)">{ring(SHADOW)}{cipher(SHADOW)}</g>
-                          <g transform="translate(0 -1.8)">{ring(LIGHT)}{cipher(LIGHT)}</g>
+                          {/* raised relief: occlusion below, light above, face */}
+                          <g transform="translate(0 2)">{ring(SHADOW)}{cipher(SHADOW)}</g>
+                          <g transform="translate(0 -1.5)">{ring(LIGHT)}{cipher(LIGHT)}</g>
                           {ring(FACE)}
                           {cipher(FACE)}
                         </g>
