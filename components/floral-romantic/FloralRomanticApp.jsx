@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { Cormorant_Garamond, Great_Vibes, Montserrat } from "next/font/google";
 import { getData } from "@/lib/i18n";
 import Reveal from "../Reveal";
@@ -253,6 +253,151 @@ function downloadIcs(data) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+/* محطة برنامج حية: تشتعل عند وصول تقدم التمرير إليها — البطاقة
+   تسطع وحدها الذهبي، رقاقة الوقت تتذهّب، والسطر يرتفع قليلًا */
+function FloralProgramRow({ step, lang, progress, center, span, cardRef }) {
+  const t = useTransform(progress, [center - span, center + 0.02], [0, 1]);
+  const bg = useTransform(t, [0, 1], ["rgba(255, 255, 255, 0.06)", "rgba(255, 255, 255, 0.14)"]);
+  const borderColor = useTransform(
+    t,
+    [0, 1],
+    ["rgba(255, 255, 255, 0.1)", "rgba(226, 190, 138, 0.6)"]
+  );
+  const lift = useTransform(t, [0, 1], [0, -3]);
+  const opacity = useTransform(t, [0, 1], [0.78, 1]);
+  const chipBg = useTransform(t, [0, 1], ["#F6EFE3", "#EBD3A4"]);
+  return (
+    <motion.div
+      ref={cardRef}
+      style={{ y: lift, opacity, backgroundColor: bg, borderColor }}
+      className="flex items-center gap-5 rounded-2xl border px-5 py-4 backdrop-blur-[2px]"
+    >
+      <motion.span
+        style={{ backgroundColor: chipBg }}
+        className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold tracking-wide text-burgundy ${sansClass}`}
+        dir="ltr"
+      >
+        {step.time}
+      </motion.span>
+      <div className="text-start">
+        <p className={`text-lg text-ivory-light ${serifClass(lang)}`}>{step.title}</p>
+        {step.description && (
+          <p className={`mt-0.5 text-sm leading-relaxed text-ivory-light/70 ${serifClass(lang)}`}>
+            {step.description}
+          </p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+/* مسار البرنامج المتحرك: خيط ذهبي يمتلئ مع التمرير وقلب متوهج
+   يسافر بين المحطات نزولًا وصعودًا (زنبرك ناعم) */
+function FloralProgramList({ program, lang }) {
+  const listRef = useRef(null);
+  const cardRefs = useRef([]);
+  const [geo, setGeo] = useState(null); // {x, top, height, fracs[]}
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ["start 72%", "end 42%"],
+  });
+  const progress = useSpring(scrollYProgress, { stiffness: 70, damping: 22, mass: 0.4 });
+  const heartTop = useTransform(progress, (v) => (geo ? geo.top + v * geo.height : 0));
+
+  useEffect(() => {
+    const measure = () => {
+      const c = listRef.current;
+      if (!c || !c.offsetHeight) return;
+      const centers = cardRefs.current.slice(0, program.length).map((el) => {
+        if (!el) return null;
+        let top = 0;
+        let n = el;
+        while (n && n !== c) {
+          top += n.offsetTop;
+          n = n.offsetParent;
+        }
+        return top + el.offsetHeight / 2;
+      });
+      if (centers.some((p) => p === null) || centers.length < 2) return;
+      const top = centers[0];
+      const bottom = centers[centers.length - 1];
+      setGeo({
+        top,
+        height: bottom - top,
+        fracs: centers.map((y) => (y - top) / (bottom - top)),
+      });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [program.length]);
+
+  const span = 0.6 / Math.max(program.length, 1);
+
+  return (
+    <div ref={listRef} className="relative mx-auto mt-12 max-w-lg ps-7">
+      {geo && (
+        <>
+          {/* الخيط: مسار باهت + امتلاء ذهبي يتبع التمرير */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute start-2 w-px bg-white/15"
+            style={{ top: geo.top, height: geo.height }}
+          />
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute start-2 w-[2px]"
+            style={{
+              top: geo.top,
+              height: geo.height,
+              transformOrigin: "top",
+              scaleY: progress,
+              background:
+                "linear-gradient(180deg, rgba(235, 211, 164, 0.95), rgba(235, 211, 164, 0.45))",
+            }}
+          />
+          {/* القلب المتوهج المسافر — إزاحة التمركز تتبع اتجاه اللغة */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute z-10"
+            style={{
+              insetInlineStart: "0.5rem",
+              top: heartTop,
+              x: lang === "ar" ? "46%" : "-46%",
+              y: "-50%",
+            }}
+          >
+            <span
+              className="block text-[13px] leading-none"
+              style={{
+                color: "#F6EFE3",
+                textShadow:
+                  "0 0 10px rgba(246, 239, 227, 0.9), 0 0 24px rgba(235, 211, 164, 0.55)",
+              }}
+            >
+              ♥
+            </span>
+          </motion.div>
+        </>
+      )}
+      <div className="flex flex-col gap-5">
+        {program.map((step, i) => (
+          <Reveal key={i} delay={i * 0.08}>
+            <FloralProgramRow
+              step={step}
+              lang={lang}
+              progress={progress}
+              center={geo ? geo.fracs[i] : (i + 0.5) / program.length}
+              span={span}
+              cardRef={(el) => (cardRefs.current[i] = el)}
+            />
+          </Reveal>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function hashtagOf(data) {
@@ -892,28 +1037,8 @@ export default function FloralRomanticApp({ weddingIdOverride, initialData }) {
               <Reveal>
                 <SectionHeading title={data.schedule.heading} eyebrow={ui.programSub} lang={lang} tone="light" />
               </Reveal>
-              <div className="mx-auto mt-12 flex max-w-lg flex-col gap-5">
-                {program.map((step, i) => (
-                  <Reveal key={i} delay={i * 0.08}>
-                    <div className="flex items-center gap-5 rounded-2xl border border-white/10 bg-white/[0.06] px-5 py-4 backdrop-blur-[2px]">
-                      <span
-                        className={`shrink-0 rounded-full bg-ivory px-4 py-1.5 text-sm font-semibold tracking-wide text-burgundy ${sansClass}`}
-                        dir="ltr"
-                      >
-                        {step.time}
-                      </span>
-                      <div className="text-start">
-                        <p className={`text-lg text-ivory-light ${serifClass(lang)}`}>{step.title}</p>
-                        {step.description && (
-                          <p className={`mt-0.5 text-sm leading-relaxed text-ivory-light/70 ${serifClass(lang)}`}>
-                            {step.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </Reveal>
-                ))}
-              </div>
+              {/* مسار متحرك: خيط يمتلئ، قلب يسافر، وبطاقات تشتعل تباعًا */}
+              <FloralProgramList program={program} lang={lang} />
             </section>
           )}
 
