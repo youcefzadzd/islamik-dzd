@@ -398,10 +398,10 @@ function DovesOrnament({ className = "" }) {
    under the flap. transform/opacity only → 60fps on phones. */
 /* الظرف الأصلي (اختيار المستخدم النهائي): قطعتا الرسم الأولي
    بنقش الدانتيل والزخارف الذهبية — نفس الفتح والمدة والظلال الحالية */
-/* اختيار المستخدم (new-2): الأقحوان الكبير المريمي — درزا الغطاء
-   من (0,59) و(960,59) إلى الرأس (480,732) المخفي خلف الشمع
-   (477,638) نق~118؛ الجيب مركّب: جسد المغلقة + فم Higgsfield
-   المفتوح (ببطاقة داخلية) داخل المثلث */
+/* اختيار المستخدم (النقطة 7): ظرف Higgsfield المتناظر المريمي —
+   درزاه من (0,51) و(960,49) إلى الرأس (480,733)، الغطاء مثلث صرف
+   والختم يركب معه عبر القرص العائم، والجيب صورة الظرف المفتوح
+   المولّدة كاملة */
 const ENVELOPE_TOP = "/assets/templates/heritage2-top.png";
 const ENVELOPE_BOTTOM = "/assets/templates/heritage2-bottom.png";
 const IMG_W = 960;
@@ -439,11 +439,11 @@ function useEnvelopeScene() {
          diagonal. MEASURED from the pocket PNG's alpha channel (column
          scan), so it hugs the real artwork edge exactly */
       const EDGE = [
-        [0, 0.0461],
-        [0.25, 0.309],
-        [0.5, 0.5719],
-        [0.75, 0.309],
-        [1, 0.0461],
+        [0, 0.0398],
+        [0.25, 0.3062],
+        [0.5, 0.5727],
+        [0.75, 0.3055],
+        [1, 0.0383],
       ];
       /* opening mouth: follows the edge path (+3px overlap) */
       const cavityClip = `polygon(${[
@@ -456,7 +456,7 @@ function useEnvelopeScene() {
         cavityClip,
         /* bottom of the pocket's notch — anchors the cavity's contact
            shadow (strongest at center, lighter at the sides) */
-        notchY: oy + 0.5719 * h,
+        notchY: oy + 0.5727 * h,
         /* camera close-up anchor — tuned so the sealed frame shows the
            FULL Arabic welcome (with its ornaments) at the top, the seal
            large at mid-frame and the Welcome script complete below */
@@ -466,8 +466,8 @@ function useEnvelopeScene() {
            positioner, drawn exactly over the baked disc — centering
            never depends on the artwork file. Row and radius are the
            PNG measurements (canvas 270px, disc center 480,640). */
-        sealY: oy + 0.4984 * h, // disc center row (638/1280)
-        sealD: (250 / 960) * w, // overlay canvas at artwork scale
+        sealY: oy + 0.5 * h, // disc center row (640/1280)
+        sealD: (270 / 960) * w, // overlay canvas at artwork scale
       });
     }
     compute();
