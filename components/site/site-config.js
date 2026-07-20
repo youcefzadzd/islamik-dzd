@@ -38,7 +38,7 @@ export const CATALOG = [
     // ختم الشمع يُركّب فوق صورة الظرف (الصورة نفسها فيها تجويف فارغ)
     // top/width نسب مئوية من بطاقة المعاينة — عدّلها لضبط الموضع والحجم.
     // الختم الذهبي بالبسملة — نفس ختم القالب الحقيقي (نسخة مضغوطة).
-    seal: { src: "/assets/site/islamic-seal.webp", top: "52%", width: "52%" },
+    seal: { src: "/assets/site/islamic-seal.webp", top: "52%", width: "42%" },
     video: "/assets/templates/demo-hero.mp4",
     description: {
       ar: "ظرف مختوم بالشمع، بجعتان متحركتان، ورق حرفي فاخر بالذهبي والبورجوندي — ثنائي اللغة مع RSVP.",
