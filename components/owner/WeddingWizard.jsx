@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EMPTY_PROGRAM_STEP, INVITATION_FIELDS, formToBody } from "./formModel";
 import { ownerHeaders } from "./shared";
 import { TEMPLATES, getTemplate, DEFAULT_TEMPLATE_ID } from "@/lib/templates";
@@ -540,7 +540,31 @@ function StepProgram({ f, setF }) {
   );
 }
 
+/* كلمة السر الافتراضية للعميل: اسم العريس (حروف لاتينية منظّفة)
+   + تاريخ العرس يوم-شهر-سنة — مثال: amine14082026 */
+function suggestedPassword(f) {
+  const name = (f.groomName || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+  const d = f.weddingDate || ""; // YYYY-MM-DD
+  if (!name || d.length !== 10) return "";
+  return `${name}${d.slice(8, 10)}${d.slice(5, 7)}${d.slice(0, 4)}`;
+}
+
 function StepDesign({ f, setF, set, requirePassword }) {
+  const defaultPassword = useMemo(() => suggestedPassword(f), [f.groomName, f.weddingDate]);
+
+  /* عرس جديد: تُعبّأ تلقائيًا إن كانت الخانة فارغة — في وضع التعديل
+     لا نملأ شيئًا حتى لا تتغير كلمة سر العميل دون قصد */
+  useEffect(() => {
+    if (requirePassword && defaultPassword) {
+      setF((p) => (p.dashboardPassword ? p : { ...p, dashboardPassword: defaultPassword }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultPassword, requirePassword]);
+
   return (
     <div className="space-y-5">
       {/* اختيار القالب انتقل إلى الخطوة الأولى — هنا يبقى تذكير فقط */}
@@ -606,7 +630,26 @@ function StepDesign({ f, setF, set, requirePassword }) {
           label={requirePassword ? "Mot de passe du client *" : "Nouveau mot de passe client (vide = inchangé)"}
           full
         >
-          <input type="text" className={inputCls} value={f.dashboardPassword} onChange={set("dashboardPassword")} />
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              className={`${inputCls} flex-1`}
+              value={f.dashboardPassword}
+              onChange={set("dashboardPassword")}
+            />
+            <button
+              type="button"
+              disabled={!defaultPassword}
+              onClick={() => setF((p) => ({ ...p, dashboardPassword: defaultPassword }))}
+              className="rounded-lg border border-gold/50 px-3 py-2 text-sm text-gold-dark transition-colors hover:bg-ivory-dark disabled:opacity-40"
+            >
+              🎲 Générer
+            </button>
+          </div>
+          <p className="mt-1 text-xs text-ink/50">
+            Générée automatiquement : prénom du marié + date du mariage
+            {defaultPassword ? ` (${defaultPassword})` : " — renseignez le prénom et la date d'abord"}
+          </p>
         </Field>
       </Grid>
     </div>
