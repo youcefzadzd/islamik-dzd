@@ -39,7 +39,9 @@ export const CATALOG = [
     // top/width نسب مئوية من بطاقة المعاينة — عدّلها لضبط الموضع والحجم.
     // الختم الذهبي بالبسملة — نفس ختم القالب الحقيقي (نسخة مضغوطة).
     seal: { src: "/assets/site/islamic-seal.webp", top: "52%", width: "42%" },
-    video: "/assets/templates/demo-hero.mp4",
+    // سينماغراف مولّد (kling3) من ظرفه الحقيقي — demo-hero.mp4 كان
+    // فيديو حديقة Sage Garden بالخطأ
+    video: "/assets/templates/islamic-royal-card.mp4",
     description: {
       ar: "ظرف مختوم بالشمع، بجعتان متحركتان، ورق حرفي فاخر بالذهبي والبورجوندي — ثنائي اللغة مع RSVP.",
       fr: "Enveloppe scellée, cygnes animés, papier artisanal or et bordeaux — bilingue FR/AR avec RSVP.",
