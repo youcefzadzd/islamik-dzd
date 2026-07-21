@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { REVIEWS_STRIP, SITE, TESTIMONIALS } from "./site-config";
+import { PRICING, REVIEWS_STRIP, SITE, TESTIMONIALS, formatDZD } from "./site-config";
 import { COPY } from "./site-copy";
 import {
   CompareSection,
@@ -51,12 +51,13 @@ export default function SiteHome() {
       <NavBar lang={lang} t={t} onSwitch={switchLang} />
       <Hero lang={lang} t={t} />
       <ReviewsTicker lang={lang} t={t} />
+      {/* الباقات مقدَّمة إلى أعلى الصفحة — يرى الزائر السعر قبل التفاصيل */}
+      <PricingSection lang={lang} t={t} />
       <TemplatesSection lang={lang} t={t} />
       <HowSection lang={lang} t={t} />
       <CompareSection lang={lang} t={t} />
       <DashboardSection lang={lang} t={t} />
       <LangsSection lang={lang} t={t} />
-      <PricingSection lang={lang} t={t} />
       <TestimonialsSection lang={lang} t={t} />
       <FaqSection lang={lang} t={t} />
       <ContactSection lang={lang} t={t} />
@@ -213,6 +214,8 @@ function NavBar({ lang, t, onSwitch }) {
 function Hero({ lang, t }) {
   const arabic = lang === "ar";
   const font = arabic ? "font-arabicText" : "font-body";
+  /* أرخص باقة — مصدر شارة "ابتداءً من" */
+  const heroPrice = PRICING.reduce((a, b) => (b.price < a.price ? b : a));
 
   return (
     <section className="relative overflow-hidden px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
@@ -285,6 +288,29 @@ function Hero({ lang, t }) {
             {t.hero.ctaSecondary}
           </GhostButton>
         </motion.div>
+
+        {/* شارة السعر — يظهر السعر خلال أول ثوانٍ دون تمرير */}
+        <motion.a
+          href="#pricing"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.44 }}
+          className={`mt-6 inline-flex items-center gap-2.5 rounded-full border border-gold/45 bg-cream px-5 py-2.5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold ${font}`}
+        >
+          <span aria-hidden>✨</span>
+          <span className="text-sm text-ink/65">{t.hero.priceFrom}</span>
+          <span className="font-serif text-lg font-bold tabular-nums text-burgundy-dark">
+            {formatDZD(heroPrice.price, lang)}
+          </span>
+          {heroPrice.oldPrice ? (
+            <span className="text-xs text-ink/40 line-through tabular-nums">
+              {formatDZD(heroPrice.oldPrice, lang)}
+            </span>
+          ) : null}
+          <span className="rounded-full bg-gold/15 px-2.5 py-0.5 text-[0.68rem] font-semibold text-gold-dark">
+            {t.hero.priceNote}
+          </span>
+        </motion.a>
 
         <motion.div
           initial={{ opacity: 0 }}
