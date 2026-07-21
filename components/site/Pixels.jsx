@@ -9,8 +9,8 @@
  *   NEXT_PUBLIC_FACEBOOK_PIXEL_ID / NEXT_PUBLIC_TIKTOK_PIXEL_ID
  * لا يُحقن أي سكربت ما دامت القوائم فارغة.
  *
- * الأحداث: PageView تلقائيًا، وتحويل "طلب" عبر trackOrderLead()
- * عند نجاح إرسال نموذج الطلب.
+ * الأحداث: PageView تلقائيًا، ومبيعة (Purchase / CompletePayment)
+ * عبر trackOrderPurchase() عند نجاح إرسال نموذج الطلب.
  */
 
 import { useEffect } from "react";
@@ -107,20 +107,27 @@ function activatePixels({ facebook = [], tiktok = [] }) {
   }
 }
 
-/** تحويل "طلب جديد" — يصل إلى كل البيكسلات المفعّلة في المنصتين */
-export function trackOrderLead({ templateId, packId, value } = {}) {
+/**
+ * مبيعة "طلب مُرسل" — تصل إلى كل البيكسلات المفعّلة في المنصتين.
+ * حملات الشراء: Meta يتعرّف على "Purchase" وتيك توك على
+ * "CompletePayment" — كلاهما بقيمة الباقة بالدينار حتى تُحسب
+ * كمبيعة ويتحسّن الاستهداف على المشترين الفعليين.
+ */
+export function trackOrderPurchase({ templateId, packId, value } = {}) {
   try {
     if (window.fbq) {
-      window.fbq("track", "Lead", {
+      window.fbq("track", "Purchase", {
         content_name: templateId || "order",
         content_category: packId || "",
+        content_type: "product",
         value: value || 0,
         currency: "DZD",
       });
     }
     if (window.ttq) {
-      window.ttq.track("SubmitForm", {
+      window.ttq.track("CompletePayment", {
         content_name: templateId || "order",
+        content_type: "product",
         value: value || 0,
         currency: "DZD",
       });

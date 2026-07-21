@@ -16,7 +16,7 @@ import { CATALOG, PRICING, SITE, formatDZD, whatsappLink } from "./site-config";
 import { COPY } from "./site-copy";
 import { CheckIcon, WhatsAppIcon } from "./ui";
 import { useSiteWhatsApp } from "./useSiteWhatsApp";
-import Pixels, { trackOrderLead } from "./Pixels";
+import Pixels, { trackOrderPurchase } from "./Pixels";
 
 const LANG_KEY = "dawati-site-lang";
 const LIVE_TEMPLATES = CATALOG.filter((c) => !c.comingSoon);
@@ -110,9 +110,9 @@ export default function OrderForm() {
         }),
       });
       setState(res.ok ? "done" : "error");
-      /* تحويل إعلاني (Meta Lead + TikTok SubmitForm) عند نجاح الطلب فقط */
+      /* مبيعة إعلانية (Meta Purchase + TikTok CompletePayment) عند نجاح الطلب فقط */
       if (res.ok) {
-        trackOrderLead({ templateId, packId, value: pack ? pack.price : 0 });
+        trackOrderPurchase({ templateId, packId, value: pack ? pack.price : 0 });
       }
     } catch {
       setState("error");

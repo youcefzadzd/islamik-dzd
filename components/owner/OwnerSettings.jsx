@@ -223,7 +223,8 @@ export default function OwnerSettings() {
           {pxState === "error" && <p className="mt-2 text-xs text-rose-600">{pxError}</p>}
           <p className="mt-2 text-xs text-ink/45">
             Jusqu'à 5 pixels par plateforme — chaque pixel reçoit PageView sur le site
-            vitrine et l'événement Lead / SubmitForm à chaque commande envoyée. Meta :
+            vitrine et l'événement Purchase / CompletePayment (avec le prix du pack en
+            DZD) à chaque commande envoyée. Meta :
             identifiant numérique · TikTok : lettres et chiffres. Les identifiants
             invalides sont ignorés à l'enregistrement. Prise en compte en ~1 minute.
           </p>
