@@ -7,6 +7,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const nextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: __dirname,
+  async redirects() {
+    /* الموقع التسويقي أصبح على الجذر — الروابط القديمة /site تبقى صالحة */
+    return [{ source: "/site", destination: "/", permanent: true }];
+  },
 };
 
 export default nextConfig;

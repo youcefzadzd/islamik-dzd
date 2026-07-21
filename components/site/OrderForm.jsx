@@ -147,7 +147,7 @@ export default function OrderForm() {
       {/* شريط علوي مبسّط */}
       <header className="border-b border-gold/15 bg-ivory/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3.5">
-          <a href="/site" className="flex items-center gap-2.5">
+          <a href="/" className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/50 bg-cream font-monogram text-lg text-burgundy shadow-sm">
               {SITE.brandName.charAt(0)}
             </span>
@@ -172,7 +172,7 @@ export default function OrderForm() {
                 </button>
               ))}
             </div>
-            <a href="/site" className={`text-sm text-ink/55 hover:text-burgundy ${font}`}>
+            <a href="/" className={`text-sm text-ink/55 hover:text-burgundy ${font}`}>
               {o.backToSite}
             </a>
           </div>
@@ -634,7 +634,7 @@ function SuccessScreen({ o, font, arabic, wa, summary }) {
           </a>
         ) : null}
         <a
-          href="/site"
+          href="/"
           className={`text-sm text-ink/55 underline-offset-4 hover:text-burgundy hover:underline ${font}`}
         >
           {o.backToSite}

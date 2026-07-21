@@ -31,7 +31,7 @@ export const CATALOG = [
     id: "islamic-royal",
     name: "Islamic Royal",
     badge: { ar: "الأكثر طلبًا", fr: "Le plus demandé" },
-    demoUrl: "/",
+    demoUrl: "/demo",
     // نسخة مضغوطة خاصة بالموقع — الأصل في /assets يخدم القالب الحقيقي
     preview: "/assets/site/islamic-envelope.webp",
     previewAlt: "/assets/hero-background.webp",
