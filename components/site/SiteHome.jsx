@@ -218,7 +218,7 @@ function Hero({ lang, t }) {
   const heroPrice = PRICING.reduce((a, b) => (b.price < a.price ? b : a));
 
   return (
-    <section className="relative overflow-hidden px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
+    <section className="relative overflow-hidden px-5 pb-16 pt-24 sm:px-8 sm:pt-36">
       {/* خلفية: توهجات ذهبية ناعمة */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="absolute -top-32 start-1/4 h-96 w-96 rounded-full bg-gold/10 blur-3xl" />
@@ -316,7 +316,7 @@ function Hero({ lang, t }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className={`mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-ink/50 ${font}`}
+          className={`mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-ink/50 sm:mt-8 ${font}`}
         >
           <span>💌 {t.hero.stat1}</span>
           <span className="text-gold" aria-hidden>
@@ -335,7 +335,7 @@ function Hero({ lang, t }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.55 }}
-        className="-mx-5 mt-10 sm:-mx-8"
+        className="-mx-5 mt-5 sm:-mx-8 sm:mt-10"
       >
         <ShowcaseWall />
       </motion.div>
