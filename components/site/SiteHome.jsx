@@ -25,6 +25,7 @@ import {
 import { Flourish, GhostButton, PrimaryButton } from "./ui";
 import ShowcaseWall from "./ShowcaseWall";
 import Pixels from "./Pixels";
+import WhatsAppFab from "./WhatsAppFab";
 
 const LANG_KEY = "dawati-site-lang";
 
@@ -51,6 +52,7 @@ export default function SiteHome() {
     >
       <NavBar lang={lang} t={t} onSwitch={switchLang} />
       <Pixels />
+      <WhatsAppFab lang={lang} />
       <Hero lang={lang} t={t} />
       <ReviewsTicker lang={lang} t={t} />
       {/* الباقات مقدَّمة إلى أعلى الصفحة — يرى الزائر السعر قبل التفاصيل */}

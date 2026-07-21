@@ -323,7 +323,11 @@ export const FAQ = [
  *  number اختياري — مرّر قيمة useSiteWhatsApp() لقراءة الرقم المحفوظ
  *  في لوحة التحكم؛ بدونها يُستعمل رقم site-config الثابت. */
 export function whatsappLink(message, number) {
-  const num = (number ?? SITE.whatsappNumber) || "";
+  let num = String((number ?? SITE.whatsappNumber) || "").replace(/\D/g, "");
+  /* wa.me يتطلب الصيغة الدولية: 00213… → 213…، والرقم الجزائري
+     المحلي 0XXXXXXXXX (10 أرقام) → 213 + بقية الرقم */
+  if (num.startsWith("00")) num = num.slice(2);
+  if (num.length === 10 && num.startsWith("0")) num = "213" + num.slice(1);
   if (!/^\d{8,15}$/.test(num)) return null;
   return `https://wa.me/${num}?text=${encodeURIComponent(message)}`;
 }

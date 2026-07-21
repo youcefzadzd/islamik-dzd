@@ -17,6 +17,7 @@ import { COPY } from "./site-copy";
 import { CheckIcon, WhatsAppIcon } from "./ui";
 import { useSiteWhatsApp } from "./useSiteWhatsApp";
 import Pixels, { trackOrderPurchase } from "./Pixels";
+import WhatsAppFab from "./WhatsAppFab";
 
 const LANG_KEY = "dawati-site-lang";
 const LIVE_TEMPLATES = CATALOG.filter((c) => !c.comingSoon);
@@ -150,6 +151,7 @@ export default function OrderForm() {
   return (
     <div dir={t.dir} lang={lang} className="min-h-screen bg-ivory text-ink">
       <Pixels />
+      <WhatsAppFab lang={lang} />
       {/* شريط علوي مبسّط */}
       <header className="border-b border-gold/15 bg-ivory/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-3.5">
