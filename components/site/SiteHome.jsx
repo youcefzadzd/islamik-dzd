@@ -278,13 +278,19 @@ function Hero({ lang, t }) {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.36 }}
-          className="mt-5 flex flex-row flex-wrap items-center justify-center gap-2.5 sm:mt-9 sm:gap-3"
+          className="mt-5 flex flex-row flex-nowrap items-center justify-center gap-2.5 sm:mt-9 sm:gap-3"
         >
-          <PrimaryButton href="#templates" className={font}>
+          <PrimaryButton
+            href="#templates"
+            className={`whitespace-nowrap !px-5 sm:!px-7 ${font}`}
+          >
             {t.hero.ctaPrimary}
             <span aria-hidden>{arabic ? "←" : "→"}</span>
           </PrimaryButton>
-          <GhostButton href="/site/order" className={font}>
+          <GhostButton
+            href="/site/order"
+            className={`whitespace-nowrap !px-5 sm:!px-7 ${font}`}
+          >
             {t.hero.ctaSecondary}
           </GhostButton>
         </motion.div>
@@ -295,10 +301,10 @@ function Hero({ lang, t }) {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.44 }}
-          className={`mt-4 inline-flex items-center gap-2.5 rounded-full border border-gold/45 bg-cream px-5 py-2.5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold sm:mt-6 ${font}`}
+          className={`mt-4 inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 rounded-full border border-gold/45 bg-cream px-4 py-2.5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold sm:mt-6 sm:px-5 ${font}`}
         >
           <span aria-hidden>✨</span>
-          <span className="text-sm text-ink/65">{t.hero.priceFrom}</span>
+          <span className="whitespace-nowrap text-sm text-ink/65">{t.hero.priceFrom}</span>
           <span className="font-serif text-lg font-bold tabular-nums text-burgundy-dark">
             {formatDZD(heroPrice.price, lang)}
           </span>

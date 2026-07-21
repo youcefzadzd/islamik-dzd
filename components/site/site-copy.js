@@ -227,8 +227,8 @@ export const COPY = {
       title2: "pour le plus beau jour de votre vie",
       subtitle:
         "Votre invitation est la première impression de votre mariage. Créez-la, partagez-la en un lien, et suivez les confirmations en temps réel.",
-      ctaPrimary: "Découvrir les templates",
-      ctaSecondary: "Commander maintenant",
+      ctaPrimary: "Voir les modèles",
+      ctaSecondary: "Commander",
       priceFrom: "À partir de",
       priceNote: "Offre limitée",
       stat1: "Invitation digitale",
