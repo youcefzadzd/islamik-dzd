@@ -54,8 +54,9 @@ export const CATALOG = [
     demoUrl: "/w/WED-KXZGMF",
     preview: "/assets/site/heritage-envelope.webp",
     previewAlt: "/assets/site/heritage-envelope.webp",
-    // سينماغراف مولّد (kling3): انسياب ضوء ذهبي على النقش والختم
-    video: "/assets/templates/sage-garden-card.mp4",
+    // فيديو حديقته الحقيقي — نفس مقطع واجهة القالب (كان موضوعًا خطأً
+    // على بطاقة Islamic Royal سابقًا)
+    video: "/assets/templates/demo-hero.mp4",
     description: {
       ar: "حديقة عتيقة: ظرف بلون المريمية بختم تيراكوتا، خط منمّق، وأقسام بلون الكريم والوردي الهادئ.",
       fr: "Jardin vintage : enveloppe sauge au sceau terracotta, calligraphie raffinée, sections crème et rose poudré.",
