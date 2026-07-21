@@ -218,7 +218,7 @@ function Hero({ lang, t }) {
   const heroPrice = PRICING.reduce((a, b) => (b.price < a.price ? b : a));
 
   return (
-    <section className="relative overflow-hidden px-5 pb-16 pt-24 sm:px-8 sm:pt-36">
+    <section className="relative overflow-hidden px-5 pb-16 pt-20 sm:px-8 sm:pt-36">
       {/* خلفية: توهجات ذهبية ناعمة */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="absolute -top-32 start-1/4 h-96 w-96 rounded-full bg-gold/10 blur-3xl" />
@@ -269,7 +269,7 @@ function Hero({ lang, t }) {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.24 }}
-          className={`mx-auto mt-6 max-w-xl text-base leading-relaxed text-ink/65 sm:text-lg ${font}`}
+          className={`mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink/65 sm:mt-6 sm:text-lg ${font}`}
         >
           {t.hero.subtitle}
         </motion.p>
@@ -278,7 +278,7 @@ function Hero({ lang, t }) {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.36 }}
-          className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
+          className="mt-6 flex flex-col items-center justify-center gap-3 sm:mt-9 sm:flex-row"
         >
           <PrimaryButton href="#templates" className={font}>
             {t.hero.ctaPrimary}
@@ -295,7 +295,7 @@ function Hero({ lang, t }) {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.44 }}
-          className={`mt-6 inline-flex items-center gap-2.5 rounded-full border border-gold/45 bg-cream px-5 py-2.5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold ${font}`}
+          className={`mt-4 inline-flex items-center gap-2.5 rounded-full border border-gold/45 bg-cream px-5 py-2.5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold sm:mt-6 ${font}`}
         >
           <span aria-hidden>✨</span>
           <span className="text-sm text-ink/65">{t.hero.priceFrom}</span>
@@ -316,7 +316,7 @@ function Hero({ lang, t }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className={`mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-ink/50 sm:mt-8 ${font}`}
+          className={`mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-ink/50 sm:mt-8 ${font}`}
         >
           <span>💌 {t.hero.stat1}</span>
           <span className="text-gold" aria-hidden>
@@ -335,7 +335,7 @@ function Hero({ lang, t }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.55 }}
-        className="-mx-5 mt-5 sm:-mx-8 sm:mt-10"
+        className="-mx-5 mt-2 sm:-mx-8 sm:mt-10"
       >
         <ShowcaseWall />
       </motion.div>
