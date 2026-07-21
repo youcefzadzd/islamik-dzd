@@ -48,7 +48,7 @@ export const FLORAL_DEFAULTS = {
     brideName: "لينة",
     heroDate: "18 سبتمبر 2026",
     invitationTitle: "حفل زفاف",
-    invitationText: "يتشرفان بدعوتكم لحضور",
+    invitationText: "يتشرفان بدعوتكم لمشاركتهما أفراح زفاف",
     dateIntro: "وذلك بمشيئة الله تعالى يوم",
     hallIntro: "بقاعة",
     rsvpTitle: "أكدوا حضوركم",
