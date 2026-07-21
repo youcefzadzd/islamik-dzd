@@ -218,7 +218,7 @@ function Hero({ lang, t }) {
   const heroPrice = PRICING.reduce((a, b) => (b.price < a.price ? b : a));
 
   return (
-    <section className="relative overflow-hidden px-5 pb-16 pt-20 sm:px-8 sm:pt-36">
+    <section className="relative overflow-hidden px-5 pb-16 pt-16 sm:px-8 sm:pt-36">
       {/* خلفية: توهجات ذهبية ناعمة */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="absolute -top-32 start-1/4 h-96 w-96 rounded-full bg-gold/10 blur-3xl" />
@@ -256,7 +256,7 @@ function Hero({ lang, t }) {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.12 }}
-          className={`mt-5 text-4xl leading-[1.25] text-burgundy-dark sm:text-5xl md:text-[3.4rem] ${
+          className={`mt-3 text-3xl leading-[1.3] text-burgundy-dark sm:mt-5 sm:text-5xl sm:leading-[1.25] md:text-[3.4rem] ${
             arabic ? "font-arabicText font-bold" : "font-serif font-semibold"
           }`}
         >
@@ -278,7 +278,7 @@ function Hero({ lang, t }) {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.36 }}
-          className="mt-6 flex flex-col items-center justify-center gap-3 sm:mt-9 sm:flex-row"
+          className="mt-5 flex flex-row flex-wrap items-center justify-center gap-2.5 sm:mt-9 sm:gap-3"
         >
           <PrimaryButton href="#templates" className={font}>
             {t.hero.ctaPrimary}
