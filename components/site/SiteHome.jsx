@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CATALOG, REVIEWS_STRIP, SITE, TESTIMONIALS } from "./site-config";
+import { REVIEWS_STRIP, SITE, TESTIMONIALS } from "./site-config";
 import { COPY } from "./site-copy";
 import {
   CompareSection,
@@ -23,6 +23,7 @@ import {
   TestimonialsSection,
 } from "./SitePricingFaq";
 import { Flourish, GhostButton, PrimaryButton } from "./ui";
+import ShowcaseWall from "./ShowcaseWall";
 
 const LANG_KEY = "dawati-site-lang";
 
@@ -212,7 +213,6 @@ function NavBar({ lang, t, onSwitch }) {
 function Hero({ lang, t }) {
   const arabic = lang === "ar";
   const font = arabic ? "font-arabicText" : "font-body";
-  const previews = CATALOG.filter((c) => !c.comingSoon);
 
   return (
     <section className="relative overflow-hidden px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
@@ -304,53 +304,15 @@ function Hero({ lang, t }) {
         </motion.div>
       </div>
 
-      {/* مروحة بطاقات المعاينة */}
-      <div className="relative mx-auto mt-14 flex max-w-4xl items-end justify-center gap-4 sm:gap-6">
-        {previews.map((tpl, i) => {
-          const mid = (previews.length - 1) / 2;
-          const off = i - mid;
-          return (
-            <motion.a
-              key={tpl.id}
-              href={tpl.demoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 60, rotate: 0 }}
-              animate={{ opacity: 1, y: Math.abs(off) * 14, rotate: off * 5 }}
-              transition={{ duration: 0.9, delay: 0.5 + i * 0.14, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={{ y: Math.abs(off) * 14 - 10, scale: 1.03 }}
-              className="block w-36 overflow-hidden rounded-2xl border border-gold/30 bg-cream shadow-royal sm:w-52"
-              title={tpl.name}
-            >
-              <div className="relative aspect-[3/4] overflow-hidden bg-ivory-dark">
-                <img
-                  src={tpl.preview}
-                  alt={tpl.name}
-                  className="h-full w-full object-cover"
-                />
-                {tpl.seal ? (
-                  <img
-                    src={tpl.seal.src}
-                    alt=""
-                    draggable={false}
-                    aria-hidden
-                    className="pointer-events-none absolute left-1/2 select-none"
-                    style={{
-                      top: tpl.seal.top,
-                      width: tpl.seal.width,
-                      transform: "translate(-50%, -50%)",
-                      filter: "drop-shadow(0 5px 12px rgb(30 8 13 / 0.35))",
-                    }}
-                  />
-                ) : null}
-              </div>
-              <p className="px-3 py-2.5 text-center font-serif text-xs font-semibold text-burgundy-dark sm:text-sm">
-                {tpl.name}
-              </p>
-            </motion.a>
-          );
-        })}
-      </div>
+      {/* جدار العرض المتحرك — بطاقات القوالب الحقيقية خلف هاتف مركزي */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.55 }}
+        className="-mx-5 mt-10 sm:-mx-8"
+      >
+        <ShowcaseWall />
+      </motion.div>
 
       <div className="mt-14">
         <Flourish />
