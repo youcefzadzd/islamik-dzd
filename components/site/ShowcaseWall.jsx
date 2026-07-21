@@ -13,24 +13,31 @@
 
 const ROW_A = [
   "/assets/site/showcase/a-ir-hero.webp",
+  "/assets/site/showcase/a-sg-invite.webp",
+  "/assets/site/showcase/a-fl-env.webp",
+  "/assets/site/showcase/a-ir-quote.webp",
+  "/assets/site/showcase/a-sg-hero.webp",
+  "/assets/site/showcase/a-fl-invite.webp",
+  "/assets/site/showcase/a-ir-env.webp",
   "/assets/site/showcase/a-sg-env.webp",
   "/assets/site/showcase/a-fl-hero.webp",
-  "/assets/site/showcase/a-ir-env.webp",
-  "/assets/site/showcase/a-sg-hero.webp",
-  "/assets/site/showcase/a-fl-env.webp",
 ];
 
 const ROW_B = [
   "/assets/site/showcase/b-sg-seal.webp",
-  "/assets/site/showcase/b-fl-paper.webp",
+  "/assets/site/showcase/b-fl-prog.webp",
   "/assets/site/showcase/b-ir-seal.webp",
-  "/assets/site/showcase/b-sg-paper.webp",
+  "/assets/site/showcase/b-sg-prog.webp",
   "/assets/site/showcase/b-fl-seal.webp",
+  "/assets/site/showcase/b-ir-prog.webp",
+  "/assets/site/showcase/b-sg-paper.webp",
+  "/assets/site/showcase/b-fl-paper.webp",
   "/assets/site/showcase/b-ir-paper.webp",
 ];
 
-/* نصف الشريط = 3 تكرارات؛ الشريط الكامل = النصف ×2 للحلقة المتصلة */
-const half = (arr) => [...arr, ...arr, ...arr];
+/* نصف الشريط = تكراران (9 بطاقات ×2 ×132px ≈ 2376px ≥ أعرض الشاشات)؛
+   الشريط الكامل = النصف ×2 للحلقة المتصلة */
+const half = (arr) => [...arr, ...arr];
 const strip = (arr) => [...half(arr), ...half(arr)];
 
 function Row({ tiles, variant }) {
@@ -90,11 +97,11 @@ export default function ShowcaseWall() {
       <div className="dz-sc-spot" />
       <div className="dz-sc-blend" />
 
-      {/* الهاتف المركزي — فيديو ظرف Islamic Royal */}
+      {/* الهاتف المركزي — تسجيل حقيقي لظرف Islamic Royal وهو يُفتح */}
       <div className="dz-sc-phone">
         <div className="dz-sc-phone__screen">
           <video
-            src="/assets/templates/islamic-royal-card.mp4"
+            src="/assets/site/showcase/phone-opening.mp4"
             autoPlay
             muted
             loop
