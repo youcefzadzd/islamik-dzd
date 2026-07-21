@@ -24,6 +24,7 @@ import {
 } from "./SitePricingFaq";
 import { Flourish, GhostButton, PrimaryButton } from "./ui";
 import ShowcaseWall from "./ShowcaseWall";
+import Pixels from "./Pixels";
 
 const LANG_KEY = "dawati-site-lang";
 
@@ -49,6 +50,7 @@ export default function SiteHome() {
       className="min-h-screen bg-ivory text-ink [text-rendering:optimizeLegibility]"
     >
       <NavBar lang={lang} t={t} onSwitch={switchLang} />
+      <Pixels />
       <Hero lang={lang} t={t} />
       <ReviewsTicker lang={lang} t={t} />
       {/* الباقات مقدَّمة إلى أعلى الصفحة — يرى الزائر السعر قبل التفاصيل */}
