@@ -156,6 +156,9 @@ const UI = {
     invited2: "Cordialement",
     invited3: "Invités",
     married: "Nous nous marions",
+    /* ترحيب بصيغة العروسين عندما لا يُكتب اسما الوالدين */
+    coupleWelcome:
+      "C’est avec une immense joie que nous vous convions à célébrer notre mariage",
     fatherPrefix: "Monsieur ",
     fatherSuffix: "",
     motherPrefix: "et son épouse ",
@@ -180,6 +183,8 @@ const UI = {
     invited2: "ندعوكم",
     invited3: "لحضور زفافنا",
     married: "حفل زفافنا",
+    /* ترحيب بصيغة العروسين عندما لا يُكتب اسما الوالدين */
+    coupleWelcome: "بكل حبّ وسرور، ندعوكم لمشاركتنا أفراح زفافنا",
     fatherPrefix: "السيد ",
     fatherSuffix: " وحرمه",
     motherPrefix: "",
@@ -971,32 +976,42 @@ export default function FloralRomanticApp({ weddingIdOverride, initialData }) {
                 )}
                 <RoseDivider className="mt-6" />
 
-                {(inv.fatherName || inv.motherName) && (
-                  <p className={`mt-8 text-xl leading-relaxed text-ink ${serifClass(lang)}`}>
-                    {inv.fatherName && (
-                      <>
-                        {ui.fatherPrefix}
-                        <span className="font-semibold">{inv.fatherName}</span>
-                        {ui.fatherSuffix}
-                      </>
-                    )}
-                    {inv.motherName && (
-                      <>
-                        {inv.fatherName ? " " : ""}
-                        {ui.motherPrefix}
-                        <span className="font-semibold">{inv.motherName}</span>
-                      </>
-                    )}
-                  </p>
-                )}
+                {inv.fatherName || inv.motherName ? (
+                  /* الوالدان مكتوبان — يظهر كل شيء كما هو */
+                  <>
+                    <p className={`mt-8 text-xl leading-relaxed text-ink ${serifClass(lang)}`}>
+                      {inv.fatherName && (
+                        <>
+                          {ui.fatherPrefix}
+                          <span className="font-semibold">{inv.fatherName}</span>
+                          {ui.fatherSuffix}
+                        </>
+                      )}
+                      {inv.motherName && (
+                        <>
+                          {inv.fatherName ? " " : ""}
+                          {ui.motherPrefix}
+                          <span className="font-semibold">{inv.motherName}</span>
+                        </>
+                      )}
+                    </p>
 
-                <p className={`mt-5 text-lg leading-relaxed text-ink/80 ${serifClass(lang)}`}>
-                  {inv.invitationText}
-                </p>
+                    <p className={`mt-5 text-lg leading-relaxed text-ink/80 ${serifClass(lang)}`}>
+                      {inv.invitationText}
+                    </p>
 
-                {inv.honoreeGender && (
-                  <p className={`mt-2 text-lg italic text-gold-dark ${serifClass(lang)}`}>
-                    {inv.honoreeGender === "male" ? ui.son : ui.daughter}
+                    {inv.honoreeGender && (
+                      <p className={`mt-2 text-lg italic text-gold-dark ${serifClass(lang)}`}>
+                        {inv.honoreeGender === "male" ? ui.son : ui.daughter}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  /* لا والدان — ترحيب احترافي بصيغة العروسين («يتشرفان»
+                     تعود على الوالدين فلا تصلح هنا)؛ نص المالك الخاص
+                     إن كتبه يبقى مقدَّمًا على الافتراضي */
+                  <p className={`mt-8 text-lg leading-relaxed text-ink/80 ${serifClass(lang)}`}>
+                    {getDisplayText(invSaved.invitationText, ui.coupleWelcome)}
                   </p>
                 )}
 
