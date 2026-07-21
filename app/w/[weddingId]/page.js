@@ -3,9 +3,18 @@ import HeritageApp from "@/components/heritage/HeritageApp";
 import FloralRomanticApp from "@/components/floral-romantic/FloralRomanticApp";
 import InvitationNotFound from "@/components/InvitationNotFound";
 import { buildAllData } from "@/lib/config-adapter";
-import { getWeddingByPublicId, rowToOverrides } from "@/lib/wedding-service";
+import { getWeddingByPublicId, rowToOverrides, seoForRow } from "@/lib/wedding-service";
 import { templateIdFromRow } from "@/lib/templates";
 import config from "@/wedding-config.json";
+
+/* عنوان التبويب ومعاينة المشاركة (واتساب...) باسمي العروسين الحقيقيين
+   وبلغة العرس الافتراضية — لا يظهر عنوان البذرة إلا إن غاب الاسمان */
+export async function generateMetadata({ params }) {
+  const { weddingId } = await params;
+  const { wedding } = await getWeddingByPublicId(weddingId);
+  const seo = wedding ? seoForRow(wedding) : null;
+  return seo || { title: config.seo.title, description: config.seo.description };
+}
 
 /* one renderer per live template in lib/templates.js */
 const TEMPLATE_RENDERERS = {
