@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/wedding-service";
 import { authOwnerOrStaff } from "@/lib/staff-auth";
+import { normalizePixels, parsePixelsValue } from "@/lib/ad-pixels";
 
 /**
  * إعدادات الموقع من لوحة المالك (server only).
- * GET → القيم الحالية · PUT → تحديث { whatsappNumber }
+ * GET → القيم الحالية · PUT → تحديث الحقول المُرسلة فقط:
+ *   { whatsappNumber }  و/أو  { pixels: { facebook: [...], tiktok: [...] } }
  */
 
 /* مالك، أو عامل يملك صلاحية «settings» */
@@ -23,11 +25,14 @@ export async function GET(request) {
   const { data, error } = await supabase
     .from("site_settings")
     .select("key, value")
-    .in("key", ["whatsapp_number"]);
+    .in("key", ["whatsapp_number", "ad_pixels"]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const map = Object.fromEntries((data || []).map((r) => [r.key, r.value]));
-  return NextResponse.json({ whatsappNumber: map.whatsapp_number || "" });
+  return NextResponse.json({
+    whatsappNumber: map.whatsapp_number || "",
+    pixels: parsePixelsValue(map.ad_pixels || ""),
+  });
 }
 
 export async function PUT(request) {
@@ -43,15 +48,32 @@ export async function PUT(request) {
     return NextResponse.json({ error: "invalid json" }, { status: 400 });
   }
 
-  // صيغة دولية بدون + (مثال: 213550123456) — أو فارغ لإخفاء أزرار واتساب
-  const num = String(body.whatsappNumber || "").replace(/\D/g, "");
-  if (num && (num.length < 8 || num.length > 15)) {
-    return NextResponse.json({ error: "invalid number" }, { status: 400 });
+  const now = new Date().toISOString();
+  const result = {};
+
+  /* رقم واتساب — فقط إن أُرسل الحقل */
+  if ("whatsappNumber" in body) {
+    // صيغة دولية بدون + (مثال: 213550123456) — أو فارغ لإخفاء أزرار واتساب
+    const num = String(body.whatsappNumber || "").replace(/\D/g, "");
+    if (num && (num.length < 8 || num.length > 15)) {
+      return NextResponse.json({ error: "invalid number" }, { status: 400 });
+    }
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert({ key: "whatsapp_number", value: num, updated_at: now });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    result.whatsappNumber = num;
   }
 
-  const { error } = await supabase
-    .from("site_settings")
-    .upsert({ key: "whatsapp_number", value: num, updated_at: new Date().toISOString() });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true, whatsappNumber: num });
+  /* بيكسلات الإعلانات — فقط إن أُرسل الحقل؛ التنظيف يتكفل بالصيغ الخاطئة */
+  if ("pixels" in body) {
+    const pixels = normalizePixels(body.pixels);
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert({ key: "ad_pixels", value: JSON.stringify(pixels), updated_at: now });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    result.pixels = pixels;
+  }
+
+  return NextResponse.json({ ok: true, ...result });
 }

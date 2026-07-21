@@ -3,23 +3,27 @@
 /**
  * Facebook (Meta) Pixel + TikTok Pixel لموقع التسويق فقط.
  *
- * المعرّفات تُقرأ من متغيرات البيئة في Vercel — لا يُحقن أي سكربت
- * ما دام المعرّف فارغًا، فالمكوّن آمن قبل ضبطها:
- *   NEXT_PUBLIC_FACEBOOK_PIXEL_ID  (مثال: 1234567890)
- *   NEXT_PUBLIC_TIKTOK_PIXEL_ID    (مثال: ABCDEF123456)
+ * المعرّفات تُدار من لوحة التحكم ← Paramètres ← Pixels publicitaires
+ * (عدة معرّفات لكل منصة — كل بيكسل يستقبل نفس الأحداث)، وتُجلب من
+ * /api/site/settings. متغيرا البيئة يبقيان احتياطًا اختياريًا:
+ *   NEXT_PUBLIC_FACEBOOK_PIXEL_ID / NEXT_PUBLIC_TIKTOK_PIXEL_ID
+ * لا يُحقن أي سكربت ما دامت القوائم فارغة.
  *
- * الأحداث: PageView تلقائيًا عند التحميل، وتحويل "طلب" عبر
- * trackOrderLead() عند نجاح إرسال نموذج الطلب.
+ * الأحداث: PageView تلقائيًا، وتحويل "طلب" عبر trackOrderLead()
+ * عند نجاح إرسال نموذج الطلب.
  */
 
 import { useEffect } from "react";
 
-const FB_ID = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || "";
-const TT_ID = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID || "";
+const ENV_FB = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || "";
+const ENV_TT = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID || "";
 
-function loadFacebook() {
-  if (!FB_ID || window.__dzFbPixel) return;
-  window.__dzFbPixel = true;
+let fetched = false; // لا نجلب الإعدادات إلا مرة واحدة في الزيارة
+const loadedFb = new Set();
+const loadedTt = new Set();
+
+function ensureFbBase() {
+  if (window.fbq) return;
   /* السكربت الرسمي لـ Meta Pixel */
   !(function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
@@ -37,14 +41,11 @@ function loadFacebook() {
     s = b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t, s);
   })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
-  window.fbq("init", FB_ID);
-  window.fbq("track", "PageView");
 }
 
-function loadTikTok() {
-  if (!TT_ID || window.__dzTtPixel) return;
-  window.__dzTtPixel = true;
-  /* السكربت الرسمي لـ TikTok Pixel */
+function ensureTtBase() {
+  if (window.ttq) return;
+  /* السكربت الرسمي لـ TikTok Pixel — ttq.load يُستدعى لكل معرّف */
   !(function (w, d, t) {
     w.TiktokAnalyticsObject = t;
     var ttq = (w[t] = w[t] || []);
@@ -79,12 +80,34 @@ function loadTikTok() {
       var a = document.getElementsByTagName("script")[0];
       a.parentNode.insertBefore(o, a);
     };
-    ttq.load(TT_ID);
-    ttq.page();
   })(window, document, "ttq");
 }
 
-/** تحويل "طلب جديد" — يُستدعى بعد نجاح إرسال نموذج الطلب */
+/** يحمّل ويُهيّئ كل المعرّفات المُمرّرة (تُهيّأ كل واحدة مرة واحدة فقط) */
+function activatePixels({ facebook = [], tiktok = [] }) {
+  for (const id of facebook) {
+    if (loadedFb.has(id)) continue;
+    loadedFb.add(id);
+    ensureFbBase();
+    window.fbq("init", id);
+  }
+  if (facebook.some((id) => loadedFb.has(id)) && window.fbq && !window.__dzFbPv) {
+    window.__dzFbPv = true;
+    window.fbq("track", "PageView");
+  }
+  for (const id of tiktok) {
+    if (loadedTt.has(id)) continue;
+    loadedTt.add(id);
+    ensureTtBase();
+    window.ttq.load(id);
+  }
+  if (tiktok.some((id) => loadedTt.has(id)) && window.ttq && !window.__dzTtPv) {
+    window.__dzTtPv = true;
+    window.ttq.page();
+  }
+}
+
+/** تحويل "طلب جديد" — يصل إلى كل البيكسلات المفعّلة في المنصتين */
 export function trackOrderLead({ templateId, packId, value } = {}) {
   try {
     if (window.fbq) {
@@ -109,8 +132,19 @@ export function trackOrderLead({ templateId, packId, value } = {}) {
 
 export default function Pixels() {
   useEffect(() => {
-    loadFacebook();
-    loadTikTok();
+    /* احتياط البيئة يعمل فورًا حتى قبل رد الإعدادات */
+    activatePixels({
+      facebook: ENV_FB ? [ENV_FB] : [],
+      tiktok: ENV_TT ? [ENV_TT] : [],
+    });
+    if (fetched) return;
+    fetched = true;
+    fetch("/api/site/settings")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (j && j.pixels) activatePixels(j.pixels);
+      })
+      .catch(() => {});
   }, []);
   return null;
 }
