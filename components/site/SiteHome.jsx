@@ -107,9 +107,11 @@ function NavBar({ lang, t, onSwitch }) {
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
         {/* الشعار */}
         <a href="#" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/50 bg-cream font-monogram text-lg text-burgundy shadow-sm">
-            {SITE.brandName.charAt(0)}
-          </span>
+          <img
+            src="/assets/site/logo-seal.png"
+            alt={SITE.brandName}
+            className="h-10 w-10 object-contain drop-shadow-sm"
+          />
           <span className="leading-tight">
             <span className="block font-serif text-base font-bold tracking-wide text-burgundy-dark">
               {SITE.brandName}
@@ -464,9 +466,11 @@ function Footer({ lang, t }) {
       <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/50 bg-cream font-monogram text-xl text-burgundy shadow-sm">
-              {SITE.brandName.charAt(0)}
-            </span>
+            <img
+              src="/assets/site/logo-seal.png"
+              alt={SITE.brandName}
+              className="h-11 w-11 object-contain drop-shadow-sm"
+            />
             <span>
               <span className="block font-serif text-lg font-bold text-burgundy-dark">
                 {SITE.brandName}
