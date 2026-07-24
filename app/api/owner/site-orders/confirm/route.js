@@ -92,10 +92,6 @@ export async function POST(request) {
     max_adult_companions: parseInt(ci.rsvpMax, 10) || 2,
     children_allowed: ci.rsvpChildren === "oui",
     max_children: ci.rsvpChildren === "oui" ? 2 : 0,
-    /* أجاب الزبون صراحة (Premium/Royale) أن الأطفال غير مدعوين →
-       تنويه «بدون أطفال» يظهر تلقائيًا على الدعوة */
-    no_kids_note:
-      (ci.pack === "premium" || ci.pack === "royal") && ci.rsvpChildren === "non",
   });
 
   const fields = {

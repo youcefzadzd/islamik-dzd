@@ -28,6 +28,19 @@ function FieldLabel({ children, lang }) {
 const inputClass =
   "w-full border-b border-gold/50 bg-transparent py-2.5 font-body text-lg text-ink outline-none transition-colors placeholder:text-ink/35 focus:border-burgundy";
 
+/* بطاقة «الحفل للكبار فقط» — نفس أسلوب Sage Garden وFloral، تظهر
+   تلقائيًا حين يكون خيار الأطفال مطفأً في إعدادات المرافقين */
+const ADULTS_ONLY = {
+  fr: {
+    title: "Soirée réservée aux adultes",
+    text: "Pour le confort de tous et le bon déroulement de la réception, nous vous remercions de bien vouloir ne pas venir accompagnés d'enfants. Merci de votre compréhension.",
+  },
+  ar: {
+    title: "نعتذر، الحفل مخصّص للكبار فقط",
+    text: "حرصًا على راحتكم وتنظيم الحفل، نرجو منكم التكرم بعدم اصطحاب الأطفال. شكرًا لتفهمكم.",
+  },
+};
+
 export default function RsvpSection({ data }) {
   const rsvp = data.rsvp;
   const lang = data.lang;
@@ -147,12 +160,6 @@ export default function RsvpSection({ data }) {
             <div className="divider mt-5">
               <span className="text-gold">✦</span>
             </div>
-            {/* تنويه «بدون أطفال» — سطر رقيق بروح الورقة */}
-            {rsvp.noKidsNote ? (
-              <p className="mt-4 font-body text-sm italic leading-relaxed text-burgundy/80">
-                🌸 {rsvp.noKidsNote}
-              </p>
-            ) : null}
           </div>
 
           <AnimatePresence mode="wait">
@@ -227,6 +234,37 @@ export default function RsvpSection({ data }) {
 
                 {form.attending === "yes" && companionsCfg.enabled && (
                   <div>
+                    {/* الأطفال غير مسموحين → البطاقة الفاخرة نفسها في بقية القوالب */}
+                    {!companionsCfg.childrenAllowed && (
+                      <div className="mb-6 rounded-2xl border border-gold/50 bg-ivory px-5 py-7 text-center shadow-[0_8px_28px_rgb(64_47_32_/_0.06)]">
+                        <span
+                          aria-hidden
+                          className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-gold/15 text-gold-dark"
+                        >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="7.4" r="2.5" />
+                            <path d="M7.6 18.6c.4-3.4 2-5.4 4.4-5.4s4 2 4.4 5.4" />
+                            <path d="M5.4 5.2 18.6 18.8" opacity="0.85" />
+                          </svg>
+                        </span>
+                        <div className="mx-auto mb-3 flex w-24 items-center gap-2 text-gold" aria-hidden>
+                          <span className="h-px flex-1 bg-gold/40" />
+                          <span className="text-[10px]">❦</span>
+                          <span className="h-px flex-1 bg-gold/40" />
+                        </div>
+                        <p className="font-body text-[22px] font-semibold leading-snug text-burgundy">
+                          {(ADULTS_ONLY[lang] || ADULTS_ONLY.fr).title}
+                        </p>
+                        <p className="mx-auto mt-3 max-w-xs font-body text-[14.5px] leading-[1.7] text-ink/70">
+                          {(ADULTS_ONLY[lang] || ADULTS_ONLY.fr).text}
+                        </p>
+                        <div className="mx-auto mt-4 flex w-24 items-center gap-2 text-gold" aria-hidden>
+                          <span className="h-px flex-1 bg-gold/40" />
+                          <span className="text-[10px]">❦</span>
+                          <span className="h-px flex-1 bg-gold/40" />
+                        </div>
+                      </div>
+                    )}
                     <FieldLabel lang={lang}>{ct.title}</FieldLabel>
 
                     <AnimatePresence initial={false}>

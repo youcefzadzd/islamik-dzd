@@ -90,8 +90,6 @@ export function rowToForm(w = {}) {
       rsvpSettings.max_children ??
         (rsvpSettings.children_allowed === true ? rsvpSettings.max_companions ?? 0 : 0)
     ),
-    // تنويه «بدون أطفال» على الدعوة
-    noKidsNote: rsvpSettings.no_kids_note === true,
     // step 2 — venue
     locationName: w.location_name || "",
     locationNameAr: texts.location?.nameAr || "",
@@ -216,7 +214,6 @@ export function formToBody(f) {
         f.allowCompanions && f.childrenAllowed === true
           ? Math.max(0, Math.min(10, parseInt(f.maxChildren, 10) || 0))
           : 0,
-      no_kids_note: f.noKidsNote === true,
     },
     dashboardPassword: f.dashboardPassword || undefined,
   };
