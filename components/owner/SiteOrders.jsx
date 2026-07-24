@@ -409,10 +409,14 @@ export default function SiteOrders() {
                             ⚠ Infos à saisir
                           </span>
                         ) : null}
-                        {/* الزبون ملأ استمارة /infos — تفاصيلها داخل البطاقة */}
+                        {/* حالة استمارة /infos: بانتظار الملء ← وصلت */}
                         {o.client_info ? (
                           <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[0.65rem] font-bold text-violet-700">
                             📋 Fiche reçue
+                          </span>
+                        ) : o.status === "new" || o.status === "preparing" ? (
+                          <span className="ml-2 rounded-full border border-stone-300 bg-stone-100 px-2 py-0.5 text-[0.65rem] font-semibold text-stone-500">
+                            ⏳ Fiche non remplie
                           </span>
                         ) : null}
                       </td>
@@ -816,9 +820,15 @@ function RowDetails({
               <CopyButton
                 text={`${typeof window !== "undefined" ? window.location.origin : ""}/infos?order=${o.id}`}
               />
-              <span className="text-xs text-ink/45">
-                (envoyez-le au client — sa fiche s'attache à cette commande)
-              </span>
+              {o.client_info ? (
+                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[0.68rem] font-bold text-violet-700">
+                  ✓ remplie par le client
+                </span>
+              ) : (
+                <span className="text-xs text-ink/45">
+                  (en attente — envoyez le lien au client sur WhatsApp)
+                </span>
+              )}
             </li>
           </ul>
 
