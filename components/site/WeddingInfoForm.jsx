@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { CATALOG, PRICING, SITE, whatsappLink } from "./site-config";
 import { WhatsAppIcon } from "./ui";
@@ -130,6 +131,9 @@ function Field({ label, children }) {
 }
 
 export default function WeddingInfoForm() {
+  /* ?order=<id> — رابط شخصي يرسله النشاط: الاستمارة تلتصق بذلك الطلب */
+  const params = useSearchParams();
+  const orderId = params.get("order") || "";
   const [lang, setLang] = useState("ar");
   const t = COPY[lang];
   const font = lang === "ar" ? "font-arabicText" : "font-body";
@@ -198,7 +202,7 @@ export default function WeddingInfoForm() {
       const res = await fetch("/api/site/infos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...f, lang }),
+        body: JSON.stringify({ ...f, lang, orderId }),
       });
       saved = res.ok;
     } catch {}

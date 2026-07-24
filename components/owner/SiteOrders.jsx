@@ -409,6 +409,12 @@ export default function SiteOrders() {
                             ⚠ Infos à saisir
                           </span>
                         ) : null}
+                        {/* الزبون ملأ استمارة /infos — تفاصيلها داخل البطاقة */}
+                        {o.client_info ? (
+                          <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[0.65rem] font-bold text-violet-700">
+                            📋 Fiche reçue
+                          </span>
+                        ) : null}
                       </td>
                       {filter !== "preparing" && (
                         <td className="whitespace-nowrap px-4 py-3">
@@ -805,6 +811,15 @@ function RowDetails({
                 <span className="font-semibold text-emerald">{o.wedding_id}</span>
               </li>
             ) : null}
+            <li className="flex flex-wrap items-center gap-1.5 pt-1">
+              📋 Lien fiche client :
+              <CopyButton
+                text={`${typeof window !== "undefined" ? window.location.origin : ""}/infos?order=${o.id}`}
+              />
+              <span className="text-xs text-ink/45">
+                (envoyez-le au client — sa fiche s'attache à cette commande)
+              </span>
+            </li>
           </ul>
 
           {/* معلومات التسليم للزبون: رابط الدعوة + لوحة المتابعة + كلمة السر
@@ -921,6 +936,11 @@ function RowDetails({
         </section>
       </div>
 
+      {/* استمارة العميل (fiche /infos) — تُعدَّل هنا ثم يُؤكَّد من نفس البطاقة */}
+      {o.client_info ? (
+        <FicheClientCard o={o} patchOrder={patchOrder} applySaved={applySaved} />
+      ) : null}
+
       {/* أزرار الإجراءات (نمط EcoManager) */}
       <div className="flex flex-wrap justify-end gap-2">
         <button
@@ -970,5 +990,104 @@ function RowDetails({
         )}
       </div>
     </div>
+  );
+}
+
+/* بطاقة استمارة العميل (/infos) داخل تفاصيل الطلب — كل الحقول قابلة
+   للتعديل وتُحفظ على الطلب نفسه؛ التأكيد يتم بأزرار البطاقة المعتادة */
+function FicheClientCard({ o, patchOrder, applySaved }) {
+  const [d, setD] = useState({ ...o.client_info });
+  const [saving, setSaving] = useState(false);
+  const [tick, setTick] = useState(false);
+  const [error, setError] = useState("");
+
+  const input =
+    "w-full rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-stone-900";
+  const set = (k) => (e) => setD((p) => ({ ...p, [k]: e.target.value }));
+
+  async function save() {
+    setSaving(true);
+    setError("");
+    try {
+      const saved = await patchOrder(o.id, { clientInfo: d });
+      applySaved(saved);
+      setTick(true);
+      setTimeout(() => setTick(false), 1600);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const FIELDS = [
+    ["groomFr", "Marié (latin)"],
+    ["groomAr", "Marié (arabe)", "rtl"],
+    ["brideFr", "Mariée (latin)"],
+    ["brideAr", "Mariée (arabe)", "rtl"],
+    ["father", "Père"],
+    ["mother", "Mère"],
+    ["date", "Date", null, "date"],
+    ["time", "Heure", null, "time"],
+    ["venue", "Salle"],
+    ["address", "Adresse"],
+    ["maps", "Lien Google Maps", "ltr"],
+  ];
+
+  return (
+    <section className="rounded-xl border border-violet-200 bg-violet-50/50 p-4 shadow-sm">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-violet-700">
+          📋 Fiche remplie par le client
+          {o.client_info_at ? (
+            <span className="ms-2 font-normal normal-case tracking-normal text-violet-500">
+              — reçue le {(o.client_info_at || "").slice(0, 16).replace("T", " ")}
+            </span>
+          ) : null}
+        </h3>
+        <button
+          type="button"
+          disabled={saving}
+          onClick={save}
+          className="rounded-lg bg-violet-600 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-violet-700 disabled:opacity-60"
+        >
+          {saving ? "…" : tick ? "✓ Enregistré" : "💾 Enregistrer la fiche"}
+        </button>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {FIELDS.map(([k, label, dir, type]) => (
+          <div key={k}>
+            <label className="mb-1 block text-xs text-ink/50">{label}</label>
+            <input
+              type={type || "text"}
+              dir={dir || undefined}
+              value={d[k] || ""}
+              onChange={set(k)}
+              className={input}
+            />
+          </div>
+        ))}
+        <div>
+          <label className="mb-1 block text-xs text-ink/50">Invitation au nom de</label>
+          <select value={d.honoree || "groom"} onChange={set("honoree")} className={input}>
+            <option value="groom">Le marié</option>
+            <option value="bride">La mariée</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-xs text-ink/50">Programme de la journée</label>
+          <textarea rows={4} value={d.program || ""} onChange={set("program")} className={`${input} resize-none`} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-ink/50">Demandes spéciales / hashtag</label>
+          <textarea rows={4} value={d.notes || ""} onChange={set("notes")} className={`${input} resize-none`} />
+        </div>
+      </div>
+      {error && <p className="mt-2 text-xs text-rose-600">{error}</p>}
+    </section>
   );
 }

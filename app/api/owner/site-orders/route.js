@@ -35,11 +35,10 @@ export async function GET(request) {
   const supabase = getAdminClient();
   if (!supabase) return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
 
+  /* select(*) يتحمّل غياب الأعمدة الجديدة (client_info) قبل الترحيل */
   const { data, error } = await supabase
     .from("site_orders")
-    .select(
-      "id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id, confirmation_status, comment, infos_complete, dashboard_password"
-    )
+    .select("*")
     .order("created_at", { ascending: false })
     .limit(500);
 
@@ -142,6 +141,23 @@ export async function PATCH(request) {
     if (p.length > 60) return NextResponse.json({ error: "invalid password" }, { status: 400 });
     update.dashboard_password = p || null;
   }
+  if (body.clientInfo !== undefined) {
+    /* استمارة العميل المعدَّلة من بطاقة الطلب — نصوص مقصوصة فقط */
+    const ci = body.clientInfo;
+    if (ci === null) {
+      update.client_info = null;
+    } else if (typeof ci === "object") {
+      const cap = { program: 2000, notes: 2000, maps: 300, address: 200 };
+      const clean = {};
+      for (const [k, v] of Object.entries(ci)) {
+        if (typeof v !== "string" || k.length > 30) continue;
+        clean[k] = v.trim().slice(0, cap[k] || 120);
+      }
+      update.client_info = clean;
+    } else {
+      return NextResponse.json({ error: "invalid client info" }, { status: 400 });
+    }
+  }
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "nothing to update" }, { status: 400 });
@@ -151,9 +167,7 @@ export async function PATCH(request) {
     .from("site_orders")
     .update(update)
     .eq("id", id)
-    .select(
-      "id, created_at, groom_name, bride_name, wedding_date, venue, phone, template_id, pack_id, lang, status, wedding_id, confirmation_status, comment, infos_complete, dashboard_password"
-    )
+    .select("*")
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, order: data });
