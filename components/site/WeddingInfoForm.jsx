@@ -56,9 +56,15 @@ const COPY = {
     notesPh: "مثال: #Amine_Fatima — موسيقى هادئة عند الفتح…",
     phone: "رقم هاتفكما (للتواصل)",
     phonePh: "0550123456",
-    send: "أرسلا المعلومات على واتساب",
+    send: "أرسلا المعلومات",
+    sending: "جارٍ الإرسال…",
     required: "المرجو ملء الحقول الأساسية: اسما العروسين والهاتف.",
-    hint: "بعد الضغط ستُفتح محادثة واتساب برسالة جاهزة تحوي كل ما كتبتماه — فقط اضغطا إرسال.",
+    hint: "تصل المعلومات مباشرة إلى فريق Dawati وسنتواصل معكما قريبًا.",
+    doneTitle: "وصلت معلوماتكما 🌹",
+    doneText:
+      "شكرًا لكما! استلم فريقنا كل التفاصيل وسنبدأ تجهيز دعوتكما، ثم نتواصل معكما على الرقم الذي أدخلتماه.",
+    doneWa: "أرسلا نسخة على واتساب أيضًا",
+    doneBack: "العودة إلى الموقع",
   },
   fr: {
     dir: "ltr",
@@ -97,9 +103,15 @@ const COPY = {
     notesPh: "Ex : #Amine_Fatima — musique douce à l'ouverture…",
     phone: "Votre numéro (pour vous joindre)",
     phonePh: "0550123456",
-    send: "Envoyer les informations sur WhatsApp",
+    send: "Envoyer les informations",
+    sending: "Envoi en cours…",
     required: "Merci de remplir l'essentiel : prénoms des mariés et téléphone.",
-    hint: "Un message WhatsApp prêt à envoyer s'ouvrira avec tout ce que vous avez rempli — appuyez simplement sur envoyer.",
+    hint: "Vos informations arrivent directement à l'équipe Dawati — nous vous recontactons très vite.",
+    doneTitle: "Informations bien reçues 🌹",
+    doneText:
+      "Merci ! Notre équipe a reçu tous les détails et commence à préparer votre invitation. Nous vous recontactons au numéro indiqué.",
+    doneWa: "Envoyer aussi une copie sur WhatsApp",
+    doneBack: "Retour au site",
   },
 };
 
@@ -131,6 +143,7 @@ export default function WeddingInfoForm() {
     program: "", notes: "", phone: "",
   });
   const [err, setErr] = useState(false);
+  const [state, setState] = useState("idle"); // idle | sending | done
 
   useEffect(() => {
     const saved = window.localStorage.getItem(LANG_KEY);
@@ -139,12 +152,8 @@ export default function WeddingInfoForm() {
 
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
 
-  const submit = () => {
-    if (f.groomFr.trim().length < 2 || f.brideFr.trim().length < 2 || f.phone.trim().length < 8) {
-      setErr(true);
-      return;
-    }
-    setErr(false);
+  /* رسالة واتساب المنسّقة — تُستعمل احتياطًا وفي زر "نسخة على واتساب" */
+  const buildWaLink = () => {
     const tpl = LIVE_TEMPLATES.find((c) => c.id === f.template);
     const pk = PRICING.find((p) => p.id === f.pack);
     const L = (ar, fr) => (lang === "ar" ? ar : fr);
@@ -173,8 +182,32 @@ export default function WeddingInfoForm() {
       "",
       L("📞 الهاتف:", "📞 Téléphone :") + ` ${f.phone.trim()}`,
     ].filter((x) => x !== null);
-    const link = whatsappLink(lines.join("\n"), waNumber);
-    if (link) window.open(link, "_blank", "noopener,noreferrer");
+    return whatsappLink(lines.join("\n"), waNumber);
+  };
+
+  const submit = async () => {
+    if (f.groomFr.trim().length < 2 || f.brideFr.trim().length < 2 || f.phone.trim().length < 8) {
+      setErr(true);
+      return;
+    }
+    setErr(false);
+    setState("sending");
+    /* الوجهة الأساسية: لوحة التحكم (client_infos) — واتساب احتياط فقط */
+    let saved = false;
+    try {
+      const res = await fetch("/api/site/infos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...f, lang }),
+      });
+      saved = res.ok;
+    } catch {}
+    if (!saved) {
+      const link = buildWaLink();
+      if (link) window.open(link, "_blank", "noopener,noreferrer");
+    }
+    setState("done");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -212,6 +245,39 @@ export default function WeddingInfoForm() {
       </header>
 
       <main className="mx-auto max-w-2xl px-5 pb-20 pt-10">
+        {state === "done" ? (
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="rounded-2xl border border-gold/25 bg-cream p-8 text-center shadow-card"
+          >
+            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald/10 text-3xl">
+              ✓
+            </span>
+            <h1 className={`mt-5 text-2xl font-bold text-burgundy-dark ${lang === "ar" ? "font-arabicText" : "font-serif"}`}>
+              {t.doneTitle}
+            </h1>
+            <p className="mt-3 text-sm leading-relaxed text-ink/65">{t.doneText}</p>
+            <div className="mt-7 flex flex-col items-center gap-3">
+              {buildWaLink() ? (
+                <a
+                  href={buildWaLink()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 rounded-full bg-[#25D366] px-7 py-3 text-sm font-bold text-white shadow transition-all hover:-translate-y-0.5"
+                >
+                  <WhatsAppIcon className="h-5 w-5" />
+                  {t.doneWa}
+                </a>
+              ) : null}
+              <a href="/" className="text-sm text-ink/55 underline-offset-4 hover:text-burgundy hover:underline">
+                {t.doneBack}
+              </a>
+            </div>
+          </motion.div>
+        ) : (
+        <>
         <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <h1 className={`text-3xl font-bold text-burgundy-dark ${lang === "ar" ? "font-arabicText" : "font-serif"}`}>
             {t.title}
@@ -321,15 +387,18 @@ export default function WeddingInfoForm() {
             {err ? <p className="mt-3 text-sm text-rose-600">{t.required}</p> : null}
             <button
               type="button"
+              disabled={state === "sending"}
               onClick={submit}
-              className="mt-5 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-[#25D366] px-7 py-3.5 text-sm font-bold text-white shadow transition-all duration-300 hover:-translate-y-0.5 hover:brightness-105 sm:w-auto"
+              className="mt-5 inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-burgundy px-7 py-3.5 text-sm font-bold text-cream shadow transition-all duration-300 hover:-translate-y-0.5 hover:bg-burgundy-dark disabled:opacity-60 sm:w-auto"
             >
-              <WhatsAppIcon className="h-5 w-5" />
-              {t.send}
+              {state === "sending" ? t.sending : t.send}
+              <span aria-hidden>{lang === "ar" ? "←" : "→"}</span>
             </button>
             <p className="mt-3 text-xs leading-relaxed text-ink/45">{t.hint}</p>
           </section>
         </div>
+        </>
+        )}
       </main>
     </div>
   );

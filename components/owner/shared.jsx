@@ -215,6 +215,7 @@ const NAV = [
   { href: "/owner/weddings", label: "Mariages", icon: "💍", perm: "weddings" },
   { href: "/owner/weddings/new", label: "Créer un mariage", icon: "➕", perm: "weddings" },
   { href: "/owner/orders", label: "Commandes", icon: "🛒", perm: "orders" },
+  { href: "/owner/infos", label: "Fiches mariage", icon: "📋", perm: "orders" },
   { href: "/owner/templates", label: "Modèles", icon: "🖼", perm: "templates" },
   { href: "/owner/media", label: "Médiathèque", icon: "📁", perm: "media" },
   { href: "/owner/music", label: "Musiques", icon: "🎵", perm: "music" },
