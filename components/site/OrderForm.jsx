@@ -641,6 +641,13 @@ function SuccessScreen({ o, font, arabic, wa, summary }) {
             {o.continueWhatsApp}
           </a>
         ) : null}
+        {/* استمارة المعلومات الكاملة — تصل إلينا على واتساب */}
+        <a
+          href="/infos"
+          className={`inline-flex items-center gap-2 rounded-full border border-gold/50 bg-cream px-7 py-3 text-sm font-semibold text-burgundy-dark transition-all hover:-translate-y-0.5 hover:border-gold ${font}`}
+        >
+          📋 {arabic ? "املآ استمارة معلومات العرس" : "Remplir la fiche du mariage"}
+        </a>
         <a
           href="/"
           className={`text-sm text-ink/55 underline-offset-4 hover:text-burgundy hover:underline ${font}`}
