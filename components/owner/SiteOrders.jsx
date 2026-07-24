@@ -818,7 +818,7 @@ function RowDetails({
             <li className="flex flex-wrap items-center gap-1.5 pt-1">
               📋 Fiche client :
               {(() => {
-                const ficheLink = `${typeof window !== "undefined" ? window.location.origin : ""}/infos?order=${o.id}${o.pack_id ? `&pack=${o.pack_id}` : ""}`;
+                const ficheLink = `${typeof window !== "undefined" ? window.location.origin : ""}/infos?order=${o.id}${o.pack_id ? `&pack=${o.pack_id}` : ""}${o.template_id ? `&template=${o.template_id}` : ""}`;
                 const msg =
                   o.lang === "ar"
                     ? `السلام عليكم 🌹\nلتجهيز دعوتكما، املآ استمارة معلومات العرس من هذا الرابط:\n${ficheLink}`

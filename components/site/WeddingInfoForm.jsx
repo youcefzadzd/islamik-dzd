@@ -168,6 +168,13 @@ export default function WeddingInfoForm() {
   const packParam = PRICING.some((p) => p.id === params.get("pack"))
     ? params.get("pack")
     : "";
+  const templateParam = LIVE_TEMPLATES.some((c) => c.id === params.get("template"))
+    ? params.get("template")
+    : "";
+  /* الباقة والقالب متفق عليهما مع النشاط — حين يأتيان في الرابط
+     الشخصي يظهران للزبون كمعلومة مقفلة لا كخانة اختيار */
+  const packLocked = Boolean(packParam);
+  const templateLocked = Boolean(templateParam);
   const [lang, setLang] = useState("ar");
   const t = COPY[lang];
   const font = lang === "ar" ? "font-arabicText" : "font-body";
@@ -177,7 +184,7 @@ export default function WeddingInfoForm() {
     groomFr: "", groomAr: "", brideFr: "", brideAr: "",
     honoree: "groom", father: "", mother: "",
     date: "", time: "", venue: "", address: "", maps: "",
-    template: "", pack: packParam,
+    template: templateParam, pack: packParam,
     program: "", hashtag: "", music: "",
     rsvpCompanions: "oui", rsvpMax: "2", rsvpChildren: "non",
     design: "", notes: "", phone: "",
@@ -343,29 +350,43 @@ export default function WeddingInfoForm() {
         </motion.div>
 
         <div className="mt-8 space-y-8">
-          {/* الباقة — تتحكم في بقية الخانات */}
+          {/* الباقة — تتحكم في بقية الخانات. مقفلة إن جاءت في الرابط الشخصي */}
           <section className="rounded-2xl border border-gold/25 bg-cream p-5 shadow-card">
             <h2 className="mb-1 font-serif text-lg font-semibold text-burgundy-dark">{t.sections.pack}</h2>
-            <p className="mb-4 text-xs text-ink/45">{t.packHint}</p>
-            <div className="flex flex-wrap gap-2.5">
-              {PRICING.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setF((x) => ({ ...x, pack: p.id }))}
-                  className={`rounded-2xl border px-4 py-2.5 text-sm transition-colors ${
-                    f.pack === p.id
-                      ? "border-burgundy bg-burgundy text-cream"
-                      : "border-gold/40 bg-cream text-ink/70 hover:border-burgundy/50"
-                  }`}
-                >
-                  <span className="font-semibold">{p.name[lang]}</span>
-                  <span className={`ms-2 text-xs ${f.pack === p.id ? "text-cream/75" : "text-ink/45"}`}>
-                    {formatDZD(p.price, lang)}
-                  </span>
-                </button>
-              ))}
-            </div>
+            {packLocked ? (
+              <div className="mt-3 inline-flex items-center gap-2.5 rounded-2xl border border-burgundy bg-burgundy px-4 py-2.5 text-sm text-cream">
+                <span aria-hidden>✓</span>
+                <span className="font-semibold">
+                  {PRICING.find((p) => p.id === f.pack)?.name[lang]}
+                </span>
+                <span className="text-xs text-cream/75">
+                  {formatDZD(PRICING.find((p) => p.id === f.pack)?.price || 0, lang)}
+                </span>
+              </div>
+            ) : (
+              <>
+                <p className="mb-4 text-xs text-ink/45">{t.packHint}</p>
+                <div className="flex flex-wrap gap-2.5">
+                  {PRICING.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setF((x) => ({ ...x, pack: p.id }))}
+                      className={`rounded-2xl border px-4 py-2.5 text-sm transition-colors ${
+                        f.pack === p.id
+                          ? "border-burgundy bg-burgundy text-cream"
+                          : "border-gold/40 bg-cream text-ink/70 hover:border-burgundy/50"
+                      }`}
+                    >
+                      <span className="font-semibold">{p.name[lang]}</span>
+                      <span className={`ms-2 text-xs ${f.pack === p.id ? "text-cream/75" : "text-ink/45"}`}>
+                        {formatDZD(p.price, lang)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </section>
 
           {/* العروسان */}
@@ -424,17 +445,29 @@ export default function WeddingInfoForm() {
             </div>
           </section>
 
-          {/* الدعوة */}
+          {/* الدعوة — القالب مقفل إن جاء في الرابط الشخصي */}
           <section className="rounded-2xl border border-gold/25 bg-cream p-5 shadow-card">
             <h2 className="mb-4 font-serif text-lg font-semibold text-burgundy-dark">{t.sections.design}</h2>
-            <Field label={t.template}>
-              <select value={f.template} onChange={set("template")} className={inputCls}>
-                <option value="">{t.pickTemplate}</option>
-                {LIVE_TEMPLATES.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </Field>
+            {templateLocked ? (
+              <div>
+                <span className={labelCls}>{t.template}</span>
+                <div className="inline-flex items-center gap-2.5 rounded-2xl border border-burgundy bg-burgundy px-4 py-2.5 text-sm text-cream">
+                  <span aria-hidden>✓</span>
+                  <span className="font-semibold">
+                    {LIVE_TEMPLATES.find((c) => c.id === f.template)?.name}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <Field label={t.template}>
+                <select value={f.template} onChange={set("template")} className={inputCls}>
+                  <option value="">{t.pickTemplate}</option>
+                  {LIVE_TEMPLATES.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </Field>
+            )}
           </section>
 
           {/* تفاصيل إضافية — البرنامج والهاشتاغ والموسيقى من Premium فما فوق */}
