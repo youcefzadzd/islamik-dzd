@@ -234,6 +234,12 @@ function StepDetails({ f, set, setF }) {
             </div>
           </div>
         )}
+        {/* تنويه «بدون أطفال» — مستقل عن نظام المرافقين، يظهر أعلى نموذج RSVP */}
+        <label className="mt-3 flex items-center gap-2 border-t border-gold/20 pt-3 text-sm text-ink">
+          <input type="checkbox" checked={f.noKidsNote} onChange={set("noKidsNote")} />
+          Afficher la mention « sans enfants » sur l'invitation
+          <span className="text-xs text-ink/50">(نعتذر عن اصطحاب الأطفال)</span>
+        </label>
       </div>
     </div>
   );

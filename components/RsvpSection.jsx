@@ -147,6 +147,12 @@ export default function RsvpSection({ data }) {
             <div className="divider mt-5">
               <span className="text-gold">✦</span>
             </div>
+            {/* تنويه «بدون أطفال» — سطر رقيق بروح الورقة */}
+            {rsvp.noKidsNote ? (
+              <p className="mt-4 font-body text-sm italic leading-relaxed text-burgundy/80">
+                🌸 {rsvp.noKidsNote}
+              </p>
+            ) : null}
           </div>
 
           <AnimatePresence mode="wait">
