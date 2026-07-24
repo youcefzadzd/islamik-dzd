@@ -172,6 +172,27 @@ export default function SiteOrders() {
     }
   }
 
+  /* «✓ Confirmer la fiche» — ضغطة واحدة: ينشئ العرس (إن لم يوجد)،
+     يطبّق كل حقول استمارة العميل عليه، ويعلّم الطلب Infos complètes */
+  async function confirmFiche(o) {
+    setCreatingId(o.id);
+    setLoadError("");
+    try {
+      const res = await fetch("/api/owner/site-orders/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...ownerHeaders() },
+        body: JSON.stringify({ id: o.id }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j.error || "Erreur serveur.");
+      applySaved(j.order);
+    } catch (e) {
+      setLoadError(e.message);
+    } finally {
+      setCreatingId(null);
+    }
+  }
+
   /* «Modifier» = نافذة فيها محرر العرس الكامل لهذا الطلب:
      أول ضغطة تُنشئ العرس من بيانات الطلب وتربطه به — دون تغيير حالته. */
   async function openWedding(o) {
@@ -525,23 +546,36 @@ export default function SiteOrders() {
                           )}
                           {o.status === "preparing" && (
                             <>
-                              {/* المعلومات مكتملة → «Modifier» بدل «Saisir les infos» */}
-                              <button
-                                type="button"
-                                disabled={busy}
-                                onClick={() => openWedding(o)}
-                                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
-                                  o.infos_complete
-                                    ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
-                                    : "bg-stone-900 text-white hover:bg-stone-700"
-                                }`}
-                              >
-                                {busy
-                                  ? "Création…"
-                                  : o.infos_complete
-                                    ? "✎ Modifier"
-                                    : "📋 Saisir les infos"}
-                              </button>
+                              {/* استمارة واصلة وغير مؤكدة → «✓ Confirmer la fiche»
+                                  (ينشئ العرس ويطبّقها) · مكتملة → «Modifier» ·
+                                  بلا استمارة → «Saisir les infos» يدويًا */}
+                              {o.client_info && !o.infos_complete ? (
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  onClick={() => confirmFiche(o)}
+                                  className="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-violet-700 disabled:opacity-60"
+                                >
+                                  {busy ? "Confirmation…" : "✓ Confirmer la fiche"}
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  onClick={() => openWedding(o)}
+                                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
+                                    o.infos_complete
+                                      ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
+                                      : "bg-stone-900 text-white hover:bg-stone-700"
+                                  }`}
+                                >
+                                  {busy
+                                    ? "Création…"
+                                    : o.infos_complete
+                                      ? "✎ Modifier"
+                                      : "📋 Saisir les infos"}
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => setStatus(o.id, "dispatch")}
@@ -564,6 +598,7 @@ export default function SiteOrders() {
                             patchOrder={patchOrder}
                             applySaved={applySaved}
                             onConfirm={() => setConfirmingOrder(o)}
+                            onConfirmFiche={() => confirmFiche(o)}
                             onFillInfos={() => openWedding(o)}
                             onDispatch={() => setStatus(o.id, "dispatch")}
                             onCancel={() => setStatus(o.id, "cancelled")}
@@ -733,6 +768,7 @@ function RowDetails({
   patchOrder,
   applySaved,
   onConfirm,
+  onConfirmFiche,
   onFillInfos,
   onDispatch,
   onCancel,
@@ -995,17 +1031,27 @@ function RowDetails({
         )}
         {o.status === "preparing" && (
           <>
-            <button
-              type="button"
-              onClick={onFillInfos}
-              className={`rounded-lg px-4 py-2 text-xs font-semibold transition-colors ${
-                o.infos_complete
-                  ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
-                  : "bg-stone-900 text-white hover:bg-stone-700"
-              }`}
-            >
-              {o.infos_complete ? "✎ Modifier les infos" : "📋 Saisir les infos du client"}
-            </button>
+            {o.client_info && !o.infos_complete ? (
+              <button
+                type="button"
+                onClick={onConfirmFiche}
+                className="rounded-lg bg-violet-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-700"
+              >
+                ✓ Confirmer la fiche
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onFillInfos}
+                className={`rounded-lg px-4 py-2 text-xs font-semibold transition-colors ${
+                  o.infos_complete
+                    ? "border border-gold/50 text-gold-dark hover:bg-ivory-dark"
+                    : "bg-stone-900 text-white hover:bg-stone-700"
+                }`}
+              >
+                {o.infos_complete ? "✎ Modifier les infos" : "📋 Saisir les infos du client"}
+              </button>
+            )}
             <button
               type="button"
               onClick={onDispatch}
