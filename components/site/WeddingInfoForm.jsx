@@ -66,6 +66,10 @@ const COPY = {
     rsvpNo: "لا",
     rsvpMax: "أقصى عدد مرافقين لكل ضيف",
     rsvpChildren: "هل الأطفال مدعوون؟",
+    photos: "صوركما للمعرض (اختياري — حتى 6 صور)",
+    photosHint: "تظهر في قسم معرض الصور داخل دعوتكما. JPG أو PNG، حتى 8MB للصورة.",
+    photosUploading: "جارٍ رفع الصور…",
+    photosError: "تعذّر رفع بعض الصور — جرّبا صورًا أصغر (JPG/PNG).",
     design: "طلبات تخصيص التصميم (ألوان، خطوط، لمسات خاصة…)",
     designPh: "مثال: نحب اللون الأخضر الزيتوني، وخط عربي كلاسيكي…",
     notes: "أي طلب أو ملاحظة أخرى",
@@ -128,6 +132,10 @@ const COPY = {
     rsvpNo: "Non",
     rsvpMax: "Nombre maximum d'accompagnants par invité",
     rsvpChildren: "Les enfants sont-ils invités ?",
+    photos: "Vos photos pour la galerie (optionnel — max 6)",
+    photosHint: "Affichées dans la galerie de votre invitation. JPG ou PNG, 8MB max par photo.",
+    photosUploading: "Envoi des photos…",
+    photosError: "Certaines photos n'ont pas pu être envoyées — essayez en JPG/PNG plus léger.",
     design: "Personnalisation du design (couleurs, polices, touches spéciales…)",
     designPh: "Ex : nous aimons le vert olive, avec une calligraphie classique…",
     notes: "Autre demande ou remarque",
@@ -192,6 +200,38 @@ export default function WeddingInfoForm() {
   const [err, setErr] = useState(false);
   const [state, setState] = useState("idle"); // idle | sending | done
 
+  /* صور المعرض (Premium/Royale) — تُرفع فور اختيارها وتُجمع روابطها */
+  const [photos, setPhotos] = useState([]);
+  const [photosBusy, setPhotosBusy] = useState(false);
+  const [photosErr, setPhotosErr] = useState(false);
+
+  const pickPhotos = async (e) => {
+    const files = [...(e.target.files || [])].slice(0, 6 - photos.length);
+    e.target.value = "";
+    if (!files.length) return;
+    setPhotosBusy(true);
+    setPhotosErr(false);
+    const added = [];
+    for (const file of files) {
+      if (!file.type.startsWith("image/") || file.size > 8 * 1024 * 1024) {
+        setPhotosErr(true);
+        continue;
+      }
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/site/infos/upload", { method: "POST", body: fd });
+        const j = await res.json();
+        if (res.ok && j.url) added.push(j.url);
+        else setPhotosErr(true);
+      } catch {
+        setPhotosErr(true);
+      }
+    }
+    if (added.length) setPhotos((p) => [...p, ...added].slice(0, 6));
+    setPhotosBusy(false);
+  };
+
   useEffect(() => {
     const saved = window.localStorage.getItem(LANG_KEY);
     if (saved === "fr" || saved === "ar") setLang(saved);
@@ -239,6 +279,8 @@ export default function WeddingInfoForm() {
         : null,
       f.program.trim() ? "" : null,
       f.program.trim() ? L("📋 البرنامج:", "📋 Programme :") + `\n${f.program.trim()}` : null,
+      photos.length ? "" : null,
+      photos.length ? L("📷 الصور:", "📷 Photos :") + `\n${photos.join("\n")}` : null,
       f.design.trim() ? "" : null,
       f.design.trim() ? L("👑 التخصيص:", "👑 Personnalisation :") + `\n${f.design.trim()}` : null,
       f.notes.trim() ? "" : null,
@@ -262,7 +304,7 @@ export default function WeddingInfoForm() {
       const res = await fetch("/api/site/infos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...f, lang, orderId }),
+        body: JSON.stringify({ ...f, photos, lang, orderId }),
       });
       saved = res.ok;
     } catch {}
@@ -486,6 +528,47 @@ export default function WeddingInfoForm() {
                     <Field label={t.music}>
                       <input value={f.music} onChange={set("music")} placeholder={t.musicPh} className={inputCls} />
                     </Field>
+                  </div>
+
+                  {/* صور المعرض — اختيارية، تُرفع فورًا */}
+                  <div>
+                    <span className={labelCls}>{t.photos}</span>
+                    <div className="flex flex-wrap gap-2.5">
+                      {photos.map((u, i) => (
+                        <div key={u} className="relative h-20 w-20 overflow-hidden rounded-xl border border-gold/30">
+                          <img src={u} alt="" className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            aria-label="Retirer"
+                            onClick={() => setPhotos((p) => p.filter((_, k) => k !== i))}
+                            className="absolute end-0.5 top-0.5 rounded-full bg-black/55 px-1.5 text-xs text-white"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      {photos.length < 6 ? (
+                        <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-xl border border-dashed border-gold/50 text-2xl text-gold-dark transition-colors hover:bg-ivory-light">
+                          {photosBusy ? (
+                            <span className="animate-pulse text-sm">…</span>
+                          ) : (
+                            "+"
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            disabled={photosBusy}
+                            onChange={pickPhotos}
+                          />
+                        </label>
+                      ) : null}
+                    </div>
+                    <p className="mt-1.5 text-xs text-ink/45">
+                      {photosBusy ? t.photosUploading : t.photosHint}
+                    </p>
+                    {photosErr ? <p className="mt-1 text-xs text-rose-600">{t.photosError}</p> : null}
                   </div>
                 </>
               ) : null}

@@ -112,6 +112,14 @@ export async function POST(request) {
     },
   };
 
+  /* صور الاستمارة تلتحق بمعرض العرس (بلا تكرار) */
+  const photos = Array.isArray(ci.photos) ? ci.photos : [];
+  if (photos.length) {
+    const media = (wedding && wedding.media) || {};
+    const gallery = Array.isArray(media.gallery) ? media.gallery : [];
+    fields.media = { ...media, gallery: [...new Set([...gallery, ...photos])] };
+  }
+
   let weddingId = order.wedding_id;
   let dashboardPassword = null;
 

@@ -59,6 +59,12 @@ export async function POST(request) {
     rsvpMax: /^[1-5]$/.test(String(body.rsvpMax)) ? String(body.rsvpMax) : "2",
     rsvpChildren: body.rsvpChildren === "oui" ? "oui" : "non",
     design: s(body.design, 2000),
+    /* صور المعرض المرفوعة عبر /api/site/infos/upload — روابط https فقط */
+    photos: Array.isArray(body.photos)
+      ? body.photos
+          .filter((u) => typeof u === "string" && /^https:\/\//.test(u) && u.length <= 300)
+          .slice(0, 6)
+      : [],
     notes: s(body.notes, 2000),
     phone,
     lang: body.lang === "fr" ? "fr" : "ar",

@@ -1188,6 +1188,22 @@ function FicheClientCard({ o, patchOrder, applySaved }) {
           <textarea rows={4} value={d.notes || ""} onChange={set("notes")} className={`${input} resize-none`} />
         </div>
       </div>
+
+      {/* صور الزبون للمعرض — تلتحق بمعرض العرس عند «✓ Confirmer la fiche» */}
+      {Array.isArray(d.photos) && d.photos.length ? (
+        <div className="mt-3">
+          <p className="mb-1.5 text-xs font-semibold text-ink/50">
+            📷 Photos du client ({d.photos.length}) — ajoutées à la galerie à la confirmation
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {d.photos.map((u) => (
+              <a key={u} href={u} target="_blank" rel="noreferrer" className="block h-16 w-16 overflow-hidden rounded-lg border border-violet-200">
+                <img src={u} alt="" className="h-full w-full object-cover" />
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
       {error && <p className="mt-2 text-xs text-rose-600">{error}</p>}
     </section>
   );

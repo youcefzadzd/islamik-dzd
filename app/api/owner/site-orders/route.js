@@ -150,7 +150,15 @@ export async function PATCH(request) {
       const cap = { program: 2000, notes: 2000, design: 2000, maps: 300, address: 200, music: 200 };
       const clean = {};
       for (const [k, v] of Object.entries(ci)) {
-        if (typeof v !== "string" || k.length > 30) continue;
+        if (k.length > 30) continue;
+        /* photos: مصفوفة روابط https — تُحفظ كما هي (حتى 6) */
+        if (k === "photos" && Array.isArray(v)) {
+          clean.photos = v
+            .filter((u) => typeof u === "string" && /^https:\/\//.test(u) && u.length <= 300)
+            .slice(0, 6);
+          continue;
+        }
+        if (typeof v !== "string") continue;
         clean[k] = v.trim().slice(0, cap[k] || 120);
       }
       update.client_info = clean;
