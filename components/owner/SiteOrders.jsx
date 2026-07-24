@@ -816,18 +816,35 @@ function RowDetails({
               </li>
             ) : null}
             <li className="flex flex-wrap items-center gap-1.5 pt-1">
-              📋 Lien fiche client :
-              <CopyButton
-                text={`${typeof window !== "undefined" ? window.location.origin : ""}/infos?order=${o.id}${o.pack_id ? `&pack=${o.pack_id}` : ""}`}
-              />
+              📋 Fiche client :
+              {(() => {
+                const ficheLink = `${typeof window !== "undefined" ? window.location.origin : ""}/infos?order=${o.id}${o.pack_id ? `&pack=${o.pack_id}` : ""}`;
+                const msg =
+                  o.lang === "ar"
+                    ? `السلام عليكم 🌹\nلتجهيز دعوتكما، املآ استمارة معلومات العرس من هذا الرابط:\n${ficheLink}`
+                    : `Bonjour 🌹\nPour préparer votre invitation, merci de remplir la fiche du mariage via ce lien :\n${ficheLink}`;
+                return (
+                  <>
+                    {wa ? (
+                      <a
+                        href={`${wa}?text=${encodeURIComponent(msg)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md bg-emerald px-2.5 py-1 text-xs font-semibold text-white hover:opacity-90"
+                      >
+                        🟢 Envoyer sur WhatsApp
+                      </a>
+                    ) : null}
+                    <CopyButton text={ficheLink} />
+                  </>
+                );
+              })()}
               {o.client_info ? (
                 <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[0.68rem] font-bold text-violet-700">
                   ✓ remplie par le client
                 </span>
               ) : (
-                <span className="text-xs text-ink/45">
-                  (en attente — envoyez le lien au client sur WhatsApp)
-                </span>
+                <span className="text-xs text-ink/45">(en attente)</span>
               )}
             </li>
           </ul>
