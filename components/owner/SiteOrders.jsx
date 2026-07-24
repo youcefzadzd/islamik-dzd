@@ -818,7 +818,7 @@ function RowDetails({
             <li className="flex flex-wrap items-center gap-1.5 pt-1">
               📋 Lien fiche client :
               <CopyButton
-                text={`${typeof window !== "undefined" ? window.location.origin : ""}/infos?order=${o.id}`}
+                text={`${typeof window !== "undefined" ? window.location.origin : ""}/infos?order=${o.id}${o.pack_id ? `&pack=${o.pack_id}` : ""}`}
               />
               {o.client_info ? (
                 <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[0.68rem] font-bold text-violet-700">
@@ -1042,6 +1042,8 @@ function FicheClientCard({ o, patchOrder, applySaved }) {
     ["venue", "Salle"],
     ["address", "Adresse"],
     ["maps", "Lien Google Maps", "ltr"],
+    ["hashtag", "Hashtag", "ltr"],
+    ["music", "Musique"],
   ];
 
   return (
@@ -1085,15 +1087,41 @@ function FicheClientCard({ o, patchOrder, applySaved }) {
             <option value="bride">La mariée</option>
           </select>
         </div>
+        <div>
+          <label className="mb-1 block text-xs text-ink/50">Accompagnants</label>
+          <select value={d.rsvpCompanions || "oui"} onChange={set("rsvpCompanions")} className={input}>
+            <option value="oui">Oui</option>
+            <option value="non">Non</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-ink/50">Max / invité</label>
+          <select value={d.rsvpMax || "2"} onChange={set("rsvpMax")} className={input}>
+            {["1", "2", "3", "4", "5"].map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-ink/50">Enfants invités</label>
+          <select value={d.rsvpChildren || "non"} onChange={set("rsvpChildren")} className={input}>
+            <option value="non">Non</option>
+            <option value="oui">Oui</option>
+          </select>
+        </div>
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
         <div>
           <label className="mb-1 block text-xs text-ink/50">Programme de la journée</label>
           <textarea rows={4} value={d.program || ""} onChange={set("program")} className={`${input} resize-none`} />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-ink/50">Demandes spéciales / hashtag</label>
+          <label className="mb-1 block text-xs text-ink/50">Personnalisation (Royal) 👑</label>
+          <textarea rows={4} value={d.design || ""} onChange={set("design")} className={`${input} resize-none`} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-ink/50">Autres demandes</label>
           <textarea rows={4} value={d.notes || ""} onChange={set("notes")} className={`${input} resize-none`} />
         </div>
       </div>

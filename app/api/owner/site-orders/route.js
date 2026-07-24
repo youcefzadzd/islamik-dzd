@@ -147,7 +147,7 @@ export async function PATCH(request) {
     if (ci === null) {
       update.client_info = null;
     } else if (typeof ci === "object") {
-      const cap = { program: 2000, notes: 2000, maps: 300, address: 200 };
+      const cap = { program: 2000, notes: 2000, design: 2000, maps: 300, address: 200, music: 200 };
       const clean = {};
       for (const [k, v] of Object.entries(ci)) {
         if (typeof v !== "string" || k.length > 30) continue;

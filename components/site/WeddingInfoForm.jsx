@@ -11,7 +11,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { CATALOG, PRICING, SITE, whatsappLink } from "./site-config";
+import { CATALOG, PRICING, SITE, formatDZD, whatsappLink } from "./site-config";
 import { WhatsAppIcon } from "./ui";
 import { useSiteWhatsApp } from "./useSiteWhatsApp";
 import Pixels from "./Pixels";
@@ -26,13 +26,17 @@ const COPY = {
     subtitle:
       "املآ المعلومات التالية بدقة — نستعملها لتجهيز دعوتكما كما تتمنيانها. عند الإرسال تصلنا مباشرة على واتساب.",
     sections: {
+      pack: "باقتكما",
       couple: "العروسان",
       family: "العائلة (اختياري)",
       event: "الحفل",
       design: "الدعوة",
       extra: "تفاصيل إضافية (اختياري)",
+      rsvp: "تأكيد الحضور والمرافقون",
+      royal: "التخصيص الملكي 👑",
       contact: "التواصل",
     },
+    packHint: "الخانات التالية تتغير حسب الباقة المختارة.",
     groomFr: "اسم العريس (بالأحرف اللاتينية)",
     groomAr: "اسم العريس بالعربية",
     brideFr: "اسم العروس (بالأحرف اللاتينية)",
@@ -53,8 +57,19 @@ const COPY = {
     pickPack: "اختر الباقة…",
     program: "برنامج اليوم (استقبال، عشاء، سهرة… مع الأوقات)",
     programPh: "مثال:\n16:00 استقبال الضيوف\n19:00 العشاء\n21:00 السهرة",
-    notes: "هاشتاغ، أغنية مفضلة، أو أي طلب خاص",
-    notesPh: "مثال: #Amine_Fatima — موسيقى هادئة عند الفتح…",
+    hashtag: "هاشتاغ العرس",
+    hashtagPh: "مثال: #Amine_Fatima",
+    music: "الموسيقى أو الأغنية المفضلة",
+    musicPh: "مثال: موسيقى هادئة عند فتح الدعوة…",
+    rsvpCompanions: "هل يمكن للضيوف إحضار مرافقين؟",
+    rsvpYes: "نعم",
+    rsvpNo: "لا",
+    rsvpMax: "أقصى عدد مرافقين لكل ضيف",
+    rsvpChildren: "هل الأطفال مدعوون؟",
+    design: "طلبات تخصيص التصميم (ألوان، خطوط، لمسات خاصة…)",
+    designPh: "مثال: نحب اللون الأخضر الزيتوني، وخط عربي كلاسيكي…",
+    notes: "أي طلب أو ملاحظة أخرى",
+    notesPh: "اكتبا هنا أي شيء آخر تريدانه…",
     phone: "رقم هاتفكما (للتواصل)",
     phonePh: "0550123456",
     send: "أرسلا المعلومات",
@@ -73,13 +88,17 @@ const COPY = {
     subtitle:
       "Remplissez ces informations avec précision — elles servent à préparer votre invitation. À l'envoi, tout nous arrive directement sur WhatsApp.",
     sections: {
+      pack: "Votre pack",
       couple: "Les mariés",
       family: "La famille (optionnel)",
       event: "La fête",
       design: "L'invitation",
       extra: "Détails supplémentaires (optionnel)",
+      rsvp: "RSVP et accompagnants",
+      royal: "Personnalisation Royale 👑",
       contact: "Contact",
     },
+    packHint: "Les champs suivants s'adaptent au pack choisi.",
     groomFr: "Prénom du marié (lettres latines)",
     groomAr: "Prénom du marié en arabe",
     brideFr: "Prénom de la mariée (lettres latines)",
@@ -100,8 +119,19 @@ const COPY = {
     pickPack: "Choisir le pack…",
     program: "Programme de la journée (accueil, dîner, soirée… avec horaires)",
     programPh: "Ex :\n16:00 Accueil des invités\n19:00 Dîner\n21:00 Soirée",
-    notes: "Hashtag, musique préférée, ou demande spéciale",
-    notesPh: "Ex : #Amine_Fatima — musique douce à l'ouverture…",
+    hashtag: "Hashtag du mariage",
+    hashtagPh: "Ex : #Amine_Fatima",
+    music: "Musique ou chanson préférée",
+    musicPh: "Ex : musique douce à l'ouverture de l'invitation…",
+    rsvpCompanions: "Les invités peuvent-ils venir accompagnés ?",
+    rsvpYes: "Oui",
+    rsvpNo: "Non",
+    rsvpMax: "Nombre maximum d'accompagnants par invité",
+    rsvpChildren: "Les enfants sont-ils invités ?",
+    design: "Personnalisation du design (couleurs, polices, touches spéciales…)",
+    designPh: "Ex : nous aimons le vert olive, avec une calligraphie classique…",
+    notes: "Autre demande ou remarque",
+    notesPh: "Écrivez ici tout ce que vous souhaitez ajouter…",
     phone: "Votre numéro (pour vous joindre)",
     phonePh: "0550123456",
     send: "Envoyer les informations",
@@ -131,9 +161,13 @@ function Field({ label, children }) {
 }
 
 export default function WeddingInfoForm() {
-  /* ?order=<id> — رابط شخصي يرسله النشاط: الاستمارة تلتصق بذلك الطلب */
+  /* ?order=<id> — رابط شخصي يرسله النشاط: الاستمارة تلتصق بذلك الطلب.
+     ?pack= يحدد الباقة مسبقًا فتتكيف الخانات معها */
   const params = useSearchParams();
   const orderId = params.get("order") || "";
+  const packParam = PRICING.some((p) => p.id === params.get("pack"))
+    ? params.get("pack")
+    : "";
   const [lang, setLang] = useState("ar");
   const t = COPY[lang];
   const font = lang === "ar" ? "font-arabicText" : "font-body";
@@ -143,8 +177,10 @@ export default function WeddingInfoForm() {
     groomFr: "", groomAr: "", brideFr: "", brideAr: "",
     honoree: "groom", father: "", mother: "",
     date: "", time: "", venue: "", address: "", maps: "",
-    template: "", pack: "",
-    program: "", notes: "", phone: "",
+    template: "", pack: packParam,
+    program: "", hashtag: "", music: "",
+    rsvpCompanions: "oui", rsvpMax: "2", rsvpChildren: "non",
+    design: "", notes: "", phone: "",
   });
   const [err, setErr] = useState(false);
   const [state, setState] = useState("idle"); // idle | sending | done
@@ -155,6 +191,10 @@ export default function WeddingInfoForm() {
   }, []);
 
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
+
+  /* مستوى الباقة يحدد الخانات الظاهرة — بلا اختيار تُعرض كل الخانات */
+  const TIER = { essential: 0, premium: 1, royal: 2 };
+  const tier = f.pack in TIER ? TIER[f.pack] : 2;
 
   /* رسالة واتساب المنسّقة — تُستعمل احتياطًا وفي زر "نسخة على واتساب" */
   const buildWaLink = () => {
@@ -179,8 +219,21 @@ export default function WeddingInfoForm() {
       "",
       tpl ? L("🎨 القالب:", "🎨 Template :") + ` ${tpl.name}` : null,
       pk ? L("💎 الباقة:", "💎 Pack :") + ` ${pk.name[lang]}` : null,
+      f.hashtag.trim() ? L("#️⃣ الهاشتاغ:", "#️⃣ Hashtag :") + ` ${f.hashtag.trim()}` : null,
+      f.music.trim() ? L("🎵 الموسيقى:", "🎵 Musique :") + ` ${f.music.trim()}` : null,
+      tier >= 1
+        ? L("👥 المرافقون:", "👥 Accompagnants :") +
+          " " +
+          (f.rsvpCompanions === "oui"
+            ? L(`نعم (حتى ${f.rsvpMax})`, `oui (max ${f.rsvpMax})`)
+            : L("لا", "non")) +
+          L(" · الأطفال: ", " · enfants : ") +
+          (f.rsvpChildren === "oui" ? L("نعم", "oui") : L("لا", "non"))
+        : null,
       f.program.trim() ? "" : null,
       f.program.trim() ? L("📋 البرنامج:", "📋 Programme :") + `\n${f.program.trim()}` : null,
+      f.design.trim() ? "" : null,
+      f.design.trim() ? L("👑 التخصيص:", "👑 Personnalisation :") + `\n${f.design.trim()}` : null,
       f.notes.trim() ? "" : null,
       f.notes.trim() ? L("✨ طلبات خاصة:", "✨ Demandes :") + `\n${f.notes.trim()}` : null,
       "",
@@ -290,6 +343,31 @@ export default function WeddingInfoForm() {
         </motion.div>
 
         <div className="mt-8 space-y-8">
+          {/* الباقة — تتحكم في بقية الخانات */}
+          <section className="rounded-2xl border border-gold/25 bg-cream p-5 shadow-card">
+            <h2 className="mb-1 font-serif text-lg font-semibold text-burgundy-dark">{t.sections.pack}</h2>
+            <p className="mb-4 text-xs text-ink/45">{t.packHint}</p>
+            <div className="flex flex-wrap gap-2.5">
+              {PRICING.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setF((x) => ({ ...x, pack: p.id }))}
+                  className={`rounded-2xl border px-4 py-2.5 text-sm transition-colors ${
+                    f.pack === p.id
+                      ? "border-burgundy bg-burgundy text-cream"
+                      : "border-gold/40 bg-cream text-ink/70 hover:border-burgundy/50"
+                  }`}
+                >
+                  <span className="font-semibold">{p.name[lang]}</span>
+                  <span className={`ms-2 text-xs ${f.pack === p.id ? "text-cream/75" : "text-ink/45"}`}>
+                    {formatDZD(p.price, lang)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
           {/* العروسان */}
           <section className="rounded-2xl border border-gold/25 bg-cream p-5 shadow-card">
             <h2 className="mb-4 font-serif text-lg font-semibold text-burgundy-dark">{t.sections.couple}</h2>
@@ -349,38 +427,95 @@ export default function WeddingInfoForm() {
           {/* الدعوة */}
           <section className="rounded-2xl border border-gold/25 bg-cream p-5 shadow-card">
             <h2 className="mb-4 font-serif text-lg font-semibold text-burgundy-dark">{t.sections.design}</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={t.template}>
-                <select value={f.template} onChange={set("template")} className={inputCls}>
-                  <option value="">{t.pickTemplate}</option>
-                  {LIVE_TEMPLATES.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-              </Field>
-              <Field label={t.pack}>
-                <select value={f.pack} onChange={set("pack")} className={inputCls}>
-                  <option value="">{t.pickPack}</option>
-                  {PRICING.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name[lang]}</option>
-                  ))}
-                </select>
-              </Field>
-            </div>
+            <Field label={t.template}>
+              <select value={f.template} onChange={set("template")} className={inputCls}>
+                <option value="">{t.pickTemplate}</option>
+                {LIVE_TEMPLATES.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </Field>
           </section>
 
-          {/* تفاصيل إضافية */}
+          {/* تفاصيل إضافية — البرنامج والهاشتاغ والموسيقى من Premium فما فوق */}
           <section className="rounded-2xl border border-gold/25 bg-cream p-5 shadow-card">
             <h2 className="mb-4 font-serif text-lg font-semibold text-burgundy-dark">{t.sections.extra}</h2>
             <div className="space-y-4">
-              <Field label={t.program}>
-                <textarea value={f.program} onChange={set("program")} placeholder={t.programPh} rows={4} className={inputCls} />
-              </Field>
+              {tier >= 1 ? (
+                <>
+                  <Field label={t.program}>
+                    <textarea value={f.program} onChange={set("program")} placeholder={t.programPh} rows={4} className={inputCls} />
+                  </Field>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label={t.hashtag}>
+                      <input value={f.hashtag} onChange={set("hashtag")} placeholder={t.hashtagPh} dir="ltr" className={inputCls} />
+                    </Field>
+                    <Field label={t.music}>
+                      <input value={f.music} onChange={set("music")} placeholder={t.musicPh} className={inputCls} />
+                    </Field>
+                  </div>
+                </>
+              ) : null}
               <Field label={t.notes}>
                 <textarea value={f.notes} onChange={set("notes")} placeholder={t.notesPh} rows={3} className={inputCls} />
               </Field>
             </div>
           </section>
+
+          {/* تأكيد الحضور والمرافقون — Premium فما فوق */}
+          {tier >= 1 ? (
+            <section className="rounded-2xl border border-gold/25 bg-cream p-5 shadow-card">
+              <h2 className="mb-4 font-serif text-lg font-semibold text-burgundy-dark">{t.sections.rsvp}</h2>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {[
+                  ["rsvpCompanions", t.rsvpCompanions],
+                  ["rsvpChildren", t.rsvpChildren],
+                ].map(([k, label]) => (
+                  <div key={k}>
+                    <span className={labelCls}>{label}</span>
+                    <div className="flex gap-2">
+                      {[
+                        ["oui", t.rsvpYes],
+                        ["non", t.rsvpNo],
+                      ].map(([v, txt]) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => setF((p) => ({ ...p, [k]: v }))}
+                          className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                            f[k] === v
+                              ? "border-burgundy bg-burgundy text-cream"
+                              : "border-gold/40 bg-cream text-ink/70 hover:border-burgundy/50"
+                          }`}
+                        >
+                          {txt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {f.rsvpCompanions === "oui" ? (
+                  <Field label={t.rsvpMax}>
+                    <select value={f.rsvpMax} onChange={set("rsvpMax")} className={inputCls}>
+                      {["1", "2", "3", "4", "5"].map((n) => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                  </Field>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          {/* التخصيص الملكي — Royal فقط */}
+          {tier >= 2 ? (
+            <section className="rounded-2xl border border-gold/40 bg-gold/[0.06] p-5 shadow-card">
+              <h2 className="mb-4 font-serif text-lg font-semibold text-burgundy-dark">{t.sections.royal}</h2>
+              <Field label={t.design}>
+                <textarea value={f.design} onChange={set("design")} placeholder={t.designPh} rows={4} className={inputCls} />
+              </Field>
+            </section>
+          ) : null}
 
           {/* التواصل + الإرسال */}
           <section className="rounded-2xl border border-gold/25 bg-cream p-5 shadow-card">
