@@ -52,7 +52,7 @@ export default function SiteOrders() {
   const [denied, setDenied] = useState(false);
   const [orders, setOrders] = useState(null);
   const [loadError, setLoadError] = useState("");
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("new");
   const [creatingId, setCreatingId] = useState(null); // طلب يجري إنشاء عرسه
   const [editorWedding, setEditorWedding] = useState(null); // WED-XXX المفتوح في نافذة التحرير
   const [expandedId, setExpandedId] = useState(null); // الصف المفتوح بزر ➕
@@ -275,7 +275,7 @@ export default function SiteOrders() {
     <OwnerLayout active="/owner/orders" title="Commandes du site">
       {/* عدّادات + فلترة بالحالة */}
       <div className="mb-4 flex flex-wrap gap-2">
-        {[{ id: "all", label: "Toutes", cls: "bg-white/70 text-ink/70" }, ...STATUSES].map((s) => (
+        {STATUSES.map((s) => (
           <button
             key={s.id}
             type="button"
