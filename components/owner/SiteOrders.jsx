@@ -326,13 +326,10 @@ export default function SiteOrders() {
 
       {loadError && <p className={`mb-4 p-4 text-sm text-rose-600 ${glass}`}>{loadError}</p>}
       {!orders && !loadError && <p className="py-10 text-center text-ink/55">Chargement…</p>}
-      {orders && !loadError && shown.length === 0 && (
-        <p className={`p-8 text-center text-sm text-ink/55 ${glass}`}>
-          Aucune commande {filter !== "all" ? "dans ce statut" : "pour le moment"}.
-        </p>
-      )}
 
-      {shown?.length > 0 && (
+      {/* رأس الجدول ظاهر دائمًا في كل التبويبات — حتى بلا أي طلب؛
+          الرسالة الفارغة تصبح صفًا داخل الجدول */}
+      {orders && !loadError && (
         <div className={`overflow-x-auto ${glass}`}>
           <table className="w-full min-w-[1000px] text-sm">
             <thead>
@@ -370,7 +367,14 @@ export default function SiteOrders() {
               </tr>
             </thead>
             <tbody>
-              {shown.map((o) => {
+              {shown?.length === 0 && (
+                <tr>
+                  <td colSpan={filter === "preparing" ? 7 : 8} className="px-4 py-10 text-center text-sm text-ink/45">
+                    Aucune commande {filter !== "all" ? "dans ce statut" : "pour le moment"}.
+                  </td>
+                </tr>
+              )}
+              {shown?.map((o) => {
                 const pack = packOf(o.pack_id);
                 const wa = customerWhatsApp(o.phone);
                 const st = STATUSES.find((s) => s.id === o.status) || STATUSES[0];
