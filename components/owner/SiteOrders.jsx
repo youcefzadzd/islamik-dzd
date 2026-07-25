@@ -11,6 +11,7 @@ import {
   glass,
   hasStoredCredentials,
 } from "./shared";
+import { uiClick, uiSuccess, uiError } from "./sounds";
 
 /* حالات الطلب — نفس قيم عمود status في site_orders.
    الطلب الجديد يصل بحالة new (= En confirmation) ثم يتدرج في السلسلة. */
@@ -128,6 +129,10 @@ export default function SiteOrders() {
   }
 
   async function setStatus(id, status) {
+    /* صوت حسب طبيعة الانتقال: إلغاء/رجوع ↓ · تسليم ✓ · البقية نقرة */
+    if (status === "cancelled" || status === "returned") uiError();
+    else if (status === "delivered") uiSuccess();
+    else uiClick();
     const before = orders;
     setOrders(orders.map((o) => (o.id === id ? { ...o, status } : o)));
     try {
@@ -139,6 +144,7 @@ export default function SiteOrders() {
 
   /* تغيير motif التأكيد مباشرة من عمود الجدول (تبويب En confirmation) */
   async function setMotif(id, motif) {
+    uiClick();
     const before = orders;
     setOrders(orders.map((o) => (o.id === id ? { ...o, confirmation_status: motif || null } : o)));
     try {
@@ -150,6 +156,7 @@ export default function SiteOrders() {
 
   /* تغيير الباقة مباشرة من عمود الجدول — دون فتح التفاصيل */
   async function setPack(id, packId) {
+    uiClick();
     const before = orders;
     setOrders(orders.map((o) => (o.id === id ? { ...o, pack_id: packId || null } : o)));
     try {
@@ -161,6 +168,7 @@ export default function SiteOrders() {
 
   async function deleteOrder(id) {
     if (!window.confirm("Supprimer définitivement cette commande ?")) return;
+    uiError();
     const res = await fetch("/api/owner/site-orders", {
       method: "DELETE",
       headers: { "Content-Type": "application/json", ...ownerHeaders() },
@@ -185,6 +193,7 @@ export default function SiteOrders() {
       });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || "Erreur serveur.");
+      uiSuccess();
       applySaved(j.order);
     } catch (e) {
       setLoadError(e.message);
@@ -685,6 +694,7 @@ function PackChooser({ order, onClose, onValidated, patchOrder }) {
     setError("");
     try {
       const saved = await patchOrder(order.id, { packId, status: "preparing" });
+      uiSuccess();
       onValidated(saved);
     } catch (e) {
       setError(e.message);
@@ -804,6 +814,7 @@ function RowDetails({
     setError("");
     try {
       const saved = await patchOrder(o.id, { confirmationStatus: motif, comment });
+      uiClick();
       applySaved(saved);
       setSavedTick(true);
       setTimeout(() => setSavedTick(false), 1600);
