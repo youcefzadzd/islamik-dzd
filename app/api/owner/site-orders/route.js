@@ -127,6 +127,23 @@ export async function PATCH(request) {
     const c = String(body.confirmationStatus).trim();
     if (c.length > 60) return NextResponse.json({ error: "invalid motif" }, { status: 400 });
     update.confirmation_status = c || null;
+    /* سجلّ الحالات: كل اختيار غير فارغ يُلحق بتاريخه — يبقى التاريخ
+       كاملًا مرئيًا في البطاقة حتى بعد تغيير الحالة */
+    if (c) {
+      const { data: cur } = await supabase
+        .from("site_orders")
+        .select("confirmation_history")
+        .eq("id", id)
+        .maybeSingle();
+      const hist = Array.isArray(cur?.confirmation_history) ? cur.confirmation_history : [];
+      const last = hist[hist.length - 1];
+      if (!last || last.status !== c) {
+        update.confirmation_history = [
+          ...hist.slice(-29), // بحد أقصى 30 إدخالًا
+          { status: c, at: new Date().toISOString() },
+        ];
+      }
+    }
   }
   if (body.comment !== undefined) {
     const c = String(body.comment).trim();

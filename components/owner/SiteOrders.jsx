@@ -966,6 +966,31 @@ function RowDetails({
           >
             {saving ? "…" : savedTick ? "✓ Enregistré" : "Enregistrer"}
           </button>
+
+          {/* سجلّ الحالات — كل اختيار محفوظ بتاريخه، الأحدث أولًا */}
+          {Array.isArray(o.confirmation_history) && o.confirmation_history.length > 0 && (
+            <div className="mt-4 border-t border-stone-100 pt-3">
+              <p className="mb-2 text-[0.65rem] font-bold uppercase tracking-wider text-ink/40">
+                Historique des statuts
+              </p>
+              <ul className="max-h-36 space-y-1.5 overflow-y-auto pe-1">
+                {[...o.confirmation_history].reverse().map((h, i) => (
+                  <li key={i} className="flex items-baseline justify-between gap-3 text-xs">
+                    <span
+                      className={`rounded-full px-2 py-0.5 font-semibold ${
+                        i === 0 ? "bg-gold/15 text-gold-dark" : "bg-stone-100 text-stone-500"
+                      }`}
+                    >
+                      {h.status}
+                    </span>
+                    <span className="whitespace-nowrap tabular-nums text-ink/40">
+                      {(h.at || "").slice(0, 16).replace("T", " · ")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
 
         {/* ملخص الطلب — الباقة قابلة للتغيير مباشرة من هنا */}
