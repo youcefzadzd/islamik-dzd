@@ -941,7 +941,8 @@ function RowDetails({
           ) : null}
         </section>
 
-        {/* متابعة التأكيد: motif + تعليق */}
+        {/* متابعة التأكيد: motif + تعليق — مرحلة التأكيد فقط، لا تظهر في En préparation */}
+        {o.status !== "preparing" && (
         <section className={card}>
           <h3 className={heading}>Statut de confirmation</h3>
           <select className={input} value={motif} onChange={(e) => setMotif(e.target.value)}>
@@ -1001,6 +1002,7 @@ function RowDetails({
             </div>
           )}
         </section>
+        )}
 
         {/* ملخص الطلب — الباقة قابلة للتغيير مباشرة من هنا */}
         <section className={card}>
