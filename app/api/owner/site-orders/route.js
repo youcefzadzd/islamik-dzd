@@ -127,28 +127,32 @@ export async function PATCH(request) {
     const c = String(body.confirmationStatus).trim();
     if (c.length > 60) return NextResponse.json({ error: "invalid motif" }, { status: 400 });
     update.confirmation_status = c || null;
-    /* سجلّ الحالات: كل اختيار غير فارغ يُلحق بتاريخه — يبقى التاريخ
-       كاملًا مرئيًا في البطاقة حتى بعد تغيير الحالة */
-    if (c) {
-      const { data: cur } = await supabase
-        .from("site_orders")
-        .select("confirmation_history")
-        .eq("id", id)
-        .maybeSingle();
-      const hist = Array.isArray(cur?.confirmation_history) ? cur.confirmation_history : [];
-      const last = hist[hist.length - 1];
-      if (!last || last.status !== c) {
-        update.confirmation_history = [
-          ...hist.slice(-29), // بحد أقصى 30 إدخالًا
-          { status: c, at: new Date().toISOString() },
-        ];
-      }
-    }
   }
   if (body.comment !== undefined) {
     const c = String(body.comment).trim();
     if (c.length > 500) return NextResponse.json({ error: "invalid comment" }, { status: 400 });
     update.comment = c || null;
+  }
+  /* سجلّ المتابعة: أي تغيير في الحالة أو التعليق يُلحق بتاريخه
+     { status, comment, at } — يبقى التاريخ كاملًا مرئيًا في البطاقة */
+  if ("confirmation_status" in update || "comment" in update) {
+    const { data: cur } = await supabase
+      .from("site_orders")
+      .select("confirmation_history, confirmation_status, comment")
+      .eq("id", id)
+      .maybeSingle();
+    const hist = Array.isArray(cur?.confirmation_history) ? cur.confirmation_history : [];
+    const last = hist[hist.length - 1] || {};
+    const newStatus =
+      "confirmation_status" in update ? update.confirmation_status || "" : cur?.confirmation_status || "";
+    const newComment = "comment" in update ? update.comment || "" : cur?.comment || "";
+    const changed = newStatus !== (last.status || "") || newComment !== (last.comment || "");
+    if ((newStatus || newComment) && changed) {
+      update.confirmation_history = [
+        ...hist.slice(-29), // بحد أقصى 30 إدخالًا
+        { status: newStatus || null, comment: newComment || null, at: new Date().toISOString() },
+      ];
+    }
   }
   if (body.infosComplete !== undefined) {
     update.infos_complete = Boolean(body.infosComplete);

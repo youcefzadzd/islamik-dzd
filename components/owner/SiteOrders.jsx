@@ -973,19 +973,26 @@ function RowDetails({
               <p className="mb-2 text-[0.65rem] font-bold uppercase tracking-wider text-ink/40">
                 Historique des statuts
               </p>
-              <ul className="max-h-36 space-y-1.5 overflow-y-auto pe-1">
+              <ul className="max-h-44 space-y-2 overflow-y-auto pe-1">
                 {[...o.confirmation_history].reverse().map((h, i) => (
-                  <li key={i} className="flex items-baseline justify-between gap-3 text-xs">
-                    <span
-                      className={`rounded-full px-2 py-0.5 font-semibold ${
-                        i === 0 ? "bg-gold/15 text-gold-dark" : "bg-stone-100 text-stone-500"
-                      }`}
-                    >
-                      {h.status}
-                    </span>
-                    <span className="whitespace-nowrap tabular-nums text-ink/40">
-                      {(h.at || "").slice(0, 16).replace("T", " · ")}
-                    </span>
+                  <li key={i} className="text-xs">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span
+                        className={`rounded-full px-2 py-0.5 font-semibold ${
+                          i === 0 ? "bg-gold/15 text-gold-dark" : "bg-stone-100 text-stone-500"
+                        }`}
+                      >
+                        {h.status || "— sans motif —"}
+                      </span>
+                      <span className="whitespace-nowrap tabular-nums text-ink/40">
+                        {(h.at || "").slice(0, 16).replace("T", " · ")}
+                      </span>
+                    </div>
+                    {h.comment ? (
+                      <p className="mt-1 border-s-2 border-stone-200 ps-2 italic leading-snug text-ink/55">
+                        {h.comment}
+                      </p>
+                    ) : null}
                   </li>
                 ))}
               </ul>
