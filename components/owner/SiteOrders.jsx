@@ -855,6 +855,7 @@ function RowDetails({
                 <span className="font-semibold text-emerald">{o.wedding_id}</span>
               </li>
             ) : null}
+            {o.status === "preparing" ? (
             <li className="flex flex-wrap items-center gap-1.5 pt-1">
               📋 Fiche client :
               {(() => {
@@ -887,6 +888,7 @@ function RowDetails({
                 <span className="text-xs text-ink/45">(en attente)</span>
               )}
             </li>
+            ) : null}
           </ul>
 
           {/* معلومات التسليم للزبون: رابط الدعوة + لوحة المتابعة + كلمة السر
