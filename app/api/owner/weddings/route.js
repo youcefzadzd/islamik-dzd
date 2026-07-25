@@ -26,15 +26,19 @@ export async function GET(request) {
   const { data, error } = await supabase
     .from("weddings")
     .select(
-      "id, wedding_id, bride_name, groom_name, display_name, wedding_date, created_at, default_language, languages, media, texts"
+      "id, wedding_id, bride_name, groom_name, display_name, wedding_date, created_at, default_language, languages, media, texts, location_name, contact"
     )
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({
-    rows: data.map(({ texts, media, ...w }) => ({
+    rows: data.map(({ texts, media, contact, ...w }) => ({
       ...w,
       heroImage: media?.heroImage || null,
       archived: !!texts?._archived,
+      /* حقول البحث الشامل: الأسماء العربية، الهاتف، القاعة */
+      groomNameAr: texts?.couple?.groomNameAr || null,
+      brideNameAr: texts?.couple?.brideNameAr || null,
+      phone: contact?.phone || null,
     })),
   });
 }

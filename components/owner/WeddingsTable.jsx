@@ -52,10 +52,23 @@ export default function WeddingsTable() {
     let out = [...(rows || [])];
     const q = search.trim().toLowerCase();
     if (q) {
-      out = out.filter((w) =>
-        [w.display_name, w.groom_name, w.bride_name, w.wedding_id]
-          .filter(Boolean)
-          .some((s) => s.toLowerCase().includes(q))
+      const qDigits = q.replace(/\D/g, "");
+      out = out.filter(
+        (w) =>
+          [
+            w.display_name,
+            w.groom_name,
+            w.bride_name,
+            w.groomNameAr,
+            w.brideNameAr,
+            w.wedding_id,
+            w.location_name,
+            w.wedding_date,
+          ]
+            .filter(Boolean)
+            .some((s) => String(s).toLowerCase().includes(q)) ||
+          /* الهاتف: مطابقة بالأرقام فقط (تتجاوز الفراغات و+213) */
+          (qDigits.length >= 4 && String(w.phone || "").replace(/\D/g, "").includes(qDigits))
       );
     }
     if (statusFilter !== "all") out = out.filter((w) => statusOf(w).label === statusFilter);
@@ -108,7 +121,7 @@ export default function WeddingsTable() {
       {/* toolbar */}
       <div className={`mb-4 flex flex-wrap items-center gap-2 p-3 ${glass}`}>
         <input
-          placeholder="Rechercher un couple ou un identifiant…"
+          placeholder="Rechercher : couple (fr/ar), téléphone, salle, date, WED-ID…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-xs rounded-lg border border-gold/40 bg-white px-3 py-2 text-sm outline-none focus:border-stone-900"

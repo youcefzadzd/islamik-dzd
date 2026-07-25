@@ -54,6 +54,7 @@ export default function SiteOrders() {
   const [orders, setOrders] = useState(null);
   const [loadError, setLoadError] = useState("");
   const [filter, setFilter] = useState("new");
+  const [search, setSearch] = useState("");
   const [creatingId, setCreatingId] = useState(null); // طلب يجري إنشاء عرسه
   const [editorWedding, setEditorWedding] = useState(null); // WED-XXX المفتوح في نافذة التحرير
   const [expandedId, setExpandedId] = useState(null); // الصف المفتوح بزر ➕
@@ -264,8 +265,20 @@ export default function SiteOrders() {
       rows = rows?.filter((o) => !o.infos_complete);
     else if (filter === "preparing" && infosFilter === "done")
       rows = rows?.filter((o) => o.infos_complete);
+    /* بحث حر: الأسماء، الهاتف (أرقامًا)، معرّف العرس، القاعة */
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const qDigits = q.replace(/\D/g, "");
+      rows = rows?.filter(
+        (o) =>
+          [o.groom_name, o.bride_name, o.wedding_id, o.venue, o.client_info?.groomAr, o.client_info?.brideAr]
+            .filter(Boolean)
+            .some((s) => String(s).toLowerCase().includes(q)) ||
+          (qDigits.length >= 4 && String(o.phone || "").replace(/\D/g, "").includes(qDigits))
+      );
+    }
     return rows;
-  }, [orders, filter, motifFilter, infosFilter]);
+  }, [orders, filter, motifFilter, infosFilter, search]);
 
   /* عدّادا فلتر اكتمال المعلومات في En préparation */
   const infosCounts = useMemo(() => {
@@ -300,10 +313,16 @@ export default function SiteOrders() {
             {s.label} · {counts[s.id]}
           </button>
         ))}
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="🔍 Rechercher : couple, téléphone, salle, WED-ID…"
+          className="ml-auto w-full max-w-xs rounded-full border border-gold/40 bg-white px-4 py-1.5 text-xs outline-none focus:border-stone-900"
+        />
         <button
           type="button"
           onClick={load}
-          className="ml-auto rounded-full border border-gold/40 px-3.5 py-1.5 text-xs font-semibold text-gold-dark transition-colors hover:bg-ivory-dark"
+          className="rounded-full border border-gold/40 px-3.5 py-1.5 text-xs font-semibold text-gold-dark transition-colors hover:bg-ivory-dark"
         >
           ↻ Actualiser
         </button>
