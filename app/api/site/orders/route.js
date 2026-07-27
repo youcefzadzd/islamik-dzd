@@ -46,9 +46,9 @@ export async function POST(request) {
   if (venue.length > 160) {
     return NextResponse.json({ error: "invalid venue" }, { status: 400 });
   }
-  // أرقام دولية أو محلية: أرقام ومسافات و+ و- فقط، 8 خانات رقمية على الأقل
+  // رقم هاتف جزائري: يبدأ بـ05/06/07 ويتكون من 10 أرقام (المسافات والفواصل مسموحة في العرض)
   const digits = phone.replace(/\D/g, "");
-  if (!/^[0-9+\s()-]{8,24}$/.test(phone) || digits.length < 8 || digits.length > 15) {
+  if (!/^[0-9+\s()-]{8,24}$/.test(phone) || !/^0[567]\d{8}$/.test(digits)) {
     return NextResponse.json({ error: "invalid phone" }, { status: 400 });
   }
 

@@ -81,7 +81,8 @@ export default function OrderForm() {
     if (groom.trim().length < 2) return o.errorGroom;
     if (bride.trim().length < 2) return o.errorBride;
     const digits = phone.replace(/\D/g, "");
-    if (digits.length < 8 || digits.length > 15) return o.errorPhone;
+    // رقم جزائري: يبدأ بـ05/06/07 ويتكون من 10 أرقام
+    if (!/^0[567]\d{8}$/.test(digits)) return o.errorPhone;
     return "";
   };
 
