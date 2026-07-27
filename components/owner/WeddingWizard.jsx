@@ -388,7 +388,7 @@ const INVITATION_PLACEHOLDERS_AR = {
   motherName: "مثال: السيدة فاطمة بنت علي",
   invitationText: "مثال: يتشرفان بدعوتكم لحضور حفل زفاف ابنتهما",
   mainTitle: "مثال: حفل زفاف",
-  brideName: "مثال: كاتية",
+  brideName: "مثال: أمال",
   dateIntro: "مثال: وذلك يوم",
   weddingDate: "مثال: السبت 15 أوت 2026",
   time: "مثال: على الساعة السابعة مساءً",
