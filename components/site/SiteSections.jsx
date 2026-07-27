@@ -100,7 +100,25 @@ function TemplateCard({ tpl, i, lang, t }) {
 
   return (
     <Reveal delay={0.05}>
-      <article className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
+      <article>
+        {/* اسم القالب فوق المعاينة */}
+        <header className="mb-8 text-center">
+          <span
+            className="font-serif text-5xl font-semibold leading-none text-gold/30 sm:text-6xl"
+            aria-hidden
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
+          <h3 className="mt-2 font-serif text-3xl font-bold text-burgundy-dark sm:text-4xl">
+            {tpl.name}
+          </h3>
+          <div
+            className="mx-auto mt-4 h-px w-16 bg-gradient-to-r from-transparent via-gold to-transparent"
+            aria-hidden
+          />
+        </header>
+
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
         {/* المعاينة */}
         <div className={flip ? "lg:order-2" : ""}>
           <div className="group relative mx-auto max-w-md overflow-hidden rounded-3xl border border-gold/25 bg-cream shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:shadow-royal lg:max-w-none">
@@ -186,21 +204,8 @@ function TemplateCard({ tpl, i, lang, t }) {
 
         {/* التفاصيل */}
         <div className={`text-center lg:text-start ${flip ? "lg:order-1" : ""}`}>
-          <span
-            className="font-serif text-6xl font-semibold leading-none text-gold/30 sm:text-7xl"
-            aria-hidden
-          >
-            {String(i + 1).padStart(2, "0")}
-          </span>
-          <h3 className="mt-3 font-serif text-3xl font-bold text-burgundy-dark sm:text-4xl">
-            {tpl.name}
-          </h3>
-          <div
-            className="mx-auto mt-4 h-px w-16 bg-gradient-to-r from-transparent via-gold to-transparent lg:mx-0"
-            aria-hidden
-          />
           <p
-            className={`mx-auto mt-5 max-w-md text-base leading-relaxed text-ink/65 lg:mx-0 ${
+            className={`mx-auto max-w-md text-base leading-relaxed text-ink/65 lg:mx-0 ${
               arabic ? "font-arabicText" : "font-body"
             }`}
           >
@@ -227,6 +232,7 @@ function TemplateCard({ tpl, i, lang, t }) {
               <span aria-hidden>{arabic ? "←" : "→"}</span>
             </GhostButton>
           </div>
+        </div>
         </div>
       </article>
     </Reveal>
