@@ -24,6 +24,7 @@ import {
 } from "./SitePricingFaq";
 import { Flourish, GhostButton, PrimaryButton } from "./ui";
 import ShowcaseWall from "./ShowcaseWall";
+import { HomeOrderSection } from "./HomeOrderForm";
 import Pixels from "./Pixels";
 import WhatsAppFab from "./WhatsAppFab";
 
@@ -63,6 +64,8 @@ export default function SiteHome() {
       <DashboardSection lang={lang} t={t} />
       <LangsSection lang={lang} t={t} />
       <TestimonialsSection lang={lang} t={t} />
+      {/* نموذج الطلب المدمج — الزائر يطلب دون مغادرة الصفحة */}
+      <HomeOrderSection lang={lang} t={t} />
       <FaqSection lang={lang} t={t} />
       <ContactSection lang={lang} t={t} />
       <Footer lang={lang} t={t} />
