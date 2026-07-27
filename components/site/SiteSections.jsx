@@ -5,6 +5,7 @@
  * لوحة المتابعة، وتعدد اللغات.
  */
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { CATALOG, COMPARISON, formatDZD } from "./site-config";
 import {
@@ -36,86 +37,9 @@ export function TemplatesSection({ lang, t }) {
       />
 
       <div className="mx-auto mt-14 grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {live.map((tpl, i) => {
-          return (
-            <Reveal key={tpl.id} delay={i * 0.08}>
-              <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-gold/25 bg-cream shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:shadow-royal">
-                {/* رقم القالب */}
-                <span
-                  className="absolute top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-ivory/90 font-serif text-sm font-semibold text-burgundy shadow-sm backdrop-blur ltr:left-4 rtl:right-4"
-                  aria-hidden
-                >
-                  {i + 1}
-                </span>
-                {tpl.badge ? (
-                  <span
-                    className={`absolute top-4 z-10 rounded-full bg-burgundy px-3.5 py-1.5 text-[0.68rem] font-semibold tracking-wide text-cream shadow ltr:right-4 rtl:left-4 ${
-                      arabic ? "font-arabicText" : ""
-                    }`}
-                  >
-                    {tpl.badge[lang]}
-                  </span>
-                ) : null}
-
-                <div className="relative aspect-[4/5] overflow-hidden bg-ivory-dark">
-                  <img
-                    src={tpl.preview}
-                    alt={tpl.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
-                  />
-                  {tpl.seal ? (
-                    <img
-                      src={tpl.seal.src}
-                      alt=""
-                      loading="lazy"
-                      draggable={false}
-                      aria-hidden
-                      className="pointer-events-none absolute left-1/2 select-none transition-transform duration-700 group-hover:scale-[1.05]"
-                      style={{
-                        top: tpl.seal.top,
-                        width: tpl.seal.width,
-                        transform: "translate(-50%, -50%)",
-                        filter: "drop-shadow(0 6px 14px rgb(30 8 13 / 0.35))",
-                      }}
-                    />
-                  ) : null}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/35 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                </div>
-
-                <div className="flex flex-1 flex-col gap-3 p-6">
-                  <h3 className="font-serif text-xl font-semibold text-burgundy-dark">
-                    {tpl.name}
-                  </h3>
-                  <p
-                    className={`flex-1 text-sm leading-relaxed text-ink/65 ${
-                      arabic ? "font-arabicText" : "font-body"
-                    }`}
-                  >
-                    {tpl.description[lang]}
-                  </p>
-                  <div className="mt-2 flex flex-col gap-2.5">
-                    <GhostButton href={tpl.demoUrl} newTab className="w-full !py-2.5">
-                      <span className={arabic ? "font-arabicText" : ""}>
-                        {t.templates.viewDemo}
-                      </span>
-                      <span aria-hidden>{arabic ? "←" : "→"}</span>
-                    </GhostButton>
-                    <PrimaryButton
-                      href={`/site/order?template=${tpl.id}`}
-                      className="w-full !py-2.5"
-                    >
-                      <span className={arabic ? "font-arabicText" : ""}>
-                        {t.order.orderNow}
-                      </span>
-                      <span aria-hidden>{arabic ? "←" : "→"}</span>
-                    </PrimaryButton>
-                  </div>
-                </div>
-              </article>
-            </Reveal>
-          );
-        })}
+        {live.map((tpl, i) => (
+          <TemplateCard key={tpl.id} tpl={tpl} i={i} lang={lang} t={t} />
+        ))}
 
         {/* بطاقة "قريبًا" */}
         <Reveal delay={live.length * 0.08}>
@@ -151,6 +75,142 @@ export function TemplatesSection({ lang, t }) {
         </Reveal>
       </div>
     </section>
+  );
+}
+
+/* بطاقة قالب بتبويبين: «شاشة الافتتاح» (الظرف) و«الدعوة من الداخل»
+   (فيديو القالب الحقيقي يعمل تلقائيًا، أو صورة الداخل) */
+function TemplateCard({ tpl, i, lang, t }) {
+  const arabic = lang === "ar";
+  const [view, setView] = useState("opening"); // opening | inside
+  const hasInside = Boolean(tpl.inside);
+  const showInside = hasInside && view === "inside";
+
+  const tabs = [
+    { key: "opening", label: t.templates.tabOpening },
+    { key: "inside", label: t.templates.tabInside },
+  ];
+
+  return (
+    <Reveal delay={i * 0.08}>
+      <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-gold/25 bg-cream shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:shadow-royal">
+        {/* تبويبا المعاينة — مثل الدعوات من الداخل/الخارج */}
+        {hasInside ? (
+          <div className="flex border-b border-gold/15 bg-ivory-light/70 text-xs font-semibold">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setView(tab.key)}
+                className={`flex-1 px-2 py-2.5 transition-colors ${
+                  view === tab.key
+                    ? "bg-burgundy text-cream"
+                    : "text-ink/55 hover:text-burgundy"
+                } ${arabic ? "font-arabicText" : ""}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="relative aspect-[4/5] overflow-hidden bg-ivory-dark">
+          {/* رقم القالب والشارة فوق المعاينة */}
+          <span
+            className="absolute top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-ivory/90 font-serif text-sm font-semibold text-burgundy shadow-sm backdrop-blur ltr:left-4 rtl:right-4"
+            aria-hidden
+          >
+            {i + 1}
+          </span>
+          {tpl.badge ? (
+            <span
+              className={`absolute top-4 z-10 rounded-full bg-burgundy px-3.5 py-1.5 text-[0.68rem] font-semibold tracking-wide text-cream shadow ltr:right-4 rtl:left-4 ${
+                arabic ? "font-arabicText" : ""
+              }`}
+            >
+              {tpl.badge[lang]}
+            </span>
+          ) : null}
+
+          {showInside ? (
+            tpl.inside.type === "video" ? (
+              <video
+                src={tpl.inside.src}
+                poster={tpl.inside.poster}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <img
+                src={tpl.inside.src}
+                alt={tpl.name}
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+            )
+          ) : (
+            <>
+              <img
+                src={tpl.preview}
+                alt={tpl.name}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+              />
+              {tpl.seal ? (
+                <img
+                  src={tpl.seal.src}
+                  alt=""
+                  loading="lazy"
+                  draggable={false}
+                  aria-hidden
+                  className="pointer-events-none absolute left-1/2 select-none transition-transform duration-700 group-hover:scale-[1.05]"
+                  style={{
+                    top: tpl.seal.top,
+                    width: tpl.seal.width,
+                    transform: "translate(-50%, -50%)",
+                    filter: "drop-shadow(0 6px 14px rgb(30 8 13 / 0.35))",
+                  }}
+                />
+              ) : null}
+            </>
+          )}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/35 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        </div>
+
+        <div className="flex flex-1 flex-col gap-3 p-6">
+          <h3 className="font-serif text-xl font-semibold text-burgundy-dark">
+            {tpl.name}
+          </h3>
+          <p
+            className={`flex-1 text-sm leading-relaxed text-ink/65 ${
+              arabic ? "font-arabicText" : "font-body"
+            }`}
+          >
+            {tpl.description[lang]}
+          </p>
+          <div className="mt-2 flex flex-col gap-2.5">
+            <GhostButton href={tpl.demoUrl} newTab className="w-full !py-2.5">
+              <span className={arabic ? "font-arabicText" : ""}>
+                {t.templates.viewDemo}
+              </span>
+              <span aria-hidden>{arabic ? "←" : "→"}</span>
+            </GhostButton>
+            <PrimaryButton
+              href={`/site/order?template=${tpl.id}`}
+              className="w-full !py-2.5"
+            >
+              <span className={arabic ? "font-arabicText" : ""}>
+                {t.order.orderNow}
+              </span>
+              <span aria-hidden>{arabic ? "←" : "→"}</span>
+            </PrimaryButton>
+          </div>
+        </div>
+      </article>
+    </Reveal>
   );
 }
 

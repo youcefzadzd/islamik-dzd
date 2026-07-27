@@ -42,6 +42,8 @@ export const CATALOG = [
     // سينماغراف مولّد (kling3) من ظرفه الحقيقي — demo-hero.mp4 كان
     // فيديو حديقة Sage Garden بالخطأ
     video: "/assets/templates/islamic-royal-card.mp4",
+    // تبويب «الدعوة من الداخل» في بطاقة المعرض
+    inside: { type: "image", src: "/assets/hero-background.webp" },
     description: {
       ar: "ظرف مختوم بالشمع، بجعتان متحركتان، ورق حرفي فاخر بالذهبي والبورجوندي — ثنائي اللغة مع RSVP.",
       fr: "Enveloppe scellée, cygnes animés, papier artisanal or et bordeaux — bilingue FR/AR avec RSVP.",
@@ -57,6 +59,7 @@ export const CATALOG = [
     // فيديو حديقته الحقيقي — نفس مقطع واجهة القالب (كان موضوعًا خطأً
     // على بطاقة Islamic Royal سابقًا)
     video: "/assets/templates/demo-hero.mp4",
+    inside: { type: "video", src: "/assets/templates/demo-hero.mp4" },
     description: {
       ar: "حديقة عتيقة: ظرف بلون المريمية بختم تيراكوتا، خط منمّق، وأقسام بلون الكريم والوردي الهادئ.",
       fr: "Jardin vintage : enveloppe sauge au sceau terracotta, calligraphie raffinée, sections crème et rose poudré.",
@@ -70,6 +73,11 @@ export const CATALOG = [
     preview: "/assets/templates/floral-romantic/envelope-closed.webp",
     previewAlt: "/assets/templates/floral-romantic/reveal-scene.webp",
     video: "/assets/templates/floral-romantic/reveal-scene.mp4",
+    inside: {
+      type: "video",
+      src: "/assets/templates/floral-romantic/reveal-scene.mp4",
+      poster: "/assets/templates/floral-romantic/reveal-scene.webp",
+    },
     seal: {
       src: "/assets/site/floral-seal.webp",
       top: "50%",
