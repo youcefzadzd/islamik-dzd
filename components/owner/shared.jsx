@@ -249,10 +249,42 @@ export function AccessDenied() {
 export function OwnerLayout({ children, active, title, actions }) {
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState(null);
+  const [newOrders, setNewOrders] = useState(0);
 
   useEffect(() => {
     setSession(getSession());
   }, []);
+
+  /* شارة «Commandes»: عدّ الطلبات التي وصلت بعد آخر زيارة للقسم —
+     تُصفَّر (وتختفي) بمجرد دخول صفحة الطلبات */
+  useEffect(() => {
+    if (active === "/owner/orders") {
+      try {
+        localStorage.setItem("owner_orders_seen_at", String(Date.now()));
+      } catch {}
+      setNewOrders(0);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/owner/site-orders", { headers: ownerHeaders() });
+        if (!res.ok) return;
+        const body = await res.json().catch(() => ({}));
+        if (cancelled || !Array.isArray(body.orders)) return;
+        let seen = 0;
+        try {
+          seen = Number(localStorage.getItem("owner_orders_seen_at")) || 0;
+        } catch {}
+        setNewOrders(
+          body.orders.filter((o) => (Date.parse(o.created_at) || 0) > seen).length
+        );
+      } catch {}
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [active]);
 
   /* المالك (أو قبل تحميل الجلسة) يرى كل شيء — العامل يرى أقسامه فقط */
   const visibleNav = NAV.filter((item) => {
@@ -285,6 +317,11 @@ export function OwnerLayout({ children, active, title, actions }) {
             )}
             <span className="w-5 text-center text-base">{item.icon}</span>
             {item.label}
+            {item.href === "/owner/orders" && newOrders > 0 && (
+              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold leading-none text-white">
+                {newOrders > 99 ? "99+" : newOrders}
+              </span>
+            )}
           </Link>
         );
       })}
