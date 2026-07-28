@@ -5,7 +5,7 @@
  * لوحة المتابعة، وتعدد اللغات.
  */
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { CATALOG, COMPARISON, formatDZD } from "./site-config";
 import {
@@ -84,17 +84,66 @@ export function TemplatesSection({ lang, t }) {
 function TemplatesCarousel({ live, lang, t }) {
   const arabic = lang === "ar";
   const trackRef = useRef(null);
+  const [active, setActive] = useState(0);
 
-  const scrollByCard = (dir) => {
+  const scrollToCard = (idx) => {
     const el = trackRef.current;
     if (!el) return;
-    const card = el.querySelector("[data-tpl-card]");
-    const step = card ? card.offsetWidth + 28 : el.clientWidth * 0.8;
-    el.scrollBy({ left: dir * step, behavior: "smooth" });
+    const cards = el.querySelectorAll("[data-tpl-card]");
+    const card = cards[Math.max(0, Math.min(idx, cards.length - 1))];
+    if (!card) return;
+    /* توسيط البطاقة داخل الشريط — يعمل في الاتجاهين RTL/LTR */
+    el.scrollTo({
+      left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2,
+      behavior: "smooth",
+    });
+  };
+
+  /* تتبّع البطاقة الظاهرة لتحديث النقاط — مع تثبيت الطرفين لأن آخر
+     بطاقة قد لا تتوسّط الشريط عند بلوغ نهاية التمرير */
+  const onScroll = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    const cards = el.querySelectorAll("[data-tpl-card]");
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    const pos = Math.abs(el.scrollLeft); // RTL يعطي قيمًا سالبة
+    if (maxScroll > 4 && pos >= maxScroll - 4) return setActive(cards.length - 1);
+    if (pos <= 4) return setActive(0);
+
+    const mid = el.getBoundingClientRect().left + el.clientWidth / 2;
+    let best = 0;
+    let bestDist = Infinity;
+    cards.forEach((c, i) => {
+      const r = c.getBoundingClientRect();
+      const d = Math.abs(r.left + r.width / 2 - mid);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    });
+    setActive(best);
   };
 
   return (
-    <div className="mt-14">
+    <div className="mt-8">
+      {/* عدّاد القوالب + تلميح السحب */}
+      <div className="mb-8 flex flex-col items-center gap-2">
+        <span
+          className={`rounded-full border border-gold/40 bg-cream px-5 py-2 text-sm font-bold text-burgundy-dark shadow-sm ${
+            arabic ? "font-arabicText" : "font-body"
+          }`}
+        >
+          ✨ {t.templates.countLabel(live.length)}
+        </span>
+        <span
+          className={`text-xs text-ink/45 ${
+            arabic ? "font-arabicText" : "font-body"
+          }`}
+        >
+          {t.templates.swipeHint}
+        </span>
+      </div>
+
       {/* هيكل الهاتف — إطار داكن بشاشة وحزّة علوية */}
       <style
         dangerouslySetInnerHTML={{
@@ -117,29 +166,57 @@ function TemplatesCarousel({ live, lang, t }) {
         }}
       />
 
-      <div ref={trackRef} className="dz-tprail mx-auto max-w-6xl px-5 sm:px-8">
+      <div
+        ref={trackRef}
+        onScroll={onScroll}
+        className="dz-tprail mx-auto max-w-6xl px-5 sm:px-8"
+      >
         {live.map((tpl, i) => (
-          <TemplateCard key={tpl.id} tpl={tpl} i={i} lang={lang} t={t} />
+          <TemplateCard
+            key={tpl.id}
+            tpl={tpl}
+            i={i}
+            total={live.length}
+            lang={lang}
+            t={t}
+          />
         ))}
       </div>
 
-      {/* أسهم التنقل */}
-      <div className="mt-2 flex items-center justify-center gap-3">
+      {/* أسهم + نقاط تدل على عدد القوالب وموضع الحالي */}
+      <div className="mt-2 flex items-center justify-center gap-4">
         <button
           type="button"
-          onClick={() => scrollByCard(arabic ? 1 : -1)}
+          onClick={() => scrollToCard(active - 1)}
           aria-label="previous"
           className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 bg-cream text-burgundy shadow-sm transition-colors hover:bg-burgundy hover:text-cream"
         >
-          ‹
+          {arabic ? "›" : "‹"}
         </button>
+
+        <div className="flex items-center gap-2.5">
+          {live.map((tpl, i) => (
+            <button
+              key={tpl.id}
+              type="button"
+              onClick={() => scrollToCard(i)}
+              aria-label={tpl.name}
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                i === active
+                  ? "w-7 bg-burgundy"
+                  : "w-2.5 bg-gold/40 hover:bg-gold"
+              }`}
+            />
+          ))}
+        </div>
+
         <button
           type="button"
-          onClick={() => scrollByCard(arabic ? -1 : 1)}
+          onClick={() => scrollToCard(active + 1)}
           aria-label="next"
           className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 bg-cream text-burgundy shadow-sm transition-colors hover:bg-burgundy hover:text-cream"
         >
-          ›
+          {arabic ? "‹" : "›"}
         </button>
       </div>
     </div>
@@ -148,7 +225,7 @@ function TemplatesCarousel({ live, lang, t }) {
 
 /* بطاقة قالب: هاتفان جنبًا إلى جنب — الغلاف (الظرف بختمه) والدعوة من
    الداخل (فيديو القالب الحقيقي يعمل تلقائيًا أو صورة الداخل) */
-function TemplateCard({ tpl, i, lang, t }) {
+function TemplateCard({ tpl, i, total, lang, t }) {
   const arabic = lang === "ar";
 
   return (
@@ -228,6 +305,13 @@ function TemplateCard({ tpl, i, lang, t }) {
 
       {/* الاسم والوصف */}
       <div className="mt-6 text-center">
+        {/* ترتيب القالب من الإجمالي — يوضح للزائر عدد القوالب */}
+        <span
+          className="mb-2 inline-block font-serif text-xs font-semibold tracking-[0.2em] text-gold-dark"
+          dir="ltr"
+        >
+          {String(i + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+        </span>
         <h3 className="font-serif text-2xl font-bold text-burgundy-dark">
           {tpl.name}
         </h3>
