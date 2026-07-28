@@ -5,7 +5,7 @@
  * لوحة المتابعة، وتعدد اللغات.
  */
 
-import { useState } from "react";
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import { CATALOG, COMPARISON, formatDZD } from "./site-config";
 import {
@@ -36,12 +36,8 @@ export function TemplatesSection({ lang, t }) {
         subtitle={t.templates.subtitle}
       />
 
-      {/* كل قالب في قسم عريض لوحده — معاينة في جهة وتفاصيل في الأخرى بالتناوب */}
-      <div className="mx-auto mt-16 max-w-6xl space-y-16 sm:space-y-24">
-        {live.map((tpl, i) => (
-          <TemplateCard key={tpl.id} tpl={tpl} i={i} lang={lang} t={t} />
-        ))}
-      </div>
+      {/* شريط أفقي: كل قالب ببطاقة فيها هاتفان — الغلاف والدعوة من الداخل */}
+      <TemplatesCarousel live={live} lang={lang} t={t} />
 
       {/* شريط "قريبًا" */}
       <Reveal delay={0.1} className="mx-auto mt-16 max-w-6xl">
@@ -83,159 +79,189 @@ export function TemplatesSection({ lang, t }) {
   );
 }
 
-/* قسم عرض كامل لكل قالب — المعاينة في جهة والتفاصيل في الأخرى بالتناوب،
-   مع تبويبين: «شاشة الافتتاح» (الظرف) و«الدعوة من الداخل»
-   (فيديو القالب الحقيقي يعمل تلقائيًا، أو صورة الداخل) */
-function TemplateCard({ tpl, i, lang, t }) {
+/* شريط أفقي للقوالب — بطاقة لكل قالب فيها هاتفان (الغلاف + الداخل)،
+   تمرير بالسحب أو بالسهمين */
+function TemplatesCarousel({ live, lang, t }) {
   const arabic = lang === "ar";
-  const [view, setView] = useState("opening"); // opening | inside
-  const hasInside = Boolean(tpl.inside);
-  const showInside = hasInside && view === "inside";
-  const flip = i % 2 === 1; // تناوب جهة المعاينة
+  const trackRef = useRef(null);
 
-  const tabs = [
-    { key: "opening", label: t.templates.tabOpening },
-    { key: "inside", label: t.templates.tabInside },
-  ];
+  const scrollByCard = (dir) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const card = el.querySelector("[data-tpl-card]");
+    const step = card ? card.offsetWidth + 28 : el.clientWidth * 0.8;
+    el.scrollBy({ left: dir * step, behavior: "smooth" });
+  };
 
   return (
-    <Reveal delay={0.05}>
-      <article>
-        {/* اسم القالب فوق المعاينة */}
-        <header className="mb-8 text-center">
+    <div className="mt-14">
+      {/* هيكل الهاتف — إطار داكن بشاشة وحزّة علوية */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+.dz-tp{width:100%;border-radius:26px;padding:2px;
+  background:linear-gradient(160deg,#2a1f22 0%,#1f1518 100%);
+  box-shadow:0 0 0 1px rgb(255 255 255 / .06),0 22px 44px -20px rgb(30 8 13 / .45)}
+.dz-tp__screen{position:relative;width:100%;aspect-ratio:9/19;border-radius:24px;
+  overflow:hidden;background:#14100f}
+.dz-tp__screen img,.dz-tp__screen video{width:100%;height:100%;object-fit:cover;display:block}
+.dz-tp__notch{position:absolute;top:7px;left:50%;transform:translateX(-50%);
+  width:44px;height:11px;border-radius:8px;background:#14100f;z-index:3}
+.dz-tp__glare{position:absolute;inset:0;border-radius:24px;z-index:2;pointer-events:none;
+  background:linear-gradient(135deg,rgb(255 255 255 / .14) 0%,rgb(255 255 255 / .03) 32%,transparent 62%)}
+.dz-tprail{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding:6px 4px 22px;scrollbar-width:none}
+.dz-tprail::-webkit-scrollbar{display:none}
+.dz-tprail>*{scroll-snap-align:center;flex:0 0 auto}
+`,
+        }}
+      />
+
+      <div ref={trackRef} className="dz-tprail mx-auto max-w-6xl px-5 sm:px-8">
+        {live.map((tpl, i) => (
+          <TemplateCard key={tpl.id} tpl={tpl} i={i} lang={lang} t={t} />
+        ))}
+      </div>
+
+      {/* أسهم التنقل */}
+      <div className="mt-2 flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={() => scrollByCard(arabic ? 1 : -1)}
+          aria-label="previous"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 bg-cream text-burgundy shadow-sm transition-colors hover:bg-burgundy hover:text-cream"
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          onClick={() => scrollByCard(arabic ? -1 : 1)}
+          aria-label="next"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 bg-cream text-burgundy shadow-sm transition-colors hover:bg-burgundy hover:text-cream"
+        >
+          ›
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* بطاقة قالب: هاتفان جنبًا إلى جنب — الغلاف (الظرف بختمه) والدعوة من
+   الداخل (فيديو القالب الحقيقي يعمل تلقائيًا أو صورة الداخل) */
+function TemplateCard({ tpl, i, lang, t }) {
+  const arabic = lang === "ar";
+
+  return (
+    <article
+      data-tpl-card
+      style={{ width: "min(86vw, 430px)" }}
+      className="group rounded-3xl border border-gold/25 bg-cream p-5 shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:shadow-royal sm:p-6"
+    >
+      {/* الهاتفان */}
+      <div className="relative grid grid-cols-2 gap-3.5">
+        {tpl.badge ? (
           <span
-            className="font-serif text-5xl font-semibold leading-none text-gold/30 sm:text-6xl"
-            aria-hidden
-          >
-            {String(i + 1).padStart(2, "0")}
-          </span>
-          <h3 className="mt-2 font-serif text-3xl font-bold text-burgundy-dark sm:text-4xl">
-            {tpl.name}
-          </h3>
-          <div
-            className="mx-auto mt-4 h-px w-16 bg-gradient-to-r from-transparent via-gold to-transparent"
-            aria-hidden
-          />
-        </header>
-
-        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
-        {/* المعاينة */}
-        <div className={flip ? "lg:order-2" : ""}>
-          <div className="group relative mx-auto max-w-md overflow-hidden rounded-3xl border border-gold/25 bg-cream shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:shadow-royal lg:max-w-none">
-            {hasInside ? (
-              <div className="flex border-b border-gold/15 bg-ivory-light/70 text-xs font-semibold">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setView(tab.key)}
-                    className={`flex-1 px-2 py-2.5 transition-colors ${
-                      view === tab.key
-                        ? "bg-burgundy text-cream"
-                        : "text-ink/55 hover:text-burgundy"
-                    } ${arabic ? "font-arabicText" : ""}`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
-            <div className="relative aspect-[4/5] overflow-hidden bg-ivory-dark">
-              {tpl.badge ? (
-                <span
-                  className={`absolute top-4 z-10 rounded-full bg-burgundy px-3.5 py-1.5 text-[0.68rem] font-semibold tracking-wide text-cream shadow ltr:right-4 rtl:left-4 ${
-                    arabic ? "font-arabicText" : ""
-                  }`}
-                >
-                  {tpl.badge[lang]}
-                </span>
-              ) : null}
-
-              {showInside ? (
-                tpl.inside.type === "video" ? (
-                  <video
-                    src={tpl.inside.src}
-                    poster={tpl.inside.poster}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <img
-                    src={tpl.inside.src}
-                    alt={tpl.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                )
-              ) : (
-                <>
-                  <img
-                    src={tpl.preview}
-                    alt={tpl.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
-                  />
-                  {tpl.seal ? (
-                    <img
-                      src={tpl.seal.src}
-                      alt=""
-                      loading="lazy"
-                      draggable={false}
-                      aria-hidden
-                      className="pointer-events-none absolute left-1/2 select-none transition-transform duration-700 group-hover:scale-[1.05]"
-                      style={{
-                        top: tpl.seal.top,
-                        width: tpl.seal.width,
-                        transform: "translate(-50%, -50%)",
-                        filter: "drop-shadow(0 6px 14px rgb(30 8 13 / 0.35))",
-                      }}
-                    />
-                  ) : null}
-                </>
-              )}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/25 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-            </div>
-          </div>
-        </div>
-
-        {/* التفاصيل */}
-        <div className={`text-center lg:text-start ${flip ? "lg:order-1" : ""}`}>
-          <p
-            className={`mx-auto max-w-md text-base leading-relaxed text-ink/65 lg:mx-0 ${
-              arabic ? "font-arabicText" : "font-body"
+            className={`absolute -top-1.5 z-10 rounded-full bg-burgundy px-3 py-1 text-[0.62rem] font-semibold tracking-wide text-cream shadow ltr:-left-1.5 rtl:-right-1.5 ${
+              arabic ? "font-arabicText" : ""
             }`}
           >
-            {tpl.description[lang]}
-          </p>
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
-            <PrimaryButton
-              href={`/site/order?template=${tpl.id}`}
-              className="w-full sm:w-auto !px-7 !py-3"
-            >
-              <span className={arabic ? "font-arabicText" : ""}>
-                {t.order.orderNow}
-              </span>
-              <span aria-hidden>{arabic ? "←" : "→"}</span>
-            </PrimaryButton>
-            <GhostButton
-              href={tpl.demoUrl}
-              newTab
-              className="w-full sm:w-auto !px-7 !py-3"
-            >
-              <span className={arabic ? "font-arabicText" : ""}>
-                {t.templates.viewDemo}
-              </span>
-              <span aria-hidden>{arabic ? "←" : "→"}</span>
-            </GhostButton>
+            {tpl.badge[lang]}
+          </span>
+        ) : null}
+
+        {/* الغلاف */}
+        <div className="dz-tp">
+          <div className="dz-tp__screen">
+            <img
+              src={tpl.preview}
+              alt={tpl.name}
+              loading="lazy"
+              className="transition-transform duration-700 group-hover:scale-[1.04]"
+            />
+            {tpl.seal ? (
+              <img
+                src={tpl.seal.src}
+                alt=""
+                loading="lazy"
+                draggable={false}
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 z-[2] select-none"
+                style={{
+                  top: tpl.seal.top,
+                  width: tpl.seal.width,
+                  height: "auto",
+                  objectFit: "contain",
+                  transform: "translate(-50%, -50%)",
+                  filter: "drop-shadow(0 5px 12px rgb(30 8 13 / 0.4))",
+                }}
+              />
+            ) : null}
+            <span className="dz-tp__glare" />
+            <span className="dz-tp__notch" />
           </div>
         </div>
+
+        {/* الدعوة من الداخل */}
+        <div className="dz-tp">
+          <div className="dz-tp__screen">
+            {tpl.inside?.type === "video" ? (
+              <video
+                src={tpl.inside.src}
+                poster={tpl.inside.poster}
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+            ) : (
+              <img
+                src={tpl.inside?.src || tpl.previewAlt || tpl.preview}
+                alt={tpl.name}
+                loading="lazy"
+              />
+            )}
+            <span className="dz-tp__glare" />
+            <span className="dz-tp__notch" />
+          </div>
         </div>
-      </article>
-    </Reveal>
+      </div>
+
+      {/* الاسم والوصف */}
+      <div className="mt-6 text-center">
+        <h3 className="font-serif text-2xl font-bold text-burgundy-dark">
+          {tpl.name}
+        </h3>
+        <div
+          className="mx-auto mt-3 h-px w-14 bg-gradient-to-r from-transparent via-gold to-transparent"
+          aria-hidden
+        />
+        <p
+          className={`mt-4 min-h-[4.5rem] text-sm leading-relaxed text-ink/65 ${
+            arabic ? "font-arabicText" : "font-body"
+          }`}
+        >
+          {tpl.description[lang]}
+        </p>
+
+        <div className="mt-5 flex flex-col gap-2.5">
+          <PrimaryButton
+            href={`/site/order?template=${tpl.id}`}
+            className="w-full !py-2.5"
+          >
+            <span className={arabic ? "font-arabicText" : ""}>
+              {t.order.orderNow}
+            </span>
+            <span aria-hidden>{arabic ? "←" : "→"}</span>
+          </PrimaryButton>
+          <GhostButton href={tpl.demoUrl} newTab className="w-full !py-2.5">
+            <span className={arabic ? "font-arabicText" : ""}>
+              {t.templates.viewDemo}
+            </span>
+            <span aria-hidden>{arabic ? "←" : "→"}</span>
+          </GhostButton>
+        </div>
+      </div>
+    </article>
   );
 }
 
